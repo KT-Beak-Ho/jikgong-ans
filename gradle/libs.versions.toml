@@ -1,0 +1,74 @@
+[versions]
+accompanistWebview = "0.24.13-rc"
+agp = "8.7.3"
+bottomsheetdialogCompose = "1.5.1"
+converterGson = "2.9.0"
+dialogs-core = "3.3.0"
+koinAndroid = "3.5.3"
+koinAndroidxCompose = "3.5.3"
+kotlin = "2.0.21"
+coreKtx = "1.15.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+lifecycleRuntimeKtx = "2.8.7"
+activityCompose = "1.9.3"
+composeBom = "2024.12.01"
+material3 = "1.4.0-alpha05"
+retrofit = "2.9.0"
+snapper = "0.3.0"
+uiTextGoogleFonts = "1.7.6"
+materialIcons = "1.7.6"
+navigationCompose = "2.8.5"
+raamcosta-core = "1.11.7"
+runtimeLivedata = "1.7.6"
+kakao-android = "2.12.8"
+kakaoNaviVersion = "2.20.6"
+playServicesLocation = "21.3.0"
+accompanistPermissionsVersion = "0.36.0"
+compilerVersion = "4.14.2"
+glideVersion = "4.15.1"
+
+[libraries]
+accompanist-webview = { module = "com.google.accompanist:accompanist-webview", version.ref = "accompanistWebview" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+bottomsheetdialog-compose = { module = "com.holix.android:bottomsheetdialog-compose", version.ref = "bottomsheetdialogCompose" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+dialogs-core = { module = "com.afollestad.material-dialogs:core", version.ref = "dialogs-core" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref="material3" }
+androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
+androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIcons" }
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIcons" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+dialogs-lifecycle = { module = "com.afollestad.material-dialogs:lifecycle", version.ref = "dialogs-core" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
+raamcosta-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "raamcosta-core" }
+raamcosta-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "raamcosta-core" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+snapper = { module = "dev.chrisbanes.snapper:snapper", version.ref = "snapper" }
+androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
+kakao-android = { module = "com.kakao.maps.open:android", version.ref = "kakao-android" }
+kakao-v2-navi = { module = "com.kakao.sdk:v2-navi", version.ref = "kakaoNaviVersion" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+google-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissionsVersion" }
+glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compilerVersion" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glideVersion" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+

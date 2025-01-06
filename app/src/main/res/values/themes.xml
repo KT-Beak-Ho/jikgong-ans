@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.JikGong1111" parent="Theme.AppCompat">
+
+        <item name="md_color_title">@color/white</item>
+        <item name="md_color_content">@color/white</item>
+        <item name="md_color_button_text">@color/white</item>
+        <item name="md_background_color">@color/background</item>
+        <item name="md_ripple_color">@color/white</item>
+        <item name="md_divider_color">@color/softBlue</item>
+        <item name="md_font_button">@color/softRed</item>
+        <item name="md_item_selector">@color/softBlue</item>
+
+    </style>
+</resources>
