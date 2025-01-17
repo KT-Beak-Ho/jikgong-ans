@@ -1,11 +1,21 @@
-# 직공 Ver. Andriod  
-## Note
-**전체 시스템에 대한 테스트 브랜치 입니다**
+#  📌 jikgong(직공)
+> 건설 노동자와 기업들의 일자리 매칭을 시켜주는 중개플랫폼 입니다.
 
-## Update
-*업데이트 내용에 대해 작성해주세요.*
+<br>
 
-## Rule
-- Full request/Merge 경우 정해진 절차에 따라 진행하며, 자세한 Description 을 작성해주세요.
-- 모든 기능이 시스템에서 정상적으로 작동해야 합니다,
-- 모든 기능에 대한 알파 테스트 진행 후 마스터 브랜치로 PR 할 수 있습니다.
+## 🛠 stacks
+## Frontend
+- Kotiln <Version>
+- Jetpack <Version>
+
+### 협업 툴
+- Git, Github
+- Figma
+- Swagger
+- Notion
+
+
+## 👩‍💻 팀원
+| 이승민            | 김진수   | 조영훈   | 안병기  | 오현식  | 김예빈  |
+| ----------------- | -------- | -------- | ------- | ------- | ------- |
+| Leader & Frontend | Backend | Frontend | Frontend | Frontend | Designer |
