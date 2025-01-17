@@ -2,8 +2,6 @@
 > 건설 노동자와 기업들의 일자리 매칭을 시켜주는 중개플랫폼 입니다.
 
 
-<br><br>
-
 ## 🛠 stacks
 ## Frontend
 - Kotiln <Version>
