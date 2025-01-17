@@ -1,15 +1,21 @@
-# 직공 Ver. Andriod 
-## Note
-**개인 개발 브랜치 입니다**
+#  📌 jikgong(직공)
+> 건설 노동자와 기업들의 일자리 매칭을 시켜주는 중개플랫폼 입니다.
 
-## Part
-### Part
-*자신이 맡은 기능 또는 버그 등 자세하게 작성해주세요.*
+<br>
 
-### Deadline
-*개발 기한에 대해 작성해주세요.*
+## 🛠 stacks
+## Frontend
+- Kotiln <Version>
+- Jetpack <Version>
 
-## Rule
-- Full request/Merge 경우 정해진 절차에 따라 진행하며, 자세한 Description 을 작성해주세요.
-- Dev Branch와 모든 충돌을 해결해야 합니다.
-- 개인 Readme에 자신이 맡은 Part 또는 구현할 기능을 자세하게 적어주세요.
+### 협업 툴
+- Git, Github
+- Figma
+- Swagger
+- Notion
+
+
+## 👩‍💻 팀원
+| 이승민            | 김진수   | 조영훈   | 안병기  | 오현식  | 김예빈  |
+| ----------------- | -------- | -------- | ------- | ------- | ------- |
+| Leader & Frontend | Backend | Frontend | Frontend | Frontend | Designer |
