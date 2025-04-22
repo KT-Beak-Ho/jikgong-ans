@@ -41,6 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
 import com.billcorea.jikgong.ui.theme.AppTypography
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -174,5 +175,7 @@ fun JikgongApp (
 fun JikgongAppPreview() {
     val navController = rememberNavController()
     val navigator = navController.toDestinationsNavigator()
-    JikgongApp(navigator, modifier = Modifier.padding(3.dp))
+    Jikgong1111Theme {
+        JikgongApp(navigator, modifier = Modifier.padding(3.dp))
+    }
 }

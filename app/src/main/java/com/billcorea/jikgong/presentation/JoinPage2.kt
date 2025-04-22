@@ -63,6 +63,7 @@ import com.billcorea.jikgong.datepicker.WheelDatePicker
 import com.billcorea.jikgong.network.VisaExpiryDateRequest
 import com.billcorea.jikgong.presentation.destinations.JoinPage3Destination
 import com.billcorea.jikgong.ui.theme.AppTypography
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.utils.MainViewModel
 import com.commandiron.wheel_picker_compose.core.WheelPickerDefaults
@@ -576,8 +577,11 @@ fun JoinPage2 (
 @Preview
 @Composable
 fun JoinPage2Preview() {
-    val viewModel : MainViewModel = koinViewModel()
+    val fakeViewModel = MainViewModel()
     val navController = rememberNavController()
     val navigator = navController.toDestinationsNavigator()
-    JoinPage2(viewModel, navigator, modifier = Modifier.padding(3.dp))
+
+    Jikgong1111Theme {
+        JoinPage2(fakeViewModel, navigator, modifier = Modifier.padding(3.dp))
+    }
 }

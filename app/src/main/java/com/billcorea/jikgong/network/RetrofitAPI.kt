@@ -42,7 +42,7 @@ interface RetrofitAPI {
     ) : Call<Coord2AddressResponse>
 
     companion object {
-        var baseURL="https://asdfdsas.p-e.kr/"
+        var baseURL="https://www.jikgong.p-e.kr/"
         var kakaoURL="https://dapi.kakao.com/"
         private val client = OkHttpClient.Builder().build()
         val gson : Gson =   GsonBuilder().setLenient().create();
