@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -21,10 +22,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,14 +36,19 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.exifinterface.media.ExifInterface
+import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.billcorea.jikgong.utils.MainViewModel
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.Rotate
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import java.io.IOException
@@ -132,6 +141,39 @@ fun GlideImage(url: String, doRefresh: () -> Unit) {
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun JoinPageglidePreview() {
+    val context = LocalContext.current
+    val config = LocalConfiguration.current
+    val screenWidth = config.screenWidthDp
+    val sp = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
+    var safeCardNumber by remember { mutableStateOf("") }
+    var isSecretOk by remember { mutableStateOf(false) }
+    var isGrantCamera by remember { mutableStateOf(false) }
+    var isUseCamera by remember { mutableStateOf(false) }
+    var isUsePic by remember { mutableStateOf(false) }
+    var isOnCamera by remember { mutableStateOf(false) }
+    var galleryUri by remember { mutableStateOf<Uri?>(null) }
+    var takeUri by remember { mutableStateOf<Uri?>(null) }
+    var _safeManagerCardUri by remember { mutableStateOf<Uri?>(null) }
+    var _workerCardUri by remember { mutableStateOf<Uri?>(null) }
+    var currentPhotoPath: String by remember { mutableStateOf("") }
+    var takePicTy by remember { mutableStateOf("") }
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
+
+    Jikgong1111Theme {
+        GlideImage(_workerCardUri.toString(), doRefresh = {
+            _workerCardUri = null
+            isUsePic = false
+            isUseCamera = false
+            if (_safeManagerCardUri == null) {
+                isSecretOk = false
+            }
+        })    }
 }
 
 

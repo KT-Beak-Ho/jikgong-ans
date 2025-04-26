@@ -155,5 +155,4 @@ class MainViewModel : ViewModel() {
 
         Log.e("", "setLocation ... ${lat.value} ${lon.value}")
     }
-
 }
