@@ -14,6 +14,6 @@
 /captures
 .externalNativeBuild
 .cxx
-*.idea
+/.idea/
 local.properties
 README.md

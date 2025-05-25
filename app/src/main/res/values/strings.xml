@@ -5,7 +5,9 @@
     <string name="findJobPlace">일할 현장을\n찾고 있어요</string>
     <string name="findWorker">일할 사람을\n찾고 있어요</string>
     <string name="personFor"><![CDATA["개인회원 > "]]></string>
+    <string name="personForLogin"><![CDATA["개인로그인 > "]]></string>
     <string name="corpFor"><![CDATA["기업회원 > "]]></string>
+    <string name="corpForLogin"><![CDATA["기업로그인 > "]]></string>
     <string name="enterPhoneNumber">전화번호를\n입력해 주세요</string>
     <string name="enterForNumberOnly">숫자만 입력</string>
     <string name="telnumber">전화번호</string>
