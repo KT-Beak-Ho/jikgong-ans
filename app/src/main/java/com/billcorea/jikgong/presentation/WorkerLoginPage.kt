@@ -98,7 +98,6 @@ fun WorkerLoginPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(5.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = {
@@ -110,15 +109,14 @@ fun WorkerLoginPage(
                         contentDescription = "Arrow Back"
                     )
                 }
-                PageIndicator(
-                    numberOfPages = 5,
-                    selectedPage = 0, // 이건 index 라서 0 ~ 4 범위내 에서
-                    defaultRadius = 12.dp,
-                    selectedLength = 24.dp,
-                    space = 6.dp,
-                    animationDurationInMillis = 1000,
+                Text(
+                    text = stringResource(R.string.login),
+                    color = appColorScheme.onPrimaryContainer,
+                    style = AppTypography.titleMedium,
                 )
             }
+
+
         }
         , bottomBar = {
             TextButton(
@@ -127,7 +125,17 @@ fun WorkerLoginPage(
                     editor.putString("phoneNumber", phoneNumber)
                     editor.apply()
                     if (isSecretOk) {
+
                         navigator.navigate(JoinPage2Destination)
+                    }
+                    else {
+                        MaterialDialog(context).show {
+                            icon(R.drawable.ic_jikgong_white)
+                            message(R.string.errorSecretCode)
+                            positiveButton(R.string.OK) {
+                                it.dismiss()
+                            }
+                        }
                     }
                 },
                 modifier = Modifier
@@ -136,7 +144,7 @@ fun WorkerLoginPage(
                     .background(if (isSecretOk) appColorScheme.primary else appColorScheme.inversePrimary)
             ) {
                 Text(
-                    text = stringResource(R.string.next),
+                    text = stringResource(R.string.login),
                     color = if (isSecretOk) appColorScheme.onPrimary else appColorScheme.surfaceDim,
                     lineHeight = 1.25.em,
                     style = AppTypography.labelMedium,
@@ -151,7 +159,7 @@ fun WorkerLoginPage(
             .fillMaxSize()
             .padding(innerPadding)) {
             Text(
-                text = stringResource(R.string.enterPhoneNumber),
+                text = stringResource(R.string.telnumber),
                 color = appColorScheme.primary,
                 lineHeight = 1.33.em,
                 style = AppTypography.titleLarge,
@@ -213,6 +221,7 @@ fun WorkerLoginPage(
                             }
                         }
                     }
+                    
                 }, modifier = Modifier
                     .width((screenWidth * .3).dp)
                     .background(appColorScheme.primary)) {

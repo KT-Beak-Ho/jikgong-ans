@@ -12,6 +12,7 @@
     <string name="enterForNumberOnly">숫자만 입력</string>
     <string name="telnumber">전화번호</string>
     <string name="getSecretCode">인증번호 받기</string>
+    <string name="errorSecretCode">인증번호가 바르지 않습니다.</string>
     <string name="next">다음</string>
     <string name="secretCode">인증번호 n자리</string>
     <string name="enterSecretCode">인증번호을 입력</string>
