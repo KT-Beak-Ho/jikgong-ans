@@ -18,6 +18,11 @@ import java.lang.reflect.Type
 
 interface RetrofitAPI {
 
+    @POST("api/login")
+    fun login(
+        @Body body: LoginRequest
+    ): Call<LoginResponse>
+
     @POST("api/join/sms-verification")
     fun smsVerification(
         @Body body: SmsVerificationRequest

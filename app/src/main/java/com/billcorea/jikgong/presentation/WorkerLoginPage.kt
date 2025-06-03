@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -34,8 +35,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -76,23 +79,45 @@ fun WorkerLoginPage(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    var isSecurity by remember { mutableStateOf(false) }
-    var isSecretOk by remember { mutableStateOf(false) }
-    var phoneNumber by remember { mutableStateOf("") }
-    var secretCode by remember { mutableStateOf("") }
-    var isFocusPhoneNo by remember { mutableStateOf(false) }
+    var loginIdOrPhone by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
-    val _authCode = viewModel.authCode.observeAsState()
-    val authCode = _authCode.value
+    val _loginResult = viewModel.loginResult.observeAsState()
+    val _loginError = viewModel.loginError.observeAsState()
+    val loginResult = _loginResult.value
+    val loginError = _loginError.value
 
-    // 수신된 검증 번호와 입력한 값이 동일할 떄만 ...
-    isSecretOk = authCode == secretCode
-    Log.e("", "ERROR ... $authCode == $secretCode")
+    LaunchedEffect(loginError) {
+        loginError?.let {
+            MaterialDialog(context).show {
+                icon(R.drawable.ic_jikgong_white)
+                message(text = it)
+                positiveButton(R.string.OK) { dialog -> dialog.dismiss() }
+            }
+        }
+    }
+
+    LaunchedEffect(loginResult) {
+        loginResult?.let {
+            // 로그인 성공 시 SharedPreferences 등에 저장 가능
+            navigator.navigate(JoinPage2Destination)
+        }
+    }
 
     Scaffold (
         modifier = modifier
             .fillMaxSize()
             .padding(top = 20.dp)
+            .drawBehind {
+                val strokeWidth = 1.dp.toPx()
+                val y = size.height - strokeWidth / 2
+                drawLine(
+                    color = appColorScheme.outlineVariant,
+                    start = Offset(0f, y),
+                    end = Offset(size.width, y),
+                    strokeWidth = strokeWidth
+                )
+            }
         , topBar = {
             Row(
                 modifier = Modifier
@@ -118,34 +143,73 @@ fun WorkerLoginPage(
 
 
         }
-        , bottomBar = {
+    ) { innerPadding ->
+        Column(modifier = modifier
+            .fillMaxSize()
+            .padding(innerPadding)) {
+            Spacer(modifier = Modifier.padding(5.dp))
+            OutlinedTextField(
+                value = loginIdOrPhone,
+                onValueChange = {
+                    loginIdOrPhone = it
+                },
+                placeholder = {
+                    Text(text = stringResource(R.string.loginIdOrPhone))
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+                maxLines = 1,
+                modifier = Modifier
+                    .width((screenWidth * .90).dp)
+                    .align(Alignment.CenterHorizontally)
+                    .focusRequester(focusRequester)
+            )
+
+            Spacer(modifier = Modifier.padding(4.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                },
+                placeholder = {
+                    Text(text = stringResource(R.string.password))
+                },
+                maxLines = 1,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                }),
+                modifier = Modifier
+                    .width((screenWidth * .90).dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(modifier = Modifier.padding(10.dp))
+            // 로그인 버튼
             TextButton(
                 onClick = {
-                    val editor = sp.edit()
-                    editor.putString("phoneNumber", phoneNumber)
-                    editor.apply()
-                    if (isSecretOk) {
+                    if (loginIdOrPhone.isNotBlank() && password.isNotBlank()) {
+                        val deviceToken = "test_device_token"
+                        viewModel.doLogin(loginIdOrPhone, password, deviceToken)
 
-                        navigator.navigate(JoinPage2Destination)
-                    }
-                    else {
+
+                    } else {
                         MaterialDialog(context).show {
                             icon(R.drawable.ic_jikgong_white)
-                            message(R.string.errorSecretCode)
-                            positiveButton(R.string.OK) {
-                                it.dismiss()
-                            }
+                            message(R.string.errorLoginBlank)
+                            positiveButton(R.string.OK) { it.dismiss() }
                         }
                     }
                 },
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .width((screenWidth * .90).dp)
+                    .align(Alignment.CenterHorizontally)
                     .padding(WindowInsets.navigationBars.asPaddingValues())
-                    .background(if (isSecretOk) appColorScheme.primary else appColorScheme.inversePrimary)
+                    .background(appColorScheme.primary)
             ) {
                 Text(
                     text = stringResource(R.string.login),
-                    color = if (isSecretOk) appColorScheme.onPrimary else appColorScheme.surfaceDim,
+                    color = appColorScheme.onPrimary,
                     lineHeight = 1.25.em,
                     style = AppTypography.labelMedium,
                     modifier = Modifier
@@ -153,116 +217,7 @@ fun WorkerLoginPage(
                         .wrapContentWidth(Alignment.CenterHorizontally)
                 )
             }
-        }
-    ) { innerPadding ->
-        Column(modifier = modifier
-            .fillMaxSize()
-            .padding(innerPadding)) {
-            Text(
-                text = stringResource(R.string.telnumber),
-                color = appColorScheme.primary,
-                lineHeight = 1.33.em,
-                style = AppTypography.titleLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(align = Alignment.CenterVertically)
-            )
-            Spacer(modifier = Modifier.padding(5.dp))
-            Text(
-                text = stringResource(R.string.telnumber),
-                color = appColorScheme.primary,
-                lineHeight = 1.25.em,
-                style = AppTypography.bodyMedium,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.padding(5.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
-                    value = phoneNumber,
-                    onValueChange = {
-                        phoneNumber = it
-                    },
-                    placeholder = {
-                        Text(text = stringResource(R.string.enterForNumberOnly))
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {
-                        isSecurity = true
-                    }),
-                    maxLines = 1,
-                    modifier = Modifier
-                        .width((screenWidth * .67).dp)
-                        .focusRequester(focusRequester)
-                        .onFocusChanged { focusState ->
-                            isFocusPhoneNo = focusState.isFocused
-                            if (isFocusPhoneNo && isSecurity) {
-                                isSecurity = false
-                                secretCode = ""
-                            }
-                        }
-                )
-                Spacer(modifier = Modifier.padding(2.dp))
-                TextButton( onClick = {
-                    isSecurity = true
-                    if(phoneNumber.startsWith("010") == true && phoneNumber.length >= 11) {
-                        viewModel.doSmsVerification(phoneNumber)
-                    } else {
-                        MaterialDialog(context).show {
-                            icon(R.drawable.ic_jikgong_white)
-                            message(R.string.msgPhoneNumberIsNotValid)
-                            positiveButton (R.string.OK){
-                                it.dismiss()
-                            }
-                        }
-                    }
-                    
-                }, modifier = Modifier
-                    .width((screenWidth * .3).dp)
-                    .background(appColorScheme.primary)) {
-                    Text(
-                        text = stringResource(R.string.getSecretCode),
-                        color = appColorScheme.onPrimary,
-                        lineHeight = 1.25.em,
-                        style = AppTypography.labelMedium,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth(Alignment.CenterHorizontally)
-                    )
-                }
-            }
-            if (isSecurity) {
-                Spacer(modifier = Modifier.padding(5.dp))
-                Text(
-                    text = stringResource(R.string.secretCode),
-                    color = appColorScheme.primary,
-                    lineHeight = 1.25.em,
-                    style = AppTypography.bodyMedium,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.padding(5.dp))
-                OutlinedTextField(
-                    value = secretCode,
-                    onValueChange = {
-                        secretCode = it
-                    },
-                    placeholder = {
-                        Text(text = stringResource(R.string.enterSecretCode))
-                    },
-                    maxLines = 1,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {
-                        keyboardController?.hide()
-                        focusManager.clearFocus()
-                    }),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+
         }
     }
 }

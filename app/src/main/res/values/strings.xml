@@ -1,7 +1,17 @@
 <resources>
     <string name="app_name">직공</string>
     <string name="joinMember">회원가입</string>
+
+    <!-- 로그인 Part -->
     <string name="login">로그인</string>
+    <string name="loginIdOrPhone">아이디 또는 전화번호</string>
+    <string name="password">비밀번호</string>
+    <string name="autoLogin">자동로그인</string>
+    <string name="searchId">아이디 찾기</string>
+    <string name="searchPW">비밀번호 찾기</string>
+    <string name="errorLoginBlank">아이디와 비밀번호를 다시 입력해주세요</string>
+
+
     <string name="findJobPlace">일할 현장을\n찾고 있어요</string>
     <string name="findWorker">일할 사람을\n찾고 있어요</string>
     <string name="personFor"><![CDATA["개인회원 > "]]></string>
