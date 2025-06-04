@@ -120,6 +120,7 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(JoinPage6Destination.route) {
                                 JoinPage6(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
                             composable(WorkerLoginPageDestination.route) {
                                 WorkerLoginPage(viewModel, navigator, modifier = Modifier.padding(5.dp))
                             }
