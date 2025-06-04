@@ -16,7 +16,7 @@ class JikGongApp : Application() {
             androidContext(this@JikGongApp)
             modules(appModule)
         }
-        KakaoMapSdk.init(this,BuildConfig.KAKAO_API)
+        KakaoMapSdk.init(this, BuildConfig.KAKAO_API)
         KakaoSdk.init(this, BuildConfig.KAKAO_API)
     }
 }

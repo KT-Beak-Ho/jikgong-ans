@@ -52,20 +52,27 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.MainActivity
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.network.AddressFindRoadAddress
 import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.utils.AddressFindActivity
 import com.billcorea.jikgong.utils.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.require
+import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import org.koin.androidx.compose.koinViewModel
+import com.ramcosta.composedestinations.navigation.DestinationDependenciesContainer
+
 
 @Destination
 @Composable
@@ -73,8 +80,12 @@ fun JoinPage4(
     viewModel: MainViewModel = koinViewModel(),
     navigator: DestinationsNavigator,
     modifier: Modifier = Modifier,
-    mainActivity: MainActivity
+    mainActivity: MainActivity? = null
 ) {
+
+    var lat by remember { mutableStateOf("") }
+    var lon by remember { mutableStateOf("") }
+
     val context = LocalContext.current
     val config = LocalConfiguration.current
     val screenWidth = config.screenWidthDp
@@ -131,7 +142,7 @@ fun JoinPage4(
                     )
                 }
                 PageIndicator(
-                    numberOfPages = 5,
+                    numberOfPages = 6,
                     selectedPage = 3,
                     defaultRadius = 12.dp,
                     selectedLength = 24.dp,
@@ -144,7 +155,11 @@ fun JoinPage4(
                 onClick = {
                     val editor = sp.edit()
                     editor.putString("myLocation", address)
+                    editor.putString("lon", lon)
+                    editor.putString("lat", lat)
+                    Log.e("", "${lat} ${lon}")
                     editor.apply()
+                    _name = ""
                     if (isSecretOk) {
                         navigator.navigate(JoinPage5Destination)
                     }
@@ -286,6 +301,8 @@ fun JoinPage4(
                     DisplayAddress(item, doSetCenterPosition = {
                         viewModel._respAddress.value = item.addressName
                         viewModel._geoCoding.value = "${item.y},${item.x}"
+                        lat = item.x
+                        lon = item.y
                         Log.e("", "geoCoding=${viewModel._geoCoding.value}")
                     })
                 }
@@ -335,6 +352,20 @@ fun DisplayAddress(
                 )
             }
         }
+    }
+}
+
+
+
+@Preview
+@Composable
+fun JoinPage4Preview() {
+    val fakeViewModel = MainViewModel()
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme {
+        JoinPage4(fakeViewModel, navigator, modifier = Modifier.padding(3.dp), mainActivity = null)
     }
 }
 
