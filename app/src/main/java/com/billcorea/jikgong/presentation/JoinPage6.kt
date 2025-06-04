@@ -142,7 +142,7 @@ fun JoinPage6(
     val workerCardImage by remember { mutableStateOf(sp.getString("workerCardCardUri", "").toString()) }
     val hasVisa by remember { mutableStateOf(sp.getString("haaVisa", "").toBoolean()) }
 
-    val _resultMessage = viewModel.registerResult.observeAsState(initial = "")
+    val _resultMessage = viewModel.registerResult.observeAsState(initial = " ")
     val resultMessage = _resultMessage.value
 
     fun validationData() {
@@ -154,7 +154,7 @@ fun JoinPage6(
     }
 
     LaunchedEffect(resultMessage) {
-        if (resultMessage.isNotBlank()) {
+        if (!resultMessage.isNullOrBlank()) {
             MaterialDialog(context).show {
                 icon(R.drawable.ic_launcher_v1_foreground)
                 // message(R.string.resister)
@@ -163,6 +163,9 @@ fun JoinPage6(
                     viewModel.clearRegisterResult()
                     navigator.navigate(JikgongAppDestination) }
             }
+        }
+        else if(resultMessage.isNullOrEmpty()) {
+            Log.e("", "이메일 중복")
         }
     }
 
