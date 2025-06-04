@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -43,17 +44,21 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.navigation.compose.rememberNavController
 import com.afollestad.materialdialogs.BuildConfig
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
 import com.billcorea.jikgong.ui.theme.AppTypography
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.utils.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import org.koin.androidx.compose.koinViewModel
 
 @Destination
@@ -81,9 +86,42 @@ fun JoinPage1(
     val _authCode = viewModel.authCode.observeAsState()
     val authCode = _authCode.value
 
+    val _phoneVal = viewModel.isPhoneValidation.observeAsState()
+    val phoneVal = _phoneVal.value
+
     // 수신된 검증 번호와 입력한 값이 동일할 떄만 ...
     isSecretOk = authCode == secretCode
     Log.e("", "ERROR ... $authCode == $secretCode")
+
+    LaunchedEffect(phoneVal) {
+        phoneVal?.let {
+            if (it.indexOf("false") >= 0) {
+                isSecurity = false
+                MaterialDialog(context).show {
+                    icon(R.drawable.ic_jikgong_white)
+                    message(R.string.phoneIsNotValid)
+                    positiveButton(R.string.OK) {
+                        it.dismiss()
+                    }
+                }
+            }
+            else if(it.indexOf("true") >= 0) {
+                if (phoneNumber.startsWith("010") == true && phoneNumber.length >= 11) {
+                    isSecurity = true
+                    viewModel.doSmsVerification(phoneNumber)
+                } else {
+                    isSecurity = false
+                    MaterialDialog(context).show {
+                        icon(R.drawable.ic_jikgong_white)
+                        message(R.string.msgPhoneNumberIsNotValid)
+                        positiveButton(R.string.OK) {
+                            it.dismiss()
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold (
         modifier = modifier
@@ -107,7 +145,7 @@ fun JoinPage1(
                     )
                 }
                 PageIndicator(
-                    numberOfPages = 5,
+                    numberOfPages = 6,
                     selectedPage = 0, // 이건 index 라서 0 ~ 4 범위내 에서
                     defaultRadius = 12.dp,
                     selectedLength = 24.dp,
@@ -197,18 +235,8 @@ fun JoinPage1(
                 )
                 Spacer(modifier = Modifier.padding(2.dp))
                 TextButton( onClick = {
-                    isSecurity = true
-                    if(phoneNumber.startsWith("010") == true && phoneNumber.length >= 11) {
-                        viewModel.doSmsVerification(phoneNumber)
-                    } else {
-                        MaterialDialog(context).show {
-                            icon(R.drawable.ic_jikgong_white)
-                            message(R.string.msgPhoneNumberIsNotValid)
-                            positiveButton (R.string.OK){
-                                it.dismiss()
-                            }
-                        }
-                    }
+                    // isSecurity = true
+                    viewModel.doPhoneValidation(phoneNumber)
                 }, modifier = Modifier
                     .width((screenWidth * .3).dp)
                     .background(appColorScheme.primary)) {
@@ -251,5 +279,17 @@ fun JoinPage1(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun JoinPage1Preview() {
+    val viewModel = MainViewModel()
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme {
+        JoinPage1(viewModel, navigator, modifier = Modifier.padding(3.dp))
     }
 }
