@@ -32,12 +32,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.network.Coord2RoadAddress
 import com.billcorea.jikgong.ui.theme.AppTypography
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.utils.MainViewModel
 import com.kakao.vectormap.GestureType
@@ -62,6 +65,7 @@ import com.kakao.vectormap.mapwidget.component.GuiText
 import com.kakao.vectormap.mapwidget.component.Orientation
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import org.koin.androidx.compose.koinViewModel
 
 
@@ -85,8 +89,9 @@ fun KakaoMapView(
     val _roadAddress1 = viewModel.roadAddress1.observeAsState(emptyList())
     val roadAddress1 = _roadAddress1.value
 
+    centerPosition = LatLng.from(37.5665, 126.9780)
     if (xPos != 0.0 && yPos != 0.0) {
-        centerPosition = LatLng.from(yPos!!, xPos!!)
+        //centerPosition = LatLng.from(yPos!!, xPos!!)
     }
     try {
 
@@ -176,6 +181,7 @@ fun KakaoMapView(
                                         infoOptions.setBody(body)
                                         infoOptions.setBodyOffset(0F, -4F)
 
+                                        Log.e("", "center ${centerPosition.latitude} ${centerPosition.longitude} 1")
                                         kakaoMap.mapWidgetManager?.infoWindowLayer?.addInfoWindow(infoOptions)
 
                                         // 카메라를 (locationY, locationX) 위치로 이동시키는 업데이트 생성
@@ -342,3 +348,18 @@ fun DisplayRoadAddress(item: Coord2RoadAddress) {
         }
     }
 }
+
+
+@Preview
+@Composable
+fun JikgongAPreview() {
+    val viewModel = MainViewModel()
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme {
+        KakaoMapView(viewModel, navigator)
+    }
+}
+
+
