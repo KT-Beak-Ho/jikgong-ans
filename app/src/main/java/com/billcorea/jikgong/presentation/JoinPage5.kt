@@ -65,6 +65,9 @@ import androidx.navigation.compose.rememberNavController
 import com.afollestad.materialdialogs.BuildConfig
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.R
+import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
+import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
+import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -238,7 +241,7 @@ fun JoinPage5(
                     )
                 }
                 PageIndicator(
-                    numberOfPages = 5,
+                    numberOfPages = 6,
                     selectedPage = 4,
                     defaultRadius = 12.dp,
                     selectedLength = 24.dp,
@@ -261,6 +264,11 @@ fun JoinPage5(
                             message(R.string.msgToLater)
                             positiveButton(R.string.OK) {
                                 it.dismiss()
+                                val editor = sp.edit()
+                                editor.putString("safeManagerCardUri", "")
+                                editor.putString("workerCardCardUri", "")
+                                editor.apply()
+                                navigator.navigate(JoinPage6Destination)
                             }
                         }
                     },
@@ -284,10 +292,23 @@ fun JoinPage5(
                     onClick = {
                         val editor = sp.edit()
                         //editor.putString("myLocation", address)
-                        editor.apply()
-
+                        if(isSecretOk) {
+                            if(_safeManagerCardUri == null) {
+                                editor.putString("safeManagerCardUri", "")
+                                editor.putString("workerCardCardUri", _workerCardUri.toString())
+                            }
+                            else if(_workerCardUri == null) {
+                                editor.putString("safeManagerCardUri", _safeManagerCardUri.toString())
+                                editor.putString("workerCardCardUri", "")
+                            }
+                            else {
+                                editor.putString("safeManagerCardUri", _safeManagerCardUri.toString())
+                                editor.putString("workerCardCardUri", _workerCardUri.toString())
+                            }
+                            editor.apply()
+                            navigator.navigate(JoinPage6Destination)
+                        }
                         // 가입 완료 처리 후 ...
-
                     },
                     modifier = Modifier
                         .width((screenWidth * .45).dp)
@@ -360,6 +381,7 @@ fun JoinPage5(
                                 }
                             })
                         }
+
                     } else {
                         IconButton(
                             onClick = {
