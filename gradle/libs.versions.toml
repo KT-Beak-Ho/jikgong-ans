@@ -28,6 +28,7 @@ playServicesLocation = "21.3.0"
 accompanistPermissionsVersion = "0.36.0"
 compilerVersion = "4.14.2"
 glideVersion = "4.15.1"
+media3CommonKtxVersion = "1.6.1"
 
 [libraries]
 accompanist-webview = { module = "com.google.accompanist:accompanist-webview", version.ref = "accompanistWebview" }
@@ -66,6 +67,7 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 google-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissionsVersion" }
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compilerVersion" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glideVersion" }
+androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-ktx", version.ref = "media3CommonKtxVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

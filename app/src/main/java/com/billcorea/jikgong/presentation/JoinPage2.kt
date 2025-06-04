@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +53,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -96,6 +98,14 @@ fun JoinPage2 (
     val phoneNumber by remember { mutableStateOf(sp.getString("phoneNumber", "").toString()) }
     val name by remember { mutableStateOf("") }
     var _name by remember { mutableStateOf(name) }
+    val id by remember { mutableStateOf("") }
+    var _id by remember { mutableStateOf(name) }
+    val password by remember { mutableStateOf("") }
+    var _password by remember { mutableStateOf(name) }
+    val passwordCheck by remember { mutableStateOf("") }
+    var _passwordCheck by remember { mutableStateOf(name) }
+    val email by remember { mutableStateOf("") }
+    var _email by remember { mutableStateOf(name) }
     val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.KOREAN)
     val birthday by remember { mutableStateOf(sdf.format(System.currentTimeMillis())) }
     var _birthday by remember { mutableStateOf(birthday) }
@@ -115,6 +125,11 @@ fun JoinPage2 (
     val focusRequester = FocusRequester()
     val _expiryDate = viewModel.expiryMessage.observeAsState()
     val expiryDate = _expiryDate.value
+    val _loginVal = viewModel.isLoginValidation.observeAsState()
+    var loginVal = _loginVal.value
+
+    var isCheck by remember { mutableStateOf(false) }
+
 
     fun doCheckPassportNumber() {
         viewModel.doVisaExpiryDate(VisaExpiryDateRequest("", "", "", passportNo))
@@ -128,10 +143,32 @@ fun JoinPage2 (
     }
 
     fun validationData() {
-        if (_name.isEmpty() || _birthday.isEmpty() || _nationality.isEmpty() || _gender.isEmpty()) {
+        Log.e("", "${_password} == ${_passwordCheck}")
+        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+        if (_name.isEmpty() || _birthday.isEmpty() || _nationality.isEmpty() || _gender.isEmpty() || _id.isEmpty() || _password.isEmpty() || _email.isEmpty() || !isCheck || (_password != _passwordCheck)) {
             isSecretOk = false
-        } else {
+        } else if(_email.matches(emailRegex)){
             isSecretOk = true
+        }
+    }
+
+    LaunchedEffect(loginVal) {
+        loginVal?.let {
+            if (it.indexOf("false") >= 0) {
+                isCheck = false
+                MaterialDialog(context).show {
+                    icon(R.drawable.ic_jikgong_white)
+                    message(R.string.idIsNotValid)
+                    positiveButton(R.string.OK) { it.dismiss() }
+                }
+            } else if (it.indexOf("true") >= 0) {
+                isCheck = true
+                MaterialDialog(context).show {
+                    icon(R.drawable.ic_jikgong_white)
+                    message(R.string.idIsValid)
+                    positiveButton(R.string.OK) { it.dismiss() }
+                }
+            }
         }
     }
 
@@ -160,7 +197,7 @@ fun JoinPage2 (
                     )
                 }
                 PageIndicator(
-                    numberOfPages = 5,
+                    numberOfPages = 6,
                     selectedPage = 1,
                     defaultRadius = 12.dp,
                     selectedLength = 24.dp,
@@ -173,6 +210,22 @@ fun JoinPage2 (
             TextButton(
                 onClick = {
                     if (isSecretOk) {
+                        val editor = sp.edit()
+                        editor.putString("name", _name)
+                        editor.putString("id", _id)
+                        Log.e("", "1. ${id} ${_id}")
+                        editor.putString("password", _password)
+                        editor.putString("email", _email)
+                        editor.putString("gender", _gender)
+                        editor.putString("birthday", _birthday)
+                        editor.putString("nationality", _nationality)
+                        if(passportNo == "" && nationality == "FOREIGN") {
+                            editor.putBoolean("hasVisa", false)
+                        }
+                        else {
+                            editor.putBoolean("hasVisa", true)
+                        }
+                        editor.apply()
                         navigator.navigate(JoinPage3Destination)
                     }
                 },
@@ -411,13 +464,13 @@ fun JoinPage2 (
                 ) {
                     TextButton(
                         onClick = {
-                            _nationality = "K"
+                            _nationality = "KOREAN"
                             focusManager.clearFocus()
                         }, modifier = Modifier
                             .width((screenWeight * .5).dp)
                             .border(
-                                if (_nationality == "K") 3.dp else 1.dp,
-                                if (_nationality == "K") appColorScheme.primary else appColorScheme.outline
+                                if (_nationality == "KOREAN") 3.dp else 1.dp,
+                                if (_nationality == "KOREAN") appColorScheme.primary else appColorScheme.outline
                             )
                             .focusRequester(focusRequester)
                             .onFocusChanged {
@@ -434,13 +487,13 @@ fun JoinPage2 (
                     }
                     TextButton(
                         onClick = {
-                            _nationality = "F"
+                            _nationality = "FOREIGN"
                             focusManager.clearFocus()
                         }, modifier = Modifier
                             .width((screenWeight * .5).dp)
                             .border(
-                                if (_nationality == "F") 3.dp else 1.dp,
-                                if (_nationality == "F") appColorScheme.primary else appColorScheme.outline
+                                if (_nationality == "FOREIGN") 3.dp else 1.dp,
+                                if (_nationality == "FOREIGN") appColorScheme.primary else appColorScheme.outline
                             )
                             .focusRequester(focusRequester)
                             .onFocusChanged {
@@ -449,7 +502,7 @@ fun JoinPage2 (
                     ) {
                         Text(
                             text = stringResource(R.string.foreigner),
-                            style = AppTypography.bodyMedium.copy(if (_nationality == "F") appColorScheme.primary else appColorScheme.outline),
+                            style = AppTypography.bodyMedium.copy(if (_nationality == "FOREIGN") appColorScheme.primary else appColorScheme.outline),
                             modifier = Modifier
                                 .padding(3.dp)
                                 .wrapContentWidth(Alignment.CenterHorizontally)
@@ -459,7 +512,7 @@ fun JoinPage2 (
             }
 
             item {
-                if (_nationality == "F") {
+                if (_nationality == "FOREIGN") {
                     Spacer(modifier = Modifier.padding(3.dp))
                     Row(
                         modifier = Modifier
@@ -529,20 +582,20 @@ fun JoinPage2 (
                 ) {
                     TextButton(
                         onClick = {
-                            _gender = "M"
+                            _gender = "MALE"
                             focusManager.clearFocus()
                             validationData()
                         }, modifier = Modifier
                             .width((screenWeight * .5).dp)
                             .border(
-                                if (_gender == "M") 3.dp else 1.dp,
-                                if (_gender == "M") appColorScheme.primary else appColorScheme.outline
+                                if (_gender == "MALE") 3.dp else 1.dp,
+                                if (_gender == "MALE") appColorScheme.primary else appColorScheme.outline
                             )
                             .focusRequester(focusRequester)
                     ) {
                         Text(
                             text = stringResource(R.string.male),
-                            style = AppTypography.bodyMedium.copy(if (_gender == "M") appColorScheme.primary else appColorScheme.outline),
+                            style = AppTypography.bodyMedium.copy(if (_gender == "MALE") appColorScheme.primary else appColorScheme.outline),
                             modifier = Modifier
                                 .padding(3.dp)
                                 .wrapContentWidth(Alignment.CenterHorizontally)
@@ -550,25 +603,203 @@ fun JoinPage2 (
                     }
                     TextButton(
                         onClick = {
-                            _gender = "F"
+                            _gender = "FEMALE"
                             focusManager.clearFocus()
                             validationData()
                         }, modifier = Modifier
                             .width((screenWeight * .5).dp)
                             .border(
-                                if (_gender == "F") 3.dp else 1.dp,
-                                if (_gender == "F") appColorScheme.primary else appColorScheme.outline
+                                if (_gender == "FEMALE") 3.dp else 1.dp,
+                                if (_gender == "FEMALE") appColorScheme.primary else appColorScheme.outline
                             )
                     ) {
                         Text(
                             text = stringResource(R.string.female),
-                            style = AppTypography.bodyMedium.copy(if (_gender == "F") appColorScheme.primary else appColorScheme.outline),
+                            style = AppTypography.bodyMedium.copy(if (_gender == "FEMALE") appColorScheme.primary else appColorScheme.outline),
                             modifier = Modifier
                                 .padding(3.dp)
                                 .wrapContentWidth(Alignment.CenterHorizontally)
                         )
                     }
                 }
+            }
+
+            item {
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(
+                    text = stringResource(R.string.id),
+                    color = appColorScheme.primary,
+                    lineHeight = 1.25.em,
+                    style = AppTypography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.padding(5.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = _id,
+                        onValueChange = {
+                            _id = it
+                        },
+                        placeholder = {
+                            Text(text = stringResource(R.string.enterId))
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onNext = {
+                            focusRequester.requestFocus()
+                            keyboardController?.hide()
+                            showBottomSheet = true
+                        }),
+                        maxLines = 1,
+                        modifier = Modifier.width((screenWeight * .67).dp).fillMaxWidth().focusRequester(focusRequester).onFocusChanged { isFocus ->
+                            validationData()
+                        }
+                    )
+                    Spacer(modifier = Modifier.padding(2.dp))
+                    TextButton( onClick = {
+                        // if(isCheck) {
+                        viewModel.doLoginIdValidation(_id)
+                        // }
+                    }, modifier = Modifier
+                        .width((screenWeight * .3).dp)
+                        .background(/* if (isCheck) */ appColorScheme.primary /* else appColorScheme.inversePrimary */)) {
+                        Text(
+                            text = stringResource(R.string.validation),
+                            color = /* if (isCheck) */ appColorScheme.onPrimary, // else appColorScheme.surfaceDim,
+                            lineHeight = 1.25.em,
+                            style = AppTypography.labelMedium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentWidth(Alignment.CenterHorizontally)
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(
+                    text = stringResource(R.string.password),
+                    color = appColorScheme.primary,
+                    lineHeight = 1.25.em,
+                    style = AppTypography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.padding(5.dp))
+                OutlinedTextField(
+                    value = _password,
+                    onValueChange = {
+                        _password = it
+                    },
+                    placeholder = {
+                        Text(text = stringResource(R.string.enterPassword))
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password, // 비밀번호용 키보드 타입
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onNext = {
+                        focusRequester.requestFocus()
+                        keyboardController?.hide()
+                        showBottomSheet = true
+                    }),
+                    visualTransformation = PasswordVisualTransformation(), // 입력값 마스킹
+                    maxLines = 1,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { isFocus ->
+                            validationData()
+                        }
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(
+                    text = stringResource(R.string.passwordCheck),
+                    color = appColorScheme.primary,
+                    lineHeight = 1.25.em,
+                    style = AppTypography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.padding(5.dp))
+                OutlinedTextField(
+                    value = _passwordCheck,
+                    onValueChange = {
+                        _passwordCheck = it
+                    },
+                    placeholder = {
+                        Text(text = stringResource(R.string.enterCheckPassword))
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password, // 비밀번호용 키보드 타입
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onNext = {
+                        focusRequester.requestFocus()
+                        keyboardController?.hide()
+                        showBottomSheet = true
+                    }),
+                    visualTransformation = PasswordVisualTransformation(), // 입력값 마스킹
+                    maxLines = 1,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { isFocus ->
+                            validationData()
+                        }
+                )
+            }
+
+
+            item {
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(
+                    text = stringResource(R.string.email),
+                    color = appColorScheme.primary,
+                    lineHeight = 1.25.em,
+                    style = AppTypography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.padding(5.dp))
+                OutlinedTextField(
+                    value = _email,
+                    onValueChange = {
+                        _email = it
+                    },
+                    placeholder = {
+                        Text(text = stringResource(R.string.enterEmail))
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onNext = {
+                        focusRequester.requestFocus()
+                        keyboardController?.hide()
+                        showBottomSheet = true
+                    }),
+                    maxLines = 1,
+                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester).onFocusChanged { isFocus ->
+                        validationData()
+                    }
+                )
             }
         }
     }

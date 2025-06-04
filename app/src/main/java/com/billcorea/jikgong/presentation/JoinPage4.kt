@@ -82,6 +82,10 @@ fun JoinPage4(
     modifier: Modifier = Modifier,
     mainActivity: MainActivity? = null
 ) {
+
+    var lat by remember { mutableStateOf("") }
+    var lon by remember { mutableStateOf("") }
+
     val context = LocalContext.current
     val config = LocalConfiguration.current
     val screenWidth = config.screenWidthDp
@@ -138,7 +142,7 @@ fun JoinPage4(
                     )
                 }
                 PageIndicator(
-                    numberOfPages = 5,
+                    numberOfPages = 6,
                     selectedPage = 3,
                     defaultRadius = 12.dp,
                     selectedLength = 24.dp,
@@ -151,7 +155,11 @@ fun JoinPage4(
                 onClick = {
                     val editor = sp.edit()
                     editor.putString("myLocation", address)
+                    editor.putString("lon", lon)
+                    editor.putString("lat", lat)
+                    Log.e("", "${lat} ${lon}")
                     editor.apply()
+                    _name = ""
                     if (isSecretOk) {
                         navigator.navigate(JoinPage5Destination)
                     }
@@ -293,6 +301,8 @@ fun JoinPage4(
                     DisplayAddress(item, doSetCenterPosition = {
                         viewModel._respAddress.value = item.addressName
                         viewModel._geoCoding.value = "${item.y},${item.x}"
+                        lat = item.x
+                        lon = item.y
                         Log.e("", "geoCoding=${viewModel._geoCoding.value}")
                     })
                 }

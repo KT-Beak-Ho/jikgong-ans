@@ -40,6 +40,11 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
+import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
+import com.billcorea.jikgong.presentation.destinations.JoinPage4Destination
+import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
+import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
+import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -66,6 +71,7 @@ fun JikgongApp (
 
     val sheetState = rememberModalBottomSheetState( skipPartiallyExpanded = false)
     var showBottomSheet by remember { mutableStateOf(false) }
+    var showLoginBottomSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         bottomBar = {
@@ -89,6 +95,31 @@ fun JikgongApp (
                             navigator.navigate(JoinPage1Destination)
                         },
                         doJoinCorp = {
+
+                        }
+                    )
+                }
+            }
+            if (showLoginBottomSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        showLoginBottomSheet = false
+                    }
+                    , sheetState = sheetState
+                    , modifier = Modifier.height((screenHeight * .8).dp)
+                ) {
+                    LoginBottomMiddleView(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(5.dp),
+                        doCloseBottom = {
+                            showLoginBottomSheet = false
+                        },
+                        doLoginPerson = {
+                            showLoginBottomSheet = false
+                            navigator.navigate(WorkerLoginPageDestination)
+                        },
+                        doLoginCorp = {
 
                         }
                     )
@@ -152,7 +183,7 @@ fun JikgongApp (
             ) {
                 TextButton(
                     onClick = {
-
+                        showLoginBottomSheet = true
                     },
                     modifier = Modifier
                         .fillMaxWidth()
