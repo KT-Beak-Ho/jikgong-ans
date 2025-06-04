@@ -37,6 +37,7 @@ import com.billcorea.jikgong.presentation.JoinPage2
 import com.billcorea.jikgong.presentation.JoinPage3
 import com.billcorea.jikgong.presentation.JoinPage4
 import com.billcorea.jikgong.presentation.JoinPage5
+import com.billcorea.jikgong.presentation.JoinPage6
 import com.billcorea.jikgong.presentation.KakaoMapView
 import com.billcorea.jikgong.presentation.SplashScreen
 import com.billcorea.jikgong.presentation.WorkerLoginPage
@@ -46,6 +47,7 @@ import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage3Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage4Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
+import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -116,6 +118,8 @@ class MainActivity : ComponentActivity() {
                             composable(JoinPage5Destination.route) {
                                 JoinPage5(viewModel, navigator, modifier = Modifier.padding(5.dp))
                             }
+                            composable(JoinPage6Destination.route) {
+                                JoinPage6(viewModel, navigator, modifier = Modifier.padding(5.dp))
                             composable(WorkerLoginPageDestination.route) {
                                 WorkerLoginPage(viewModel, navigator, modifier = Modifier.padding(5.dp))
                             }

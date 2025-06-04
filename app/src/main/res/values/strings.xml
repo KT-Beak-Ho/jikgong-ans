@@ -29,7 +29,15 @@
     <string name="enterYourInfo">필수정보를\n입력해 주세요</string>
     <string name="btnModify">수정</string>
     <string name="name">이름</string>
+    <string name="id">아이디</string>
+    <string name="password">비밀번호</string>
+    <string name="passwordCheck">비밀번호 확인</string>
+    <string name="email">이메일</string>
     <string name="enterName">이름을 입력 하세요</string>
+    <string name="enterId">아이디를 입력 하세요</string>
+    <string name="enterPassword">비밀번호를 입력 하세요</string>
+    <string name="enterCheckPassword">비밀번호를 한번 더 입력 하세요</string>
+    <string name="enterEmail">이메일을 입력 하세요</string>
     <string name="Cancel">취소</string>
     <string name="Apply">적용</string>
     <string name="OK">확인</string>
@@ -47,6 +55,7 @@
     <string name="bankName">거래은행</string>
     <string name="accountName">예금주</string>
     <string name="selectBank">은행선택</string>
+    <string name="selectJob">직종선택</string>
     <string name="accountNumber">계좌번호</string>
     <string name="enterAccountNumber">계좌번호을 입력하세요</string>
     <string name="enterMainLocation">대표위치를\n설정해주세요</string>
@@ -59,15 +68,16 @@
     <string name="completed">완료</string>
     <string name="toLater">나중에 하기</string>
     <string name="msgToLater"><![CDATA[추후 내 정보> 정보 수정 페이지에서\n서류을 등록 할 수 있습니다.]]></string>
-    <string name="lastTwoRegister">마지막으로\n두 가지를 등록해 주세요</string>
+    <string name="lastTwoRegister">자격증과 근로자 카드\n두 가지를 등록해 주세요</string>
     <string name="joinPage5guide1"><![CDATA[* 추후 <내 정보>에서도 등록할 수 있습니다]]></string>
     <string name="joinPage5guide2">* 해당 서류를 등록하면 직공 서비스의 대부분을 이용\n 하실 수 있습니다.</string>
-    <string name="safeManagerCard">언전관리 이수증</string>
+    <string name="safeManagerCard">교육 자격증</string>
     <string name="workerCard">건설근로자 카드</string>
     <string name="msgGetPermissonCamera">이 기능을 사용하기 위해서 카메라 권한을 허가 하세요.</string>
     <string name="useCamera">사진 촬영</string>
     <string name="useGallery">앨범에서 선택</string>
     <string name="msgCertified">인증 되었습니다</string>
+    <string name="msgSelectJob">클릭 해서 직종을 선택 하세요</string>
     <string name="msgSelectBank">클릭 해서 은행을 선택 하세요</string>
     <string name="kbbank">국민은행</string>
     <string name="shinhan">신한은행</string>
@@ -93,4 +103,9 @@
     <string name="imBank">IM뱅크</string>
     <string name="msgImageSet">이미지를 등록해 주세요.</string>
     <string name="msgPhoneNumberIsNotValid">휴대폰 번호는 (01012341234) 형식으로 입력해 주세요.</string>
+    <string name="idIsNotValid">이미 아이디가 존재합니다.</string>
+    <string name="phoneIsNotValid">이미 전화번호가 존재합니다.</string>
+    <string name="idIsValid">이 아이디는 사용 가능합니다.</string>
+    <string name="resister">회원가입이 완료되었습니다.</string>
+    <string name="validation">중복 확인</string>
 </resources>

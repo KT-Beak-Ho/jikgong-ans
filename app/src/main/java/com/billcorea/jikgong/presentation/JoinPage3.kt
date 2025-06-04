@@ -150,7 +150,7 @@ fun JoinPage3(
                     )
                 }
                 PageIndicator(
-                    numberOfPages = 5,
+                    numberOfPages = 6,
                     selectedPage = 2,
                     defaultRadius = 12.dp,
                     selectedLength = 24.dp,
@@ -163,7 +163,7 @@ fun JoinPage3(
                 onClick = {
                     val editor = sp.edit()
                     editor.putString("accountName", _name)
-                    editor.putString("bankCode", _bankCode)
+                    editor.putString("bankName", _bankName)
                     editor.putString("accountNumber", _accountNumber)
                     editor.apply()
                     if (isSecretOk) {
