@@ -45,16 +45,16 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
+import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 
 @Composable
-fun BottomMiddleView(
+fun LoginBottomMiddleView(
     modifier: Modifier = Modifier,
     doCloseBottom: () -> Unit,
-    doJoinPerson: () -> Unit,
-    doJoinCorp: () -> Unit
+    doLoginPerson: () -> Unit,
+    doLoginCorp: () -> Unit
 ) {
     val config = LocalConfiguration.current
     val screenWeight = config.screenWidthDp
@@ -67,7 +67,7 @@ fun BottomMiddleView(
             .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
     ) {
         Text(
-            text = stringResource(R.string.joinMember),
+            text = stringResource(R.string.login),
             color = MaterialTheme.colorScheme.primary,
             lineHeight = 1.22.em,
             style = AppTypography.titleMedium,
@@ -131,7 +131,7 @@ fun BottomMiddleView(
                 .wrapContentHeight(align = Alignment.CenterVertically))
         TextButton(
             onClick = {
-                doJoinPerson()
+                doLoginPerson()
             }, modifier = Modifier
                 .align(alignment = Alignment.TopStart)
                 .offset(
@@ -141,7 +141,7 @@ fun BottomMiddleView(
                 .wrapContentHeight(align = Alignment.CenterVertically)
         ) {
             Text(
-                text = stringResource(R.string.personFor),
+                text = stringResource(R.string.personForLogin),
                 color = MaterialTheme.colorScheme.secondary,
                 lineHeight = 1.22.em,
                 style = AppTypography.bodyMedium,
@@ -150,7 +150,7 @@ fun BottomMiddleView(
         }
         TextButton(
             onClick = {
-                doJoinCorp()
+                doLoginCorp()
             }, modifier = Modifier
                 .align(alignment = Alignment.TopStart)
                 .offset(
@@ -161,7 +161,7 @@ fun BottomMiddleView(
         )
         {
             Text(
-                text = stringResource(R.string.corpFor),
+                text = stringResource(R.string.corpForLogin),
                 color = MaterialTheme.colorScheme.secondary,
                 lineHeight = 1.22.em,
                 style = AppTypography.bodyMedium,
@@ -199,7 +199,7 @@ fun BottomMiddleView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
-fun JikgongApPreview() {
+fun LoginBottomMiddleViewPreview() {
 
     val config = LocalConfiguration.current
     val navController = rememberNavController()
@@ -216,19 +216,21 @@ fun JikgongApPreview() {
         , modifier = Modifier.height((screenHeight * .5).dp) // .8
     ) {
 
-        BottomMiddleView(modifier = Modifier
+        LoginBottomMiddleView(modifier = Modifier
             .fillMaxWidth()
             .padding(5.dp),
             doCloseBottom = {
                 //showBottomSheet = false
             },
-            doJoinPerson = {
+            doLoginPerson = {
                 // showBottomSheet = false
-                navigator.navigate(JoinPage1Destination)
+                navigator.navigate(WorkerLoginPageDestination)
             },
-            doJoinCorp = {
+            doLoginCorp = {
 
             }
         )
     }
 }
+
+

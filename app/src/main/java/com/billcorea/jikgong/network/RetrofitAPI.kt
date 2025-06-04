@@ -18,6 +18,11 @@ import java.lang.reflect.Type
 
 interface RetrofitAPI {
 
+    @POST("api/login")
+    fun login(
+        @Body body: LoginRequest
+    ): Call<LoginResponse>
+
     @POST("api/join/sms-verification")
     fun smsVerification(
         @Body body: SmsVerificationRequest
@@ -42,7 +47,7 @@ interface RetrofitAPI {
     ) : Call<Coord2AddressResponse>
 
     companion object {
-        var baseURL="https://asdfdsas.p-e.kr/"
+        var baseURL="https://www.jikgong.p-e.kr/"
         var kakaoURL="https://dapi.kakao.com/"
         private val client = OkHttpClient.Builder().build()
         val gson : Gson =   GsonBuilder().setLenient().create();

@@ -1,15 +1,28 @@
 <resources>
     <string name="app_name">직공</string>
     <string name="joinMember">회원가입</string>
+
+    <!-- 로그인 Part -->
     <string name="login">로그인</string>
+    <string name="loginIdOrPhone">아이디 또는 전화번호</string>
+    <string name="password">비밀번호</string>
+    <string name="autoLogin">자동로그인</string>
+    <string name="searchId">아이디 찾기</string>
+    <string name="searchPW">비밀번호 찾기</string>
+    <string name="errorLoginBlank">아이디와 비밀번호를 다시 입력해주세요</string>
+
+
     <string name="findJobPlace">일할 현장을\n찾고 있어요</string>
     <string name="findWorker">일할 사람을\n찾고 있어요</string>
     <string name="personFor"><![CDATA["개인회원 > "]]></string>
+    <string name="personForLogin"><![CDATA["개인로그인 > "]]></string>
     <string name="corpFor"><![CDATA["기업회원 > "]]></string>
+    <string name="corpForLogin"><![CDATA["기업로그인 > "]]></string>
     <string name="enterPhoneNumber">전화번호를\n입력해 주세요</string>
     <string name="enterForNumberOnly">숫자만 입력</string>
     <string name="telnumber">전화번호</string>
     <string name="getSecretCode">인증번호 받기</string>
+    <string name="errorSecretCode">인증번호가 바르지 않습니다.</string>
     <string name="next">다음</string>
     <string name="secretCode">인증번호 n자리</string>
     <string name="enterSecretCode">인증번호을 입력</string>
