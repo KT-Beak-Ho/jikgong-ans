@@ -89,8 +89,9 @@ fun KakaoMapView(
     val _roadAddress1 = viewModel.roadAddress1.observeAsState(emptyList())
     val roadAddress1 = _roadAddress1.value
 
+    centerPosition = LatLng.from(37.5665, 126.9780)
     if (xPos != 0.0 && yPos != 0.0) {
-        centerPosition = LatLng.from(yPos!!, xPos!!)
+        //centerPosition = LatLng.from(yPos!!, xPos!!)
     }
     try {
 
@@ -180,6 +181,7 @@ fun KakaoMapView(
                                         infoOptions.setBody(body)
                                         infoOptions.setBodyOffset(0F, -4F)
 
+                                        Log.e("", "center ${centerPosition.latitude} ${centerPosition.longitude} 1")
                                         kakaoMap.mapWidgetManager?.infoWindowLayer?.addInfoWindow(infoOptions)
 
                                         // 카메라를 (locationY, locationX) 위치로 이동시키는 업데이트 생성

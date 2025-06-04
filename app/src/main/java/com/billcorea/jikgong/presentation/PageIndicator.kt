@@ -26,7 +26,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun PageIndicatorSample() {
-    val numberOfPages = 5
+    val numberOfPages = 6
     val (selectedPage, setSelectedPage) = remember {
         mutableStateOf(0)
     }
