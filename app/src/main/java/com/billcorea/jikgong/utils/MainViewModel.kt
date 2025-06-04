@@ -24,6 +24,10 @@ import com.billcorea.jikgong.network.PhoneValidationRequest
 import com.billcorea.jikgong.network.PhoneValidationResponse
 import com.billcorea.jikgong.network.RegisterWorker
 import com.billcorea.jikgong.network.RegisterWorkerResponse
+import com.billcorea.jikgong.network.LoginData
+import com.billcorea.jikgong.network.LoginErrorData
+import com.billcorea.jikgong.network.LoginRequest
+import com.billcorea.jikgong.network.LoginResponse
 import com.billcorea.jikgong.network.RetrofitAPI
 import com.billcorea.jikgong.network.SmsVerificationRequest
 import com.billcorea.jikgong.network.SmsVerificationResponse
@@ -68,12 +72,21 @@ class MainViewModel : ViewModel() {
     val _geoCoding = MutableLiveData("")
     val geoCoding : LiveData<String> = _geoCoding
 
+    val _loginResponse = MutableLiveData<LoginResponse?>()
+    val loginResponse: MutableLiveData<LoginResponse?> = _loginResponse
+
+    val _loginResult = MutableLiveData<LoginData?>()
+    val loginResult: LiveData<LoginData?> = _loginResult
+
+    val _loginError = MutableLiveData<String?>()
+    val loginError: LiveData<String?> = _loginError
+
     val bankName = arrayOf("국민은행","신한은행","Kbank", "우리은행", "NH농협은행", "하나은행", "IBK기업은행","카카오뱅크",
         "IM뱅크","토스뱅크","BNK부산은행","SC제일은행","MG새마을금고","우체국","BNK경남은행","광주은행","KDB산업은행","신협","전북은행",
         "씨티뱅크","SH수협은행","제주은행")
     val bankCode = arrayOf("006","021","089","020","011","005","003","090","031","092","032","023","045","071","039","034","002","048","037","027","007","035")
 
-    val _registerResult = MutableLiveData("")
+val _registerResult = MutableLiveData("")
     val registerResult: LiveData<String> get() = _registerResult
 
     val jobName = arrayOf("보통인부", "작업반장", "특별인부", "조력공", "비계공", "형틀목공", "철근공", "철골공", "용접공", "콘트리트공",
@@ -91,6 +104,45 @@ class MainViewModel : ViewModel() {
 
     val _isPhoneValidation = MutableLiveData("")
     val isPhoneValidation: LiveData<String> = _isPhoneValidation
+    fun doLogin(loginIdOrPhone: String, password: String, deviceToken: String) {
+        val body = LoginRequest(loginIdOrPhone, password, deviceToken)
+        RetrofitAPI.create().login(body).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                val loginResponse = response.body()
+                Log.d("LOGIN", "로그인 Response: ${response}")
+                Log.d("LOGIN", "로그인 Response: ${loginResponse}")
+                val loginDataElement = loginResponse?.data
+                Log.d("LOGIN", "로그인 데이터: ${loginDataElement}")
+                if (response.isSuccessful) {
+                    try {
+                        // 정상적인 LoginData로 파싱
+                        val loginData = Gson().fromJson(loginDataElement, LoginData::class.java)
+                        _loginResult.value = loginData
+                        Log.d("LOGIN", "로그인 성공: ${loginData}")
+                    } catch (e: Exception) {
+                        _loginError.value = "로그인 실패"
+                    }
+
+                } else {
+                    val loginErrorBodyString = response.errorBody()?.string()
+                    Log.d("LOGIN", "에러 바디: $loginErrorBodyString")
+                    try {
+                        val loginErrorJson = Gson().fromJson(loginErrorBodyString, LoginResponse::class.java)
+                        val loginErrorData = Gson().fromJson(loginErrorJson.data, LoginErrorData::class.java)
+                        _loginError.value = loginErrorData.errorMessage
+                        Log.d("LOGIN", "로그인 실패: ${loginErrorData.errorMessage}")
+                    } catch (e: Exception) {
+                        Log.e("LOGIN", "LoginErrorData 파싱 실패: ${e.localizedMessage}")
+                        _loginError.value = "로그인 실패 (에러 파싱 실패)"
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                Log.e("", "error ${t.localizedMessage}")
+            }
+        })
+    }
 
     fun doKakaoGeocoding(query: String) {
         Log.e("", "doKakaoGeocoding start ... ")
