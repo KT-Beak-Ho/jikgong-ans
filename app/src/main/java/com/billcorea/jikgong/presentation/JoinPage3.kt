@@ -142,6 +142,7 @@ fun JoinPage3(
             ) {
                 IconButton(onClick = {
                     Log.e("", "backArrow")
+                    viewModel.clearRegisterResult()
                     navigator.navigateUp()
                 }) {
                     Icon(

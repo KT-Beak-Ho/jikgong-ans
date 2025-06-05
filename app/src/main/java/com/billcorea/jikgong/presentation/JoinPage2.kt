@@ -190,6 +190,7 @@ fun JoinPage2 (
                     val editor = sp.edit()
                     editor.remove("phoneNumber")
                     editor.apply()
+                    viewModel.clearRegisterResult()
                 }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
