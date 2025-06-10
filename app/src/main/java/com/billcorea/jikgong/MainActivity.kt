@@ -41,6 +41,7 @@ import com.billcorea.jikgong.presentation.JoinPage6
 import com.billcorea.jikgong.presentation.KakaoMapView
 import com.billcorea.jikgong.presentation.SplashScreen
 import com.billcorea.jikgong.presentation.WorkerLoginPage
+import com.billcorea.jikgong.presentation.WorkerProjectList
 import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
 import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
@@ -50,6 +51,7 @@ import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
 import com.google.accompanist.web.AccompanistWebChromeClient
@@ -123,6 +125,9 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(WorkerLoginPageDestination.route) {
                                 WorkerLoginPage(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(WorkerProjectListDestination.route) {
+                                WorkerProjectList(viewModel, navigator, modifier = Modifier.padding(5.dp))
                             }
                         }
                     }
