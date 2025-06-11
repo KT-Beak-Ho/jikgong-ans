@@ -108,4 +108,18 @@
     <string name="resister">회원가입이 완료되었습니다.</string>
     <string name="validation">중복 확인</string>
     <string name="roadAddress">도로명 주소를 입력 해주세요.</string>
+
+
+    <!-- 구직자 일자리 목록 -->
+    <string name="workerProjectList">일자리 목록</string>
+
+    <!-- 구직자 내 일자리 -->
+    <string name="workerMyJobs">내 일자리</string>
+
+    <!-- 구직자 수익 관리 -->
+    <string name="workerEarnings">수익 관리</string>
+
+    <!-- 구직자 내 정보 -->
+    <string name="workerMyInfo">내 정보</string>
+  
 </resources>
