@@ -86,7 +86,7 @@ class MainViewModel : ViewModel() {
         "씨티뱅크","SH수협은행","제주은행")
     val bankCode = arrayOf("006","021","089","020","011","005","003","090","031","092","032","023","045","071","039","034","002","048","037","027","007","035")
 
-val _registerResult = MutableLiveData("")
+    val _registerResult = MutableLiveData("")
     val registerResult: LiveData<String> get() = _registerResult
 
     val jobName = arrayOf("보통인부", "작업반장", "특별인부", "조력공", "비계공", "형틀목공", "철근공", "철골공", "용접공", "콘트리트공",
@@ -104,6 +104,7 @@ val _registerResult = MutableLiveData("")
 
     val _isPhoneValidation = MutableLiveData("")
     val isPhoneValidation: LiveData<String> = _isPhoneValidation
+
     fun doLogin(loginIdOrPhone: String, password: String, deviceToken: String) {
         val body = LoginRequest(loginIdOrPhone, password, deviceToken)
         RetrofitAPI.create().login(body).enqueue(object : Callback<LoginResponse> {

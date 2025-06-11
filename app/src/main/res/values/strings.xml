@@ -107,4 +107,5 @@
     <string name="idIsValid">이 아이디는 사용 가능합니다.</string>
     <string name="resister">회원가입이 완료되었습니다.</string>
     <string name="validation">중복 확인</string>
+    <string name="roadAddress">도로명 주소를 입력 해주세요.</string>
 </resources>
