@@ -104,6 +104,7 @@ class MainViewModel : ViewModel() {
 
     val _isPhoneValidation = MutableLiveData("")
     val isPhoneValidation: LiveData<String> = _isPhoneValidation
+
     fun doLogin(loginIdOrPhone: String, password: String, deviceToken: String) {
         val body = LoginRequest(loginIdOrPhone, password, deviceToken)
         RetrofitAPI.create().login(body).enqueue(object : Callback<LoginResponse> {

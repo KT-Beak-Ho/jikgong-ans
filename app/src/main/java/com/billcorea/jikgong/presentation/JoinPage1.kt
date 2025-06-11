@@ -138,6 +138,7 @@ fun JoinPage1(
                 IconButton(onClick = {
                     Log.e("", "backArrow")
                     navigator.navigateUp()
+                    viewModel.clearRegisterResult()
                 }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -273,7 +274,7 @@ fun JoinPage1(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {
                         keyboardController?.hide()
-                        focusManager.clearFocus()
+                        // focusManager.clearFocus()
                     }),
                     modifier = Modifier.fillMaxWidth()
                 )
