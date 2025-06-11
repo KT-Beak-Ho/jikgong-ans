@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -123,6 +124,10 @@ fun JoinPage2 (
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val focusRequester = FocusRequester()
+    val idFocusRequester = FocusRequester()
+    val passwordFocusRequester = FocusRequester()
+    val passwordCheckFocusRequester = FocusRequester()
+    val emailFocusRequester = FocusRequester()
     val _expiryDate = viewModel.expiryMessage.observeAsState()
     val expiryDate = _expiryDate.value
     val _loginVal = viewModel.isLoginValidation.observeAsState()
@@ -145,9 +150,14 @@ fun JoinPage2 (
     fun validationData() {
         Log.e("", "${_password} == ${_passwordCheck}")
         val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+        val idRegex = "^[A-Za-z0-9]*$".toRegex()
         if (_name.isEmpty() || _birthday.isEmpty() || _nationality.isEmpty() || _gender.isEmpty() || _id.isEmpty() || _password.isEmpty() || _email.isEmpty() || !isCheck || (_password != _passwordCheck)) {
             isSecretOk = false
-        } else if(_email.matches(emailRegex)){
+        }
+        else if(!_email.matches(emailRegex) || !_id.matches((idRegex))) {
+            isSecretOk = false
+        }
+        else {
             isSecretOk = true
         }
     }
@@ -156,6 +166,7 @@ fun JoinPage2 (
         loginVal?.let {
             if (it.indexOf("false") >= 0) {
                 isCheck = false
+                idFocusRequester.requestFocus()
                 MaterialDialog(context).show {
                     icon(R.drawable.ic_jikgong_white)
                     message(R.string.idIsNotValid)
@@ -163,12 +174,20 @@ fun JoinPage2 (
                 }
             } else if (it.indexOf("true") >= 0) {
                 isCheck = true
+                passwordFocusRequester.requestFocus()
                 MaterialDialog(context).show {
                     icon(R.drawable.ic_jikgong_white)
                     message(R.string.idIsValid)
                     positiveButton(R.string.OK) { it.dismiss() }
                 }
             }
+        }
+    }
+
+    LaunchedEffect(_id) {
+        _id.let {
+            isCheck = false
+            validationData()
         }
     }
 
@@ -345,7 +364,13 @@ fun JoinPage2 (
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, appColorScheme.inverseSurface),
+                        .border(1.dp, appColorScheme.inverseSurface)
+                        .clickable {
+                            coroutine.launch {
+                                showBottomSheet = true
+                                focusManager.clearFocus()
+                            }
+                        },
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -378,7 +403,8 @@ fun JoinPage2 (
                         onDismissRequest = {
                             Log.d("[BottomSheetDialog]", "onDismissRequest")
                             showBottomSheet = false
-                            focusRequester.requestFocus()
+                            focusManager.clearFocus()
+                            // focusRequester.requestFocus()
                         },
                         properties = BottomSheetDialogProperties(
                             behaviorProperties = BottomSheetBehaviorProperties(
@@ -413,6 +439,7 @@ fun JoinPage2 (
                                 TextButton(
                                     onClick = {
                                         showBottomSheet = false
+                                        focusManager.clearFocus()
                                     },
                                     modifier = Modifier
                                         .width((screenWeight * .4).dp)
@@ -426,7 +453,8 @@ fun JoinPage2 (
                                 TextButton(
                                     onClick = {
                                         showBottomSheet = false
-                                        focusRequester.requestFocus()
+                                        focusManager.clearFocus()
+                                        // focusRequester.requestFocus()
                                     },
                                     modifier = Modifier
                                         .width((screenWeight * .6).dp)
@@ -654,11 +682,10 @@ fun JoinPage2 (
                         placeholder = {
                             Text(text = stringResource(R.string.enterId))
                         },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = {
-                            focusRequester.requestFocus()
+                            // focusRequester.requestFocus()
                             keyboardController?.hide()
-                            showBottomSheet = true
                         }),
                         maxLines = 1,
                         modifier = Modifier.width((screenWeight * .67).dp).fillMaxWidth().focusRequester(focusRequester).onFocusChanged { isFocus ->
@@ -669,6 +696,7 @@ fun JoinPage2 (
                     TextButton( onClick = {
                         // if(isCheck) {
                         viewModel.doLoginIdValidation(_id)
+                        validationData()
                         // }
                     }, modifier = Modifier
                         .width((screenWeight * .3).dp)
@@ -681,6 +709,9 @@ fun JoinPage2 (
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentWidth(Alignment.CenterHorizontally)
+                                .focusRequester(idFocusRequester).onFocusChanged { isFocus ->
+                                validationData()
+                            }
                         )
                     }
                 }
@@ -709,18 +740,17 @@ fun JoinPage2 (
                     },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password, // 비밀번호용 키보드 타입
-                        imeAction = ImeAction.Done
+                        imeAction = ImeAction.Next
                     ),
                     keyboardActions = KeyboardActions(onNext = {
-                        focusRequester.requestFocus()
+                        passwordCheckFocusRequester.requestFocus()
                         keyboardController?.hide()
-                        showBottomSheet = true
                     }),
                     visualTransformation = PasswordVisualTransformation(), // 입력값 마스킹
                     maxLines = 1,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .focusRequester(focusRequester)
+                        .focusRequester(passwordFocusRequester)
                         .onFocusChanged { isFocus ->
                             validationData()
                         }
@@ -750,18 +780,17 @@ fun JoinPage2 (
                     },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password, // 비밀번호용 키보드 타입
-                        imeAction = ImeAction.Done
+                        imeAction = ImeAction.Next
                     ),
                     keyboardActions = KeyboardActions(onNext = {
-                        focusRequester.requestFocus()
+                        emailFocusRequester.requestFocus()
                         keyboardController?.hide()
-                        showBottomSheet = true
                     }),
                     visualTransformation = PasswordVisualTransformation(), // 입력값 마스킹
                     maxLines = 1,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .focusRequester(focusRequester)
+                        .focusRequester(passwordCheckFocusRequester)
                         .onFocusChanged { isFocus ->
                             validationData()
                         }
@@ -791,13 +820,15 @@ fun JoinPage2 (
                         Text(text = stringResource(R.string.enterEmail))
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onNext = {
-                        focusRequester.requestFocus()
+                    keyboardActions = KeyboardActions(onDone = {
                         keyboardController?.hide()
-                        showBottomSheet = true
+                        validationData()
                     }),
                     maxLines = 1,
-                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester).onFocusChanged { isFocus ->
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(emailFocusRequester)
+                        .onFocusChanged { isFocus ->
                         validationData()
                     }
                 )
