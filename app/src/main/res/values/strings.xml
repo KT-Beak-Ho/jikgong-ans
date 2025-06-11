@@ -107,4 +107,16 @@
     <string name="idIsValid">이 아이디는 사용 가능합니다.</string>
     <string name="resister">회원가입이 완료되었습니다.</string>
     <string name="validation">중복 확인</string>
+
+    <!-- 구직자 일자리 목록 -->
+    <string name="workerProjectList">일자리 목록</string>
+
+    <!-- 구직자 내 일자리 -->
+    <string name="workerMyJobs">내 일자리</string>
+
+    <!-- 구직자 수익 관리 -->
+    <string name="workerEarnings">수익 관리</string>
+
+    <!-- 구직자 내 정보 -->
+    <string name="workerMyInfo">내 정보</string>
 </resources>
