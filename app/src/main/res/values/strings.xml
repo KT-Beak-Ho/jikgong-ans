@@ -11,7 +11,6 @@
     <string name="searchPW">비밀번호 찾기</string>
     <string name="errorLoginBlank">아이디와 비밀번호를 다시 입력해주세요</string>
 
-
     <string name="findJobPlace">일할 현장을\n찾고 있어요</string>
     <string name="findWorker">일할 사람을\n찾고 있어요</string>
     <string name="personFor"><![CDATA["개인회원 > "]]></string>
@@ -121,5 +120,9 @@
 
     <!-- 구직자 내 정보 -->
     <string name="workerMyInfo">내 정보</string>
+
+    <!--    테스트 문자열-->
+    <string name="testText">경력 입력</string>
+    <string name="testText2">개월</string>
   
 </resources>

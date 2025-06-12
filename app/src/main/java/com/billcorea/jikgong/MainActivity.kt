@@ -42,6 +42,9 @@ import com.billcorea.jikgong.presentation.KakaoMapView
 import com.billcorea.jikgong.presentation.SplashScreen
 import com.billcorea.jikgong.presentation.WorkerLoginPage
 import com.billcorea.jikgong.presentation.WorkerProjectList
+import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPage1Screen
+import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
+import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
 import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
@@ -69,6 +72,7 @@ import java.security.NoSuchAlgorithmException
 class MainActivity : ComponentActivity() {
 
     val viewModel : MainViewModel by viewModels()
+    private val companyJoinViewModel = CompanyJoinSharedViewModel()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,6 +132,13 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(WorkerProjectListDestination.route) {
                                 WorkerProjectList(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(CompanyJoinPage1ScreenDestination.route) {
+                                CompanyJoinPage1Screen(
+                                    companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
                             }
                         }
                     }
