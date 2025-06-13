@@ -96,11 +96,17 @@ fun JoinPage3(
     var showBottomSheet by remember { mutableStateOf(false) }
 
     fun validationData() {
-        if (_name.isNotEmpty() && _bankCode.isNotEmpty() && _accountNumber.isNotEmpty()) {
+        /* if (_name.isNotEmpty() && _bankCode.isNotEmpty() && _accountNumber.isNotEmpty()) {
             isSecretOk = true
         } else {
             isSecretOk = false
-        }
+        } */
+    }
+
+    if (_name.isNotEmpty() && _bankCode.isNotEmpty() && _accountNumber.isNotEmpty()) {
+        isSecretOk = true
+    } else {
+        isSecretOk = false
     }
 
     if (_bankCode.isNotEmpty()) {
