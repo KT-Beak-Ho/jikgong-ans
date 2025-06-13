@@ -121,8 +121,15 @@
     <!-- 구직자 내 정보 -->
     <string name="workerMyInfo">내 정보</string>
 
+    <!-- 사업자 회원가입-->
+    <string name="businessNumber">사업자 등록번호</string>
+    <string name="companyName">회사명</string>
+    <string name="enterCompanyName">회사명 입력</string>
+    <string name="inquiry">문의사항</string>
+    <string name="enterInquiry">문의사항 입력</string>
+
     <!--    테스트 문자열-->
     <string name="testText">경력 입력</string>
     <string name="testText2">개월</string>
-  
+
 </resources>
