@@ -108,7 +108,7 @@ fun JoinPage1(
             else if(it.indexOf("true") >= 0) {
                 if (phoneNumber.startsWith("010") == true && phoneNumber.length >= 11) {
                     isSecurity = true
-                    viewModel.doSmsVerification(phoneNumber)
+//                    viewModel.doSmsVerification(phoneNumber)
                 } else {
                     isSecurity = false
                     MaterialDialog(context).show {
@@ -122,7 +122,7 @@ fun JoinPage1(
             }
         }
     }
-
+    //  화면 시작
     Scaffold (
         modifier = modifier
             .fillMaxSize()
@@ -138,6 +138,7 @@ fun JoinPage1(
                 IconButton(onClick = {
                     Log.e("", "backArrow")
                     navigator.navigateUp()
+                    viewModel.clearRegisterResult()
                 }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -273,7 +274,7 @@ fun JoinPage1(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {
                         keyboardController?.hide()
-                        focusManager.clearFocus()
+                        // focusManager.clearFocus()
                     }),
                     modifier = Modifier.fillMaxWidth()
                 )
