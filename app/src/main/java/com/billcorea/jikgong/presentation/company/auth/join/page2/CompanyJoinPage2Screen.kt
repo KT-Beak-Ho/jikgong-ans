@@ -136,13 +136,15 @@ fun CompanyJoinPage2Screen(
           labelAppendText = "*",
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterName),
+          validationError = uiState.validationErrors["name"],
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserName(it))
-          }
+          },
+
         )
         Spacer(modifier = Modifier.padding(8.dp))
       }
-      //  아이
+      //  아이디
       item {
         CommonTextInput(
           value = uiState.id,
@@ -150,6 +152,7 @@ fun CompanyJoinPage2Screen(
           labelAppendText = "*",
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterId),
+          validationError = uiState.validationErrors["id"],
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserId(it))
           }
@@ -164,6 +167,7 @@ fun CompanyJoinPage2Screen(
           labelAppendText = "*",
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterPassword),
+          validationError = uiState.validationErrors["password"],
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserPassword(it))
           }
@@ -178,6 +182,7 @@ fun CompanyJoinPage2Screen(
           labelAppendText = "*",
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterEmail),
+          validationError = uiState.validationErrors["email"],
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserMail(it))
           }
@@ -191,7 +196,8 @@ fun CompanyJoinPage2Screen(
           labelMainText = stringResource(R.string.businessNumber),
           labelAppendText = "*",
           labelAppendTextColor = colorResource(R.color.secondary_B),
-          placeholder = stringResource(R.string.enterForNumberOnly),
+          placeholder = stringResource(R.string.enterNusinessNumber),
+          validationError = uiState.validationErrors["businessNumber"],
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateBusinessNumber(it))
           }
@@ -206,6 +212,7 @@ fun CompanyJoinPage2Screen(
           labelAppendText = "*",
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterCompanyName),
+          validationError = uiState.validationErrors["companyName"],
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateCompanyName(it))
           }
@@ -217,10 +224,9 @@ fun CompanyJoinPage2Screen(
         CommonTextInput(
           value = uiState.inquiry,
           labelMainText = stringResource(R.string.inquiry),
-          labelAppendText = "*",
-          labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterInquiry),
           minLines = 3,
+          validationError = uiState.validationErrors["inquiry"],
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateInquiry(it))
           }
