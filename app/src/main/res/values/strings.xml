@@ -123,6 +123,7 @@
 
     <!-- 사업자 회원가입-->
     <string name="businessNumber">사업자 등록번호</string>
+    <string name="enterNusinessNumber">ex) 111-11-11111</string>
     <string name="companyName">회사명</string>
     <string name="enterCompanyName">회사명 입력</string>
     <string name="inquiry">문의사항</string>
