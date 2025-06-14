@@ -14,8 +14,8 @@ sealed class CompanyJoinSharedEvent {
   // Page 2 이벤트
   data class UpdateUserName(val name: String) : CompanyJoinSharedEvent()                  // 사용자 이름 입력
   data class UpdateUserId(val id:String): CompanyJoinSharedEvent()                        // 사용자 ID 입력
-  data class UpdateUserPassword(val pwd: String) : CompanyJoinSharedEvent()               // 사용자 비밀번호 입력
-  data class UpdateUserPasswordConfirm(val pwd: String) : CompanyJoinSharedEvent()        // 사용자 비밀번호 입력확인
+  data class UpdateUserPassword(val password: String) : CompanyJoinSharedEvent()          // 사용자 비밀번호 입력
+  data class UpdateUserPasswordConfirm(val password: String) : CompanyJoinSharedEvent()   // 사용자 비밀번호 입력확인
   data class UpdateUserMail(val email: String) : CompanyJoinSharedEvent()                 // 사용자 Mail 입력
   data class UpdateBusinessNumber(val businessNumber: String) : CompanyJoinSharedEvent()  // 사업자 등록번호
   data class UpdateCompanyName(val companyName: String) : CompanyJoinSharedEvent()        // 회사명
