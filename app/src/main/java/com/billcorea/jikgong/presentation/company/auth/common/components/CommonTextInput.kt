@@ -26,6 +26,7 @@ fun CommonTextInput(
   placeholder: String = "",
   maxLines: Int = 1,
   minLines: Int = 1,
+  validationError: String? = null,
 ) {
   // maxLines가 minLines보다 작은 경우 자동으로 minLines의 3배로 설정
   val adjustedMaxLines = if (maxLines < minLines) {
@@ -52,7 +53,11 @@ fun CommonTextInput(
       ),
       maxLines = adjustedMaxLines,
       minLines = minLines,
-      modifier = Modifier.fillMaxWidth()
+      modifier = Modifier.fillMaxWidth(),
+      isError = validationError != null,
+      supportingText = validationError?.let {
+        { Text(text = it) }
+      },
     )
   }
 }
