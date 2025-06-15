@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.billcorea.jikgong.network.RetrofitAPI
 import com.billcorea.jikgong.network.SmsVerificationRequest
 import com.billcorea.jikgong.network.SmsVerificationResponse
+import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants.TOTAL_PAGES
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +24,8 @@ class CompanyJoinSharedViewModel : ViewModel() {
   val shouldNavigateToNextPage: StateFlow<Boolean> = _shouldNavigateToNextPage.asStateFlow()
   private val _shouldNavigateBack = MutableStateFlow(false)
   val shouldNavigateBack: StateFlow<Boolean> = _shouldNavigateBack.asStateFlow()
+  private val _shouldNavigateHome = MutableStateFlow(false)
+  val shouldNavigateHome: StateFlow<Boolean> = _shouldNavigateHome.asStateFlow()
 
   /**
    * 네비게이션 이벤트 클리어
@@ -30,13 +33,21 @@ class CompanyJoinSharedViewModel : ViewModel() {
   fun clearNavigationEvents() {
     _shouldNavigateToNextPage.value = false
     _shouldNavigateBack.value = false
+    _shouldNavigateHome.value = false
   }
 
   /**
-   * 페이지 이동 검증 함수
+   * 다음 페이지 이동 검증 함수
    */
   private fun canNavigateToNextPage(): Boolean {
-    return _uiState.value.isPage1Complete
+    val state = _uiState.value
+    val currentPage = state.currentPage
+
+    val pageCompletionMap = mapOf(
+      1 to state.isPage1Complete,
+      2 to state.isPage2Complete,
+    )
+    return pageCompletionMap[currentPage] ?: false
   }
 
   /**
@@ -49,10 +60,12 @@ class CompanyJoinSharedViewModel : ViewModel() {
         errors["phoneNumber"] = "기업 전화번호를 입력해주세요"
         false
       }
+
       !phoneNumber.matches(Regex("^010\\d{8}$")) -> {
         errors["phoneNumber"] = "올바른 기업 전화번호 형식이 아닙니다"
         false
       }
+
       else -> {
         errors.remove("phoneNumber")
         true
@@ -81,6 +94,7 @@ class CompanyJoinSharedViewModel : ViewModel() {
           isWaiting = false
         )
       }
+
       override fun onFailure(call: Call<SmsVerificationResponse>, t: Throwable) {
         // Log.e("", "error ${t.localizedMessage}")
         // 실패 시에도 isWaiting = false로 변경
@@ -101,10 +115,12 @@ class CompanyJoinSharedViewModel : ViewModel() {
         errors["verificationCode"] = "인증번호를 입력해주세요"
         false
       }
+
       verificationCode != currentState.authCode -> {
         errors["verificationCode"] = "인증번호가 일치하지 않습니다"
         false
       }
+
       else -> {
         errors.remove("verificationCode")
         true
@@ -119,7 +135,7 @@ class CompanyJoinSharedViewModel : ViewModel() {
   /**
    * 사용자 이름 입력 검증 함수
    */
-  private fun validateUserName(name: String){
+  private fun validateUserName(name: String) {
     val currentState = _uiState.value
     val errors = currentState.validationErrors.toMutableMap()
 
@@ -128,6 +144,7 @@ class CompanyJoinSharedViewModel : ViewModel() {
         errors["name"] = "이름을 입력해주세요"
         false
       }
+
       else -> {
         errors.remove("name")
         true
@@ -137,10 +154,11 @@ class CompanyJoinSharedViewModel : ViewModel() {
       validationErrors = errors,
     )
   }
+
   /**
    * 아이디 입력 검증 함수
    */
-  private fun validateUserId(id: String){
+  private fun validateUserId(id: String) {
     val currentState = _uiState.value
     val errors = currentState.validationErrors.toMutableMap()
 
@@ -149,6 +167,7 @@ class CompanyJoinSharedViewModel : ViewModel() {
         errors["id"] = "아이디를 입력해주세요"
         false
       }
+
       else -> {
         errors.remove("id")
         true
@@ -158,10 +177,11 @@ class CompanyJoinSharedViewModel : ViewModel() {
       validationErrors = errors,
     )
   }
+
   /**
    * 비밀번호 입력 검증 함수
    */
-  private fun validateUserPwd(pwd: String){
+  private fun validateUserPwd(pwd: String) {
     val currentState = _uiState.value
     val errors = currentState.validationErrors.toMutableMap()
 
@@ -170,6 +190,7 @@ class CompanyJoinSharedViewModel : ViewModel() {
         errors["pwd"] = "비밀번호를 입력해주세요"
         false
       }
+
       else -> {
         errors.remove("pwd")
         true
@@ -179,6 +200,7 @@ class CompanyJoinSharedViewModel : ViewModel() {
       validationErrors = errors,
     )
   }
+
   /**
    * 사업자 이메일 입력 검증 함수
    */
@@ -189,10 +211,12 @@ class CompanyJoinSharedViewModel : ViewModel() {
         errors["email"] = "이메일을 입력해주세요"
         false
       }
+
       !email.matches(Regex("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$")) -> {
         errors["email"] = "올바른 이메일 형식이 아닙니다"
         false
       }
+
       else -> {
         errors.remove("email")
         true
@@ -202,6 +226,7 @@ class CompanyJoinSharedViewModel : ViewModel() {
       validationErrors = errors,
     )
   }
+
   /**
    * 사업자 번호 임력 검증 함수
    */
@@ -212,10 +237,12 @@ class CompanyJoinSharedViewModel : ViewModel() {
         errors["businessNumber"] = "사업자 등록번호를 입력해주세요"
         false
       }
+
       !businessNumber.matches(Regex("^\\d{3}-\\d{2}-\\d{5}$")) -> {
         errors["businessNumber"] = "올바른 사업자 등록번호 형식이 아닙니다"
         false
       }
+
       else -> {
         errors.remove("businessNumber")
         true
@@ -225,10 +252,11 @@ class CompanyJoinSharedViewModel : ViewModel() {
       validationErrors = errors,
     )
   }
+
   /**
    * 회사명 입력 검증 함수
    */
-  private fun UpdateCompanyName(companyName: String){
+  private fun UpdateCompanyName(companyName: String) {
     val currentState = _uiState.value
     val errors = currentState.validationErrors.toMutableMap()
 
@@ -237,6 +265,7 @@ class CompanyJoinSharedViewModel : ViewModel() {
         errors["companyName"] = "회사명을 입력해주세요"
         false
       }
+
       else -> {
         errors.remove("companyName")
         true
@@ -259,31 +288,31 @@ class CompanyJoinSharedViewModel : ViewModel() {
        * 페이지 뒤로 가기
        */
       is CompanyJoinSharedEvent.PreviousPage -> {
-//                val currentPage = _uiState.value.currentPage
-//                if (currentPage > 1) {
-//                    _uiState.value = _uiState.value.copy(currentPage = currentPage - 1)
-//                    _navigationEvent.value =
-//                        CompanyJoinNavigationEvent.NavigateToPage(currentPage - 1)
-//                } else {
-//                    _navigationEvent.value = CompanyJoinNavigationEvent.NavigateBack
-//                }
-        _shouldNavigateBack.value = true
+        val currentPage = _uiState.value.currentPage
+        //  현재 page가 1 page 이상인 경우에만 뒤로가기 가능
+        _uiState.value = _uiState.value.copy(
+          currentPage = currentPage - 1
+        )
+        _shouldNavigateBack.value = currentPage > 0
       }
       /**
        * 페이지 다음 으로 가기
        */
       is CompanyJoinSharedEvent.NextPage -> {
-//                val currentPage = _uiState.value.currentPage
-//                if (canNavigateToNextPage(currentPage)) {
-//                    if (currentPage < 6) {
-//                        _uiState.value = _uiState.value.copy(currentPage = currentPage + 1)
-//                        _navigationEvent.value =
-//                            CompanyJoinNavigationEvent.NavigateToPage(currentPage + 1)
-//                    }
-//                }
         if (canNavigateToNextPage()) {
+          val currentPage = _uiState.value.currentPage
+          _uiState.value = _uiState.value.copy(
+            currentPage = currentPage + 1
+          )
           _shouldNavigateToNextPage.value = true
         }
+      }
+      /**
+       * main 페이지로 돌아가기
+       */
+      is CompanyJoinSharedEvent.HomePage -> {
+        val currentPage = _uiState.value.currentPage
+        _shouldNavigateHome.value = currentPage == TOTAL_PAGES
       }
       /**
        * Page 1 (CompanyJoinPage1Screen) 이벤트
@@ -336,7 +365,8 @@ class CompanyJoinSharedViewModel : ViewModel() {
           isValidPhoneNumber = false,    //  전화번호 양식 일치
           isPhoneVerified = false,       //  전화번호 검증 완료
           isSecurityStepActive = false,  //  인증절차 단계
-          isWaiting = false
+          isWaiting = false,
+          currentPage = 1                //  현재 페이지 위치 1
         )
       }
       /**
@@ -416,36 +446,30 @@ class CompanyJoinSharedViewModel : ViewModel() {
       /**
        * 2 Page 입력값 초기화
        */
-      is CompanyJoinSharedEvent.ResetJoin2Flow -> {}
+      is CompanyJoinSharedEvent.ResetJoin2Flow -> {
+        _uiState.value = _uiState.value.copy(
+          currentPage = 1                //  현재 페이지 위치 2
+        )
+      }
       /**
-       * Page 3 (CompanyJoinPage2Screen) 이벤트
+       * Page 3 (CompanyJoinPage3Screen) 이벤트
+       */
+      is CompanyJoinSharedEvent.ResetJoin3Flow -> {
+        _uiState.value = _uiState.value.copy(
+          currentPage = 3                //  현재 페이지 위치 3
+        )
+      }
+      /**
+       * 공통
        */
       /**
-       * Page 4 (CompanyJoinPage2Screen) 이벤트
+       * 에러 초기화
        */
-      /**
-       * Page 5 (CompanyJoinPage2Screen) 이벤트
-       */
-      /**
-       * Page 6 (CompanyJoinPage2Screen) 이벤트
-       */
-      CompanyJoinSharedEvent.ClearError -> TODO()
-      is CompanyJoinSharedEvent.NavigateToPage -> TODO()
-      CompanyJoinSharedEvent.SearchCompanyAddress -> TODO()
-      CompanyJoinSharedEvent.SubmitCompanyJoinData -> TODO()
-      is CompanyJoinSharedEvent.UpdateBusinessNumber -> TODO()
-      is CompanyJoinSharedEvent.UpdateBusinessType -> TODO()
-      is CompanyJoinSharedEvent.UpdateCompanyAddress -> TODO()
-      is CompanyJoinSharedEvent.UpdateCompanyDescription -> TODO()
-      is CompanyJoinSharedEvent.UpdateCompanyName -> TODO()
-      is CompanyJoinSharedEvent.UpdateDetailAddress -> TODO()
-      is CompanyJoinSharedEvent.UpdateEmployeeCount -> TODO()
-      is CompanyJoinSharedEvent.UpdateEstablishedYear -> TODO()
-      is CompanyJoinSharedEvent.UpdateMarketingAgreement -> TODO()
-      is CompanyJoinSharedEvent.UpdatePrivacyAgreement -> TODO()
-      is CompanyJoinSharedEvent.UpdateTermsAgreement -> TODO()
-      is CompanyJoinSharedEvent.UpdateWebsite -> TODO()
-      CompanyJoinSharedEvent.VerifyPhoneNumber -> TODO()
+      CompanyJoinSharedEvent.ClearError -> {
+        _uiState.value = _uiState.value.copy(
+          validationErrors = emptyMap() //  현재 페이지의 모든 에러 제거
+        )
+      }
     }
   }
 }
