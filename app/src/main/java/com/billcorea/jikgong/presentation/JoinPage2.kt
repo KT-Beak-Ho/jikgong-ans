@@ -2,6 +2,7 @@ package com.billcorea.jikgong.presentation
 
 import android.content.Context
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -175,6 +176,22 @@ fun JoinPage2 (
         } */
     }
 
+    // 뒤로가기 버튼 처리
+    BackHandler {
+        // 뒤로가기 시 상태 초기화
+        _id = ""
+        isSecurity = false
+        showBottomSheet = false
+        isSecretOk = false
+        isCheck = false
+
+        // ViewModel 상태 초기화 (필요한 경우)
+        viewModel.clearRegisterResult() // 또는 다른 초기화 메서드가 있다면 호출
+
+        // 실제 뒤로가기 실행
+        navigator.navigateUp()
+    }
+
     LaunchedEffect(loginVal) {
         loginVal?.let {
             if (it.indexOf("false") >= 0) {
@@ -259,6 +276,13 @@ fun JoinPage2 (
                             editor.putBoolean("hasVisa", true)
                         }
                         editor.apply()
+                        _id = ""
+                        isSecurity = false
+                        isSecretOk = false
+                        isCheck = false
+
+                        viewModel.clearRegisterResult()
+
                         navigator.navigate(JoinPage3Destination)
                     }
                 },

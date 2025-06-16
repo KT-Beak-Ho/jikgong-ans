@@ -103,7 +103,7 @@ fun JoinPage3(
         } */
     }
 
-    if (_name.isNotEmpty() && _bankCode.isNotEmpty() && _accountNumber.isNotEmpty()) {
+    if (_name.isNotEmpty() && _bankCode.isNotEmpty() && _accountNumber.isNotEmpty() && _accountNumber.length >= 10) {
         isSecretOk = true
     } else {
         isSecretOk = false
@@ -334,7 +334,8 @@ fun JoinPage3(
                         .focusRequester(focusRequester)
                         .onFocusChanged { isFocus ->
                             validationData()
-                        }
+                        },
+                    isError = _accountNumber.length in 1..9
                 )
             }
         }
