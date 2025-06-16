@@ -448,7 +448,7 @@ class CompanyJoinSharedViewModel : ViewModel() {
        */
       is CompanyJoinSharedEvent.ResetJoin2Flow -> {
         _uiState.value = _uiState.value.copy(
-          currentPage = 1                //  현재 페이지 위치 2
+          currentPage = 2                //  현재 페이지 위치 2
         )
       }
       /**

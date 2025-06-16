@@ -127,7 +127,8 @@ fun JoinPage1(
         modifier = modifier
             .fillMaxSize()
             .padding(top = 20.dp)
-        , topBar = {
+        ,
+        topBar = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -154,8 +155,8 @@ fun JoinPage1(
                     animationDurationInMillis = 1000,
                 )
             }
-        }
-        , bottomBar = {
+        },
+        bottomBar = {
             TextButton(
                 onClick = {
                     val editor = sp.edit()
@@ -195,6 +196,7 @@ fun JoinPage1(
                     .wrapContentHeight(align = Alignment.CenterVertically)
             )
             Spacer(modifier = Modifier.padding(5.dp))
+
             Text(
                 text = stringResource(R.string.telnumber),
                 color = appColorScheme.primary,
