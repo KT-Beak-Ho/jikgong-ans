@@ -25,11 +25,11 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
+import com.billcorea.jikgong.presentation.common.KeyboardConstants
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
+import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTopBar
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants
-import com.billcorea.jikgong.presentation.company.auth.join.page1.components.PhoneNumberInput
-import com.billcorea.jikgong.presentation.company.auth.join.page1.components.VerificationCodeInput
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedEvent
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
@@ -145,49 +145,47 @@ fun CompanyJoinPage1Screen(
           .fillMaxWidth()
           .wrapContentHeight(align = Alignment.CenterVertically)
       )
-
       Spacer(modifier = Modifier.padding(8.dp))
 
       // 전화 번호 입력 받는 섹션
-      PhoneNumberInput(
-        phoneNumber = uiState.phoneNumber,
-        onPhoneNumberChange = {
+      CommonTextInput(
+        value = uiState.phoneNumber,
+        labelMainText = stringResource(R.string.telnumber),
+        placeholder = stringResource(R.string.enterForNumberOnly),
+        validationError = uiState.validationErrors["phoneNumber"],
+        keyboardOptions = KeyboardConstants.Options.PHONE,
+        modifier = Modifier.fillMaxWidth(),
+        onChange = {
           companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdatePhoneNumber(it))
         },
-        onRequestCode = {
+      )
+      Spacer(modifier = Modifier.padding(5.dp))
+
+      //  인증번호 받기 버튼
+      CommonButton(
+        text = stringResource(R.string.getSecretCode),
+        onClick = {
           companyJoinViewModel.onEvent(CompanyJoinSharedEvent.RequestVerificationCode)
         },
-        onFocusChanged = { isFocused ->
-          // 포커스 변경 시 인증 단계 초기화 (기존 로직 유지)
-          if (isFocused && uiState.isSecurityStepActive) {
-            companyJoinViewModel.onEvent(
-              CompanyJoinSharedEvent.UpdatePhoneNumber(
-                uiState.phoneNumber
-              )
-            )
-          }
-        },
-        isValidPhoneNumber = uiState.isValidPhoneNumber,
-        isWaiting = uiState.isWaiting,
-        validationError = uiState.validationErrors["phoneNumber"]
+        enabled = uiState.phoneNumber.isNotEmpty() && uiState.isValidPhoneNumber,
+        isLoading = uiState.isWaiting,
+        modifier = Modifier.fillMaxWidth()  // 전체 너비 사용
       )
+
 
       //  인증번호 입력 섹션 (조건부 표시)
       if (uiState.isSecurityStepActive) {
-        VerificationCodeInput(
-          verificationCode = uiState.verificationCode,
-          onVerificationCodeChange = {
-            companyJoinViewModel.onEvent(
-              CompanyJoinSharedEvent.UpdateVerificationCode(
-                it
-              )
-            )
+        CommonTextInput(
+          value = uiState.verificationCode,
+          labelMainText = stringResource(R.string.secretCode),
+          placeholder = stringResource(R.string.enterSecretCode),
+          validationError = uiState.validationErrors["verificationCode"],
+          keyboardOptions = KeyboardConstants.Options.NUMBER,
+          keyboardActions = KeyboardConstants.Actions.doneAndHide(),
+          modifier = Modifier.fillMaxWidth(),
+          onChange = {
+            companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateVerificationCode(it))
           },
-          onDone = {
-            companyJoinViewModel.onEvent(CompanyJoinSharedEvent.VerifyPhoneNumber)
-          },
-          authCode = uiState.authCode,
-          validationError = uiState.validationErrors["verificationCode"]  // 에러 메시지 전달
         )
       }
     }

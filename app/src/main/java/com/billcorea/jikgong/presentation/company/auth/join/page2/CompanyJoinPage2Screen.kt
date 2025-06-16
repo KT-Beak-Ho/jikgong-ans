@@ -1,5 +1,6 @@
 package com.billcorea.jikgong.presentation.company.auth.join.page2
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -14,8 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +35,7 @@ import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinCons
 import com.billcorea.jikgong.presentation.company.auth.join.page2.components.PhoneNumberDisplay
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedEvent
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
+import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -50,6 +55,24 @@ fun CompanyJoinPage2Screen(
   val shouldNavigateToNextPage by companyJoinViewModel.shouldNavigateToNextPage.collectAsStateWithLifecycle()
   val shouldNavigateBack by companyJoinViewModel.shouldNavigateBack.collectAsStateWithLifecycle()
 
+  // FocusRequester들 생성
+  /**
+   * 이거 테스트 해봐야하는데 컴으로 하면 엔터누르면 담으로 넘어가서 폰으로 해봐야할거같은데
+   * 어케하누 ?
+   */
+  val focusRequesters = remember {
+    List(7) { FocusRequester() }
+//    listOf(
+//      FocusRequester(), // name
+//      FocusRequester(), // id
+//      FocusRequester(), // password
+//      FocusRequester(), // email
+//      FocusRequester(), // businessNumber
+//      FocusRequester(), // companyName
+//      FocusRequester()  // inquiry
+//    )
+  }
+
   // 페이지 실행 시 초기화
   LaunchedEffect(Unit) {
     companyJoinViewModel.onEvent(CompanyJoinSharedEvent.ResetJoin2Flow)
@@ -58,7 +81,7 @@ fun CompanyJoinPage2Screen(
   // 네비게이션 이벤트 처리 - 다음페이지
   LaunchedEffect(shouldNavigateToNextPage) {
     if (shouldNavigateToNextPage) {
-      //  navigator.navigate(CompanyJoinPage3ScreenDestination)
+      navigator.navigate(CompanyJoinPage3ScreenDestination)
       companyJoinViewModel.clearNavigationEvents()
     }
   }
@@ -89,7 +112,7 @@ fun CompanyJoinPage2Screen(
     bottomBar = {
       //  다음 버튼
       CommonButton(
-        text = stringResource(R.string.next),
+        text = stringResource(R.string.business_partnership_application),
         onClick = {
           companyJoinViewModel.onEvent(CompanyJoinSharedEvent.NextPage)
         },
@@ -103,6 +126,7 @@ fun CompanyJoinPage2Screen(
   ) { innerPadding ->
     //  메인화면 시작
     LazyColumn(
+      verticalArrangement = Arrangement.spacedBy(16.dp),  //  각 item별 공통으로 간격 적용
       modifier = Modifier
         .fillMaxSize()
         .padding(innerPadding)
@@ -119,14 +143,12 @@ fun CompanyJoinPage2Screen(
             .fillMaxWidth()
             .wrapContentHeight(align = Alignment.CenterVertically)
         )
-        Spacer(modifier = Modifier.padding(8.dp))
       }
       //  page 1에서 등록한 휴대폰 번호 출력
       item {
         PhoneNumberDisplay(
           phoneNumber = uiState.phoneNumber,
         )
-        Spacer(modifier = Modifier.padding(8.dp))
       }
       //  이름
       item {
@@ -137,12 +159,13 @@ fun CompanyJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterName),
           validationError = uiState.validationErrors["name"],
+          modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequesters[0]),
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserName(it))
           },
-
         )
-        Spacer(modifier = Modifier.padding(8.dp))
       }
       //  아이디
       item {
@@ -153,11 +176,11 @@ fun CompanyJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterId),
           validationError = uiState.validationErrors["id"],
+          modifier = Modifier.fillMaxWidth(),
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserId(it))
           }
         )
-        Spacer(modifier = Modifier.padding(8.dp))
       }
       //  비밀번호
       item {
@@ -168,11 +191,11 @@ fun CompanyJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterPassword),
           validationError = uiState.validationErrors["password"],
+          modifier = Modifier.fillMaxWidth(),
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserPassword(it))
           }
         )
-        Spacer(modifier = Modifier.padding(8.dp))
       }
       //  메일
       item {
@@ -183,11 +206,11 @@ fun CompanyJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterEmail),
           validationError = uiState.validationErrors["email"],
+          modifier = Modifier.fillMaxWidth(),
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserMail(it))
           }
         )
-        Spacer(modifier = Modifier.padding(8.dp))
       }
       //  사업자 등록 번호
       item {
@@ -198,11 +221,11 @@ fun CompanyJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterNusinessNumber),
           validationError = uiState.validationErrors["businessNumber"],
+          modifier = Modifier.fillMaxWidth(),
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateBusinessNumber(it))
           }
         )
-        Spacer(modifier = Modifier.padding(8.dp))
       }
       //  회사명
       item {
@@ -213,11 +236,11 @@ fun CompanyJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterCompanyName),
           validationError = uiState.validationErrors["companyName"],
+          modifier = Modifier.fillMaxWidth(),
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateCompanyName(it))
           }
         )
-        Spacer(modifier = Modifier.padding(8.dp))
       }
       //  문의 사항
       item {
@@ -225,13 +248,13 @@ fun CompanyJoinPage2Screen(
           value = uiState.inquiry,
           labelMainText = stringResource(R.string.inquiry),
           placeholder = stringResource(R.string.enterInquiry),
-          minLines = 3,
+          maxLines = 3,
           validationError = uiState.validationErrors["inquiry"],
+          modifier = Modifier.fillMaxWidth(),
           onChange = {
             companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateInquiry(it))
           }
         )
-        Spacer(modifier = Modifier.padding(8.dp))
       }
     }
   }

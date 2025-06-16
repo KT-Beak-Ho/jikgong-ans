@@ -23,27 +23,6 @@ data class CompanyJoinSharedUiState(
   val companyName: String = "",       //  회사명
   val inquiry: String = "",           //  문의사항
 
-  // Page 3: 주소 정보
-  val zipCode: String = "",
-  val address: String = "",
-  val detailAddress: String = "",
-
-  // Page 4: 직업 정보
-  val jobCategory: String = "",
-  val experience: String = "",
-  val skills: List<String> = emptyList(),
-  val preferredWorkTime: String = "",
-
-  // Page 5: 추가 정보
-  val profileImage: String? = null,
-  val introduction: String = "",
-  val portfolioUrls: List<String> = emptyList(),
-
-  // Page 6: 약관 동의
-  val agreeToTerms: Boolean = false,
-  val agreeToPrivacy: Boolean = false,
-  val agreeToMarketing: Boolean = false,
-
   // 공통 상태
   val currentPage: Int = 1,
   val errorMessage: String? = null,
@@ -56,28 +35,14 @@ data class CompanyJoinSharedUiState(
 
   val isPage2Complete: Boolean
     get() = name.isNotEmpty() &&
+      id.isNotEmpty() &&
       email.isNotEmpty() &&
       password.isNotEmpty() &&
-      password == passwordConfirm
+      businessNumber.isNotEmpty() &&
+      companyName.isNotEmpty()
 
-  val isPage3Complete: Boolean
-    get() = address.isNotEmpty() && detailAddress.isNotEmpty()
-
-  val isPage4Complete: Boolean
-    get() = jobCategory.isNotEmpty() && experience.isNotEmpty()
-
-  val isPage5Complete: Boolean
-    get() = true // 선택사항이므로 항상 true
-
-  val isPage6Complete: Boolean
-    get() = agreeToTerms && agreeToPrivacy
 
   // 전체 완료 상태
   val isAllDataComplete: Boolean
-    get() = isPage1Complete &&
-      isPage2Complete &&
-      isPage3Complete &&
-      isPage4Complete &&
-      isPage5Complete &&
-      isPage6Complete
+    get() = isPage1Complete && isPage2Complete
 }
