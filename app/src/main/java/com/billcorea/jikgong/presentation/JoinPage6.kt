@@ -993,12 +993,10 @@ fun JoinPage6Preview() {
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp) // 8.dp 간격으로 설정
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "[ 이름여섯글자 ]")
-                Text(text = "30년 10개월 ( 370 개월 )")
-                Spacer(modifier = Modifier.weight(1f)) // 남은 공간을 차지
-                Text(text = "X")
+                Text(text = "직종: ")
+                Text(text = "경력(개월): ")
             }
         }
     }
