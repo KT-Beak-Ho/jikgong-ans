@@ -33,6 +33,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
@@ -83,6 +84,18 @@ fun JoinPage1(
     var secretCode by remember { mutableStateOf("") }
     var isFocusPhoneNo by remember { mutableStateOf(false) }
     val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
+
+    // 뒤로가기 버튼 처리
+    BackHandler {
+        // 뒤로가기 시 상태 초기화
+        isSecurity = false
+        isSecretOk = false
+        phoneNumber = ""
+        secretCode = ""
+        viewModel.clearRegisterResult()
+        // 실제 뒤로가기 실행
+        navigator.navigateUp()
+    }
     val _authCode = viewModel.authCode.observeAsState()
     val authCode = _authCode.value
 
@@ -93,9 +106,10 @@ fun JoinPage1(
     isSecretOk = authCode == secretCode
     Log.e("", "ERROR ... $authCode == $secretCode")
 
+    // phoneVal이 변경될 때만 실행 (간단하게 되돌림)
     LaunchedEffect(phoneVal) {
-        phoneVal?.let {
-            if (it.indexOf("false") >= 0) {
+        phoneVal?.let { phoneValResult ->
+            if (phoneValResult.indexOf("false") >= 0) {
                 isSecurity = false
                 MaterialDialog(context).show {
                     icon(R.drawable.ic_jikgong_white)
@@ -105,7 +119,7 @@ fun JoinPage1(
                     }
                 }
             }
-            else if(it.indexOf("true") >= 0) {
+            else if(phoneValResult.indexOf("true") >= 0) {
                 if (phoneNumber.startsWith("010") == true && phoneNumber.length >= 11) {
                     isSecurity = true
                     viewModel.doSmsVerification(phoneNumber)
@@ -117,6 +131,7 @@ fun JoinPage1(
                         positiveButton(R.string.OK) {
                             it.dismiss()
                         }
+                        cancelOnTouchOutside(false)
                     }
                 }
             }
@@ -138,6 +153,7 @@ fun JoinPage1(
                 IconButton(onClick = {
                     Log.e("", "backArrow")
                     navigator.navigateUp()
+                    viewModel.clearRegisterResult()
                 }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -161,6 +177,11 @@ fun JoinPage1(
                     editor.putString("phoneNumber", phoneNumber)
                     editor.apply()
                     if (isSecretOk) {
+                        isSecurity = false
+                        isSecretOk = false
+                        phoneNumber = ""
+                        secretCode = ""
+                        viewModel.clearRegisterResult()
                         navigator.navigate(JoinPage2Destination)
                     }
                 },
@@ -235,7 +256,6 @@ fun JoinPage1(
                 )
                 Spacer(modifier = Modifier.padding(2.dp))
                 TextButton( onClick = {
-                    // isSecurity = true
                     viewModel.doPhoneValidation(phoneNumber)
                 }, modifier = Modifier
                     .width((screenWidth * .3).dp)
@@ -273,7 +293,7 @@ fun JoinPage1(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {
                         keyboardController?.hide()
-                        focusManager.clearFocus()
+                        // focusManager.clearFocus()
                     }),
                     modifier = Modifier.fillMaxWidth()
                 )

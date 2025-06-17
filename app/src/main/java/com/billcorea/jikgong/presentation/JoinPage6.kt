@@ -938,3 +938,31 @@ fun JobSelectList(
     }
 }
 
+@Preview
+@Composable
+fun JoinPage6Preview() {
+    val fakeViewModel = MainViewModel()
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "직종: ")
+                Text(text = "경력(개월): ")
+            }
+        }
+    }
+}
+
