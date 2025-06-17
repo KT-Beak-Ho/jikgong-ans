@@ -133,7 +133,6 @@ fun JoinPage2 (
     val expiryDate = _expiryDate.value
     val _loginVal = viewModel.isLoginValidation.observeAsState()
     var loginVal = _loginVal.value
-
     var isCheck by remember { mutableStateOf(false) }
 
 
@@ -148,7 +147,7 @@ fun JoinPage2 (
         }
     }
 
-    Log.e("", "${_password} == ${_passwordCheck}")
+  Log.e("", "${_password} == ${_passwordCheck}")
     val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
     val idRegex = "^[A-Za-z0-9]*$".toRegex()
     if (_name.isEmpty() || _birthday.isEmpty() || _nationality.isEmpty() || _gender.isEmpty() || _id.isEmpty() || _password.isEmpty() || _email.isEmpty() || !isCheck || (_password != _passwordCheck)) {
