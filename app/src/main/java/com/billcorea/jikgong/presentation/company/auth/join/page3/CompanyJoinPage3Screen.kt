@@ -31,6 +31,7 @@ import com.billcorea.jikgong.presentation.company.auth.common.components.CommonT
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedEvent
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
+import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -49,10 +50,20 @@ fun CompanyJoinPage3Screen(
 ) {
   val uiState by companyJoinViewModel.uiState.collectAsStateWithLifecycle()
   val shouldNavigateHome by companyJoinViewModel.shouldNavigateHome.collectAsStateWithLifecycle()
+  val shouldNavigateBack by companyJoinViewModel.shouldNavigateBack.collectAsStateWithLifecycle()
 
   // 페이지 실행 시 초기화
   LaunchedEffect(Unit) {
     companyJoinViewModel.onEvent(CompanyJoinSharedEvent.ResetJoin3Flow)
+  }
+
+  // 네비게이션 이벤트 처리 - 이전페이지
+  LaunchedEffect(shouldNavigateBack) {
+    if (shouldNavigateBack) {
+      navigator.navigateUp()
+      navigator.navigate(CompanyJoinPage2ScreenDestination)
+      companyJoinViewModel.clearNavigationEvents()
+    }
   }
 
   // 네비게이션 이벤트 처리 - 홈으로 돌아가기

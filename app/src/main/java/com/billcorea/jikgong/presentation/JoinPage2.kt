@@ -132,7 +132,6 @@ fun JoinPage2 (
     val expiryDate = _expiryDate.value
     val _loginVal = viewModel.isLoginValidation.observeAsState()
     var loginVal = _loginVal.value
-
     var isCheck by remember { mutableStateOf(false) }
 
 
@@ -146,6 +145,7 @@ fun JoinPage2 (
             }
         }
     }
+
 
     fun validationData() {
         Log.e("", "${_password} == ${_passwordCheck}")

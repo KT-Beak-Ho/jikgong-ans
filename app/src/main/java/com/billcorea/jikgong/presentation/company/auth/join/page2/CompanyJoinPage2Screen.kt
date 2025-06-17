@@ -1,7 +1,6 @@
 package com.billcorea.jikgong.presentation.company.auth.join.page2
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,6 +34,7 @@ import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinCons
 import com.billcorea.jikgong.presentation.company.auth.join.page2.components.PhoneNumberDisplay
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedEvent
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
+import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -90,6 +90,7 @@ fun CompanyJoinPage2Screen(
   LaunchedEffect(shouldNavigateBack) {
     if (shouldNavigateBack) {
       navigator.navigateUp()
+      navigator.navigate(CompanyJoinPage1ScreenDestination)
       companyJoinViewModel.clearNavigationEvents()
     }
   }

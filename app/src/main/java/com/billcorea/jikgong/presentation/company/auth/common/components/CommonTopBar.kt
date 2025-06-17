@@ -19,7 +19,7 @@ fun CommonTopBar(
     currentPage: Int,
     totalPages: Int,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
