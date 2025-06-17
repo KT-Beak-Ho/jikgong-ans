@@ -93,7 +93,7 @@ fun JikgongApp (
                         },
                         doJoinPerson = {
                             showBottomSheet = false
-                            navigator.navigate(JoinPage4Destination)
+                            navigator.navigate(JoinPage1Destination)
                         },
                         doJoinCorp = {
 
