@@ -70,4 +70,6 @@
     <color name="light_blue_20">#3301579B</color>
     <color name="light_blue_10">#1A01579B</color>
     <color name="light_blue_00">#0001579B</color>
+
+    <color name="secondary_B">#3971FF</color>
 </resources>
