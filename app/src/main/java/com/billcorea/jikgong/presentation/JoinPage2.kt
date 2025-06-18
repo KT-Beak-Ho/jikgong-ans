@@ -2,6 +2,7 @@ package com.billcorea.jikgong.presentation
 
 import android.content.Context
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -100,11 +101,11 @@ fun JoinPage2 (
     val name by remember { mutableStateOf("") }
     var _name by remember { mutableStateOf(name) }
     val id by remember { mutableStateOf("") }
-    var _id by remember { mutableStateOf(name) }
+    var _id by remember { mutableStateOf(id) }
     val password by remember { mutableStateOf("") }
-    var _password by remember { mutableStateOf(name) }
+    var _password by remember { mutableStateOf(password) }
     val passwordCheck by remember { mutableStateOf("") }
-    var _passwordCheck by remember { mutableStateOf(name) }
+    var _passwordCheck by remember { mutableStateOf(passwordCheck) }
     val email by remember { mutableStateOf("") }
     var _email by remember { mutableStateOf(name) }
     val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.KOREAN)
@@ -146,10 +147,22 @@ fun JoinPage2 (
         }
     }
 
+  Log.e("", "${_password} == ${_passwordCheck}")
+    val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+    val idRegex = "^[A-Za-z0-9]*$".toRegex()
+    if (_name.isEmpty() || _birthday.isEmpty() || _nationality.isEmpty() || _gender.isEmpty() || _id.isEmpty() || _password.isEmpty() || _email.isEmpty() || !isCheck || (_password != _passwordCheck)) {
+        isSecretOk = false
+    }
+    else if(!_email.matches(emailRegex) || !_id.matches((idRegex))) {
+        isSecretOk = false
+    }
+    else {
+        isSecretOk = true
+    }
 
     fun validationData() {
-        Log.e("", "${_password} == ${_passwordCheck}")
-        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+        Log.e("1", "${_password} == ${_passwordCheck}")
+        /* val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
         val idRegex = "^[A-Za-z0-9]*$".toRegex()
         if (_name.isEmpty() || _birthday.isEmpty() || _nationality.isEmpty() || _gender.isEmpty() || _id.isEmpty() || _password.isEmpty() || _email.isEmpty() || !isCheck || (_password != _passwordCheck)) {
             isSecretOk = false
@@ -159,7 +172,23 @@ fun JoinPage2 (
         }
         else {
             isSecretOk = true
-        }
+        } */
+    }
+
+    // 뒤로가기 버튼 처리
+    BackHandler {
+        // 뒤로가기 시 상태 초기화
+        _id = ""
+        isSecurity = false
+        showBottomSheet = false
+        isSecretOk = false
+        isCheck = false
+
+        // ViewModel 상태 초기화 (필요한 경우)
+        viewModel.clearRegisterResult() // 또는 다른 초기화 메서드가 있다면 호출
+
+        // 실제 뒤로가기 실행
+        navigator.navigateUp()
     }
 
     LaunchedEffect(loginVal) {
@@ -246,6 +275,13 @@ fun JoinPage2 (
                             editor.putBoolean("hasVisa", true)
                         }
                         editor.apply()
+                        _id = ""
+                        isSecurity = false
+                        isSecretOk = false
+                        isCheck = false
+
+                        viewModel.clearRegisterResult()
+
                         navigator.navigate(JoinPage3Destination)
                     }
                 },
@@ -793,7 +829,8 @@ fun JoinPage2 (
                         .focusRequester(passwordCheckFocusRequester)
                         .onFocusChanged { isFocus ->
                             validationData()
-                        }
+                        },
+                    isError = _password != _passwordCheck
                 )
             }
 
