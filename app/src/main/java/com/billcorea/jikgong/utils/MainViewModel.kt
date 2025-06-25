@@ -277,7 +277,6 @@ class MainViewModel : ViewModel() {
             override fun onFailure(request: Call<PhoneValidationResponse>, t: Throwable) {
                 Log.e("", "error ${t.localizedMessage}")
             }
-
         })
     }
 
