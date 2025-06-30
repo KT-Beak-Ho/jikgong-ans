@@ -56,12 +56,16 @@ import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage1ScreenDest
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage3ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage5ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
 import com.billcorea.jikgong.presentation.worker.auth.join.page1.WorkerJoinPage1Screen
 import com.billcorea.jikgong.presentation.worker.auth.join.page2.WorkerJoinPage2Screen
 import com.billcorea.jikgong.presentation.worker.auth.join.page3.WorkerJoinPage3Screen
 import com.billcorea.jikgong.presentation.worker.auth.join.page4.WorkerJoinPage4Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page5.WorkerJoinPage5Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page6.WorkerJoinPage6Screen
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
@@ -158,6 +162,20 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(WorkerJoinPage4ScreenDestination.route) {
                                 WorkerJoinPage4Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage5ScreenDestination.route) {
+                                WorkerJoinPage5Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage6ScreenDestination.route) {
+                                WorkerJoinPage6Screen(
                                     workerJoinViewModel = workerJoinViewModel,
                                     navigator = navigator,
                                     modifier = Modifier.padding(5.dp)

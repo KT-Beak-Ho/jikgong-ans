@@ -2,6 +2,7 @@ package com.billcorea.jikgong.presentation.worker.auth.join.shared
 
 import com.billcorea.jikgong.network.AddressFindRoadAddress
 import com.billcorea.jikgong.network.Coord2RoadAddress
+import com.billcorea.jikgong.network.WorkExperience
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -42,11 +43,22 @@ data class WorkerJoinSharedUiState(
   val respAddress: String = "",
   val addressName: String = "",
 
-  // Page 5 (자격증 등록) 관련 상태
+  // Page 5 (자격증 등록) 관련 상태 - 수정된 버전
   val educationCertificateUri: String = "",          // 교육자격증 이미지 URI
-  val workerCardUri: String = "",               // 근로자증 이미지 URI
-  // val isCertificationComplete: Boolean = false,    // 자격증 등록 완료 여부
+  val workerCardUri: String = "",                    // 근로자증 이미지 URI
+  val showBottomSheet: Boolean = false,              // 바텀시트 표시 여부
+  val showLaterDialog: Boolean = false,              // "나중에 하기" 다이얼로그 표시 여부
+  val currentPhotoPath: String = "",                 // 현재 사진 경로
+  val takePicType: String = "",                      // 사진 촬영 타입 ("educationCertificate", "workerCard")
+  val isGrantCamera: Boolean = false,                // 카메라 권한 승인 여부
 
+  // Page 6 직종 및 경력 정보
+  val selectedJobCode: String = "",
+  val selectedJobName: String = "직종을 선택해주세요",
+  val yearInput: String = "",
+  val monthInput: String = "",
+  val workExperienceList: List<WorkExperience> = emptyList(),
+  val isRegistrationInProgress: Boolean = false,
 
   // 공통 상태
   val currentPage: Int = 1,
@@ -78,11 +90,14 @@ data class WorkerJoinSharedUiState(
       lon != 0.0
 
     val isPage5Complete: Boolean
-      get() = educationCertificateUri.isNotEmpty() &&
+      get() = educationCertificateUri.isNotEmpty() ||
         workerCardUri.isNotEmpty()
 
+    val isPage5LaterComplete: Boolean
+      get() = educationCertificateUri.isEmpty() &&
+        workerCardUri.isEmpty()
 
     // 전체 완료 상태
     val isAllDataComplete: Boolean
-    get() = isPage1Complete && isPage2Complete && isPage3Complete && isPage4Complete && isPage5Complete
+    get() = isPage1Complete && isPage2Complete && isPage3Complete && isPage4Complete && (isPage5Complete || isPage5LaterComplete)
 }

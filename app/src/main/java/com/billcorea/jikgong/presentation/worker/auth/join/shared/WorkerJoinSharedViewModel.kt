@@ -467,6 +467,36 @@ class WorkerJoinSharedViewModel : ViewModel() {
       })
   }
 
+  fun getJobNameByCode(jobCode: String): String {
+    val jobNames = arrayOf("보통인부", "작업반장", "특별인부", "조력공", "비계공", "형틀목공", "철근공",
+      "철골공", "용접공", "콘크리트공", "조적공", "견출공", "건축목공", "창호공", "유리공",
+      "방수공", "미장공", "타일공", "도장공", "내장공", "도배공", "연마공", "석공",
+      "줄눈공", "판넬조립공", "지붕잇기공", "조경공", "코킹공", "배관공", "보일러공",
+      "위생공", "덕트공", "보온공", "기계설비공", "내선진공", "통신내선공", "통신설비공")
+
+    val jobCodes = arrayOf("NORMAL", "FOREMAN", "SKILLED_LABORER", "HELPER", "SCAFFOLDER",
+      "FORMWORK_CARPENTER", "REBAR_WORKER", "STEEL_STRUCTURE", "WELDER",
+      "CONCRETE_WORKER", "BRICKLAYER", "DRYWALL_FINISHER", "CONSTRUCTION_CARPENTER",
+      "WINDOW_DOOR_INSTALLER", "GLAZIER", "WATERPROOFING_WORKER", "PLASTERER",
+      "TILE", "PAINTER", "INTERIOR_FINISHER", "WALLPAPER_INSTALLER", "POLISHER",
+      "STONEMASON", "GROUT_WORKER", "PANEL_ASSEMBLER", "ROOFER", "LANDSCAPER",
+      "CAULKER", "PLUMBER", "BOILER_TECHNICIAN", "SANITARY_TECHNICIAN",
+      "DUCT_INSTALLER", "INSULATION_WORKER", "MECHANICAL_EQUIPMENT_TECHNICIAN",
+      "ELECTRICIAN", "TELECOMMUNICATIONS_INSTALLER", "TELECOMMUNICATIONS_EQUIPMENT_INSTALLER")
+
+    val index = jobCodes.indexOf(jobCode)
+    return if (index != -1) jobNames[index] else "알 수 없는 직종"
+  }
+
+  fun submitWorkerRegistration() {
+    val state = _uiState.value
+    // MainViewModel의 doRegisterWorker 메서드 호출 로직 구현
+    // 성공 시 홈으로 이동
+    _shouldNavigateHome.value = true
+  }
+
+
+
 
 
 
@@ -763,27 +793,160 @@ class WorkerJoinSharedViewModel : ViewModel() {
       }
 
       /**
-       * Page 5 입력값 초기화
+       * Page 5 입력값 초기화 - 수정된 버전
        */
       is WorkerJoinSharedEvent.ResetJoin5Flow -> {
         _uiState.value = _uiState.value.copy(
           educationCertificateUri = "",
           workerCardUri = "",
-          // isCertificationComplete = false,
+          showBottomSheet = false,
+          showLaterDialog = false,
+          currentPhotoPath = "",
+          takePicType = "",
+          isGrantCamera = false,
           currentPage = 5
         )
       }
 
+      /**
+       * 교육자격증 URI 업데이트
+       */
+      is WorkerJoinSharedEvent.UpdateEducationCertificateUri -> {
+        _uiState.value = _uiState.value.copy(
+          educationCertificateUri = event.educationCertificateUri
+        )
+      }
+
+      /**
+       * 근로자증 URI 업데이트
+       */
       is WorkerJoinSharedEvent.UpdateWorkerCardUri -> {
         _uiState.value = _uiState.value.copy(
           workerCardUri = event.workerCardUri
         )
       }
 
-      is WorkerJoinSharedEvent.UpdateEducationCertificateUri -> {
+      /**
+       * 바텀시트 표시 상태 업데이트
+       */
+      is WorkerJoinSharedEvent.UpdateShowBottomSheet -> {
         _uiState.value = _uiState.value.copy(
-          educationCertificateUri = event.educationCertificateUri
+          showBottomSheet = event.showBottomSheet
         )
+      }
+
+      /**
+       * "나중에 하기" 다이얼로그 표시 상태 업데이트
+       */
+      is WorkerJoinSharedEvent.UpdateShowLaterDialog -> {
+        _uiState.value = _uiState.value.copy(
+          showLaterDialog = event.showLaterDialog
+        )
+      }
+
+      /**
+       * 현재 사진 경로 업데이트
+       */
+      is WorkerJoinSharedEvent.UpdateCurrentPhotoPath -> {
+        _uiState.value = _uiState.value.copy(
+          currentPhotoPath = event.currentPhotoPath
+        )
+      }
+
+      /**
+       * 사진 촬영 타입 업데이트
+       */
+      is WorkerJoinSharedEvent.UpdateTakePicType -> {
+        _uiState.value = _uiState.value.copy(
+          takePicType = event.takePicType
+        )
+      }
+
+      /**
+       * 카메라 권한 승인 상태 업데이트
+       */
+      is WorkerJoinSharedEvent.UpdateIsGrantCamera -> {
+        _uiState.value = _uiState.value.copy(
+          isGrantCamera = event.isGrantCamera
+        )
+      }
+
+      // Page 6 이벤트 처리
+      is WorkerJoinSharedEvent.UpdateSelectedJob -> {
+        _uiState.value = _uiState.value.copy(
+          selectedJobCode = event.jobCode,
+          selectedJobName = event.jobName
+        )
+      }
+
+      is WorkerJoinSharedEvent.UpdateYearInput -> {
+        _uiState.value = _uiState.value.copy(
+          yearInput = event.year
+        )
+      }
+
+      is WorkerJoinSharedEvent.UpdateMonthInput -> {
+        _uiState.value = _uiState.value.copy(
+          monthInput = event.month
+        )
+      }
+
+      is WorkerJoinSharedEvent.AddWorkExperience -> {
+        val currentList = _uiState.value.workExperienceList.toMutableList()
+        val existingIndex = currentList.indexOfFirst { it.tech == event.workExperience.tech }
+
+        if (existingIndex != -1) {
+          // 기존 tech가 있으면 experienceMonths를 더함
+          val existingExperience = currentList[existingIndex]
+          val updatedExperience = existingExperience.copy(
+            experienceMonths = existingExperience.experienceMonths + event.workExperience.experienceMonths
+          )
+          currentList[existingIndex] = updatedExperience
+        } else {
+          // 없으면 새로 추가
+          currentList.add(event.workExperience)
+        }
+
+        _uiState.value = _uiState.value.copy(
+          workExperienceList = currentList
+        )
+      }
+
+      is WorkerJoinSharedEvent.RemoveWorkExperience -> {
+        val currentList = _uiState.value.workExperienceList.toMutableList()
+        currentList.remove(event.workExperience)
+        _uiState.value = _uiState.value.copy(
+          workExperienceList = currentList
+        )
+      }
+
+      is WorkerJoinSharedEvent.ClearJobInput -> {
+        _uiState.value = _uiState.value.copy(
+          selectedJobCode = "",
+          selectedJobName = "직종을 선택해주세요",
+          yearInput = "",
+          monthInput = ""
+        )
+      }
+
+      is WorkerJoinSharedEvent.ResetJoin6Flow -> {
+        _uiState.value = _uiState.value.copy(
+          yearInput = "",
+          monthInput = "",
+          selectedJobCode = "",
+          selectedJobName = "직종을 선택해주세요",
+          workExperienceList = emptyList(),
+          isRegistrationInProgress = false,
+          currentPage = 6
+        )
+      }
+
+      is WorkerJoinSharedEvent.SubmitRegistration -> {
+        _uiState.value = _uiState.value.copy(
+          isRegistrationInProgress = true
+        )
+        // 실제 회원가입 API 호출
+        submitWorkerRegistration()
       }
 
       /**
@@ -800,3 +963,4 @@ class WorkerJoinSharedViewModel : ViewModel() {
     }
   }
 }
+

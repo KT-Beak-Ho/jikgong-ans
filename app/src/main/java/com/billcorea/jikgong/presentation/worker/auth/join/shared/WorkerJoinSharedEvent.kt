@@ -1,5 +1,7 @@
 package com.billcorea.jikgong.presentation.worker.auth.join.shared
 
+import com.billcorea.jikgong.network.WorkExperience
+
 sealed class WorkerJoinSharedEvent {
   // Page 1 이벤트
   data class UpdatePhoneNumber(val phoneNumber: String) : WorkerJoinSharedEvent()  //  사용자 휴대폰 번호 입력
@@ -30,16 +32,22 @@ sealed class WorkerJoinSharedEvent {
   data class KakaoGeocoding(val query: String) : WorkerJoinSharedEvent()
 
   // Page 5 이벤트
-  // 교육자격증 URI 업데이트
   data class UpdateEducationCertificateUri(val educationCertificateUri: String) : WorkerJoinSharedEvent()
-
-  // 근로자증 URI 업데이트
   data class UpdateWorkerCardUri(val workerCardUri: String) : WorkerJoinSharedEvent()
+  data class UpdateShowBottomSheet(val showBottomSheet: Boolean) : WorkerJoinSharedEvent()
+  data class UpdateShowLaterDialog(val showLaterDialog: Boolean) : WorkerJoinSharedEvent()
+  data class UpdateCurrentPhotoPath(val currentPhotoPath: String) : WorkerJoinSharedEvent()
+  data class UpdateTakePicType(val takePicType: String) : WorkerJoinSharedEvent()
+  data class UpdateIsGrantCamera(val isGrantCamera: Boolean) : WorkerJoinSharedEvent()
 
-  // data class UpdateSafeCardNumber(val number: String) : WorkerJoinSharedEvent()
+  // Page 6 이벤트
+  data class AddWorkExperience(val workExperience: WorkExperience) : WorkerJoinSharedEvent()
+  data class RemoveWorkExperience(val workExperience: WorkExperience) : WorkerJoinSharedEvent()
+  data class UpdateSelectedJob(val jobCode: String, val jobName: String) : WorkerJoinSharedEvent()
+  data class UpdateYearInput(val year: String) : WorkerJoinSharedEvent()
+  data class UpdateMonthInput(val month: String) : WorkerJoinSharedEvent()
+  object SubmitRegistration : WorkerJoinSharedEvent()
 
-  // 자격증 완료 상태 업데이트
-  // data class UpdateCertificationComplete(val isComplete: Boolean) : WorkerJoinSharedEvent()
 
   // 네비게이션 이벤트
   object NextPage : WorkerJoinSharedEvent()
@@ -53,4 +61,6 @@ sealed class WorkerJoinSharedEvent {
   object ResetJoin3Flow : WorkerJoinSharedEvent()
   object ResetJoin4Flow : WorkerJoinSharedEvent()
   object ResetJoin5Flow : WorkerJoinSharedEvent()
+  object ResetJoin6Flow : WorkerJoinSharedEvent()
+  object ClearJobInput : WorkerJoinSharedEvent()
 }

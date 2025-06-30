@@ -43,10 +43,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.network.AddressFindRoadAddress
-import com.billcorea.jikgong.presentation.JoinPage4
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage1ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage3ScreenDestination
 import com.billcorea.jikgong.presentation.worker.auth.common.components.CommonWorkerTopBar
 import com.billcorea.jikgong.presentation.worker.auth.common.constants.WorkerJoinConstants
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedEvent
@@ -54,7 +54,6 @@ import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinShar
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.billcorea.jikgong.utils.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
@@ -70,24 +69,6 @@ fun WorkerJoinPage4Screen(
   val uiState by workerJoinViewModel.uiState.collectAsStateWithLifecycle()
   val shouldNavigateToNextPage by workerJoinViewModel.shouldNavigateToNextPage.collectAsStateWithLifecycle()
   val shouldNavigateBack by workerJoinViewModel.shouldNavigateBack.collectAsStateWithLifecycle()
-
-  // FocusRequester들 생성
-  /**
-   * 이거 테스트 해봐야하는데 컴으로 하면 엔터누르면 담으로 넘어가서 폰으로 해봐야할거같은데
-   * 어케하누 ?
-   */
-//  val focusRequesters = remember {
-//    List(7) { FocusRequester() }
-//    listOf(
-//      FocusRequester(), // name
-//      FocusRequester(), // id
-//      FocusRequester(), // password
-//      FocusRequester(), // email
-//      FocusRequester(), // businessNumber
-//      FocusRequester(), // companyName
-//      FocusRequester()  // inquiry
-//    )
-//  }
 
   // 페이지 실행 시 초기화
   LaunchedEffect(Unit) {
@@ -143,7 +124,7 @@ fun WorkerJoinPage4Screen(
   ) { innerPadding ->
     //  메인화면 시작
     LazyColumn(
-      verticalArrangement = Arrangement.spacedBy(16.dp),  //  각 item별 공통으로 간격 적용
+      // verticalArrangement = Arrangement.spacedBy(16.dp),  //  각 item별 공통으로 간격 적용
       modifier = Modifier
         .fillMaxSize()
         .padding(innerPadding)
@@ -163,6 +144,7 @@ fun WorkerJoinPage4Screen(
       }
 
       item {
+        Spacer(modifier = Modifier.padding(8.dp))
         Row(
           modifier = Modifier.fillMaxWidth().padding(5.dp),
           horizontalArrangement = Arrangement.SpaceBetween,
@@ -293,6 +275,9 @@ fun DisplayAddress(
   item: AddressFindRoadAddress,
   doSetCenterPosition: (item: AddressFindRoadAddress) -> Unit = {}
 ) {
+
+  Spacer(modifier = Modifier.padding(8.dp))
+
   TextButton(
     onClick = {
       doSetCenterPosition(item)
@@ -335,11 +320,14 @@ fun DisplayAddress(
 @Preview
 @Composable
 fun JoinPage4Preview() {
-  val fakeViewModel = MainViewModel()
   val navController = rememberNavController()
   val navigator = navController.toDestinationsNavigator()
 
   Jikgong1111Theme {
-    JoinPage4(fakeViewModel, navigator, modifier = Modifier.padding(3.dp), mainActivity = null)
+    WorkerJoinPage4Screen(
+      workerJoinViewModel = WorkerJoinSharedViewModel(), // ViewModel 직접 생성
+      navigator = navigator,
+      modifier = Modifier.padding(3.dp)
+    )
   }
 }

@@ -1,9 +1,8 @@
 package com.billcorea.jikgong.presentation.worker.auth.join.page3
 
 import android.util.Log
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -16,11 +15,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -51,6 +46,7 @@ import com.billcorea.jikgong.presentation.company.auth.common.components.CommonT
 import com.billcorea.jikgong.presentation.company.auth.common.components.LabelText
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage2ScreenDestination
+import com.billcorea.jikgong.presentation.worker.auth.common.components.CommonBottomSheetInput
 import com.billcorea.jikgong.presentation.worker.auth.common.components.CommonWorkerTopBar
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedEvent
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
@@ -175,6 +171,14 @@ fun WorkerJoinPage3Screen(
             .fillMaxWidth()
             .wrapContentHeight(align = Alignment.CenterVertically)
         )
+
+        Spacer(modifier = Modifier.padding(5.dp))
+
+        Image(
+          painter = painterResource(id = R.drawable.bank_description),
+          contentDescription = null,
+          modifier = Modifier.fillMaxWidth()
+        )
       }
 
       item {
@@ -200,43 +204,16 @@ fun WorkerJoinPage3Screen(
         )
 
         Spacer(modifier = Modifier.padding(5.dp))
-
-        // 선택 가능한 필드
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-              // 바텀시트나 다이얼로그 표시
-              showBottomSheet = true
-              focusManager.clearFocus()
-            }
-        ) {
-          OutlinedTextField(
-            value = uiState.bankName,
-            onValueChange = { }, // 읽기 전용이므로 빈 함수
-            placeholder = { Text(stringResource(R.string.msgSelectBank))},
-            readOnly = true,
-            enabled = false, // enabled를 false로 변경
-            modifier = Modifier
-              .fillMaxWidth(),
-            isError = uiState.validationErrors["bankName"] != null,
-            supportingText = uiState.validationErrors["bankName"]?.let {
-              { Text(text = it) }
-            },
-            trailingIcon = {
-              Icon(
-                painter = painterResource(R.drawable.ic_keyboard_arrow_down_24dp),
-                contentDescription = "arrow down"
-              )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-              disabledTextColor = MaterialTheme.colorScheme.onSurface,
-              disabledBorderColor = MaterialTheme.colorScheme.outline,
-              disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-              disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          )
-        }
+        CommonBottomSheetInput(
+          value = uiState.bankName,
+          placeholderText = stringResource(R.string.msgSelectBank),
+          errorKey = "bankName",
+          validationErrors = uiState.validationErrors,
+          iconPainter = painterResource(R.drawable.ic_keyboard_arrow_down_24dp),
+          onClick = {
+            showBottomSheet = true
+          }
+        )
       }
 
       item {

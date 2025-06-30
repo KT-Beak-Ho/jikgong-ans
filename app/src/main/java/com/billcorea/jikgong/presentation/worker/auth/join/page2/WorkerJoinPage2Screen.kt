@@ -4,9 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,10 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -50,10 +45,12 @@ import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.datepicker.WheelDatePicker
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
+import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.LabelText
 import com.billcorea.jikgong.presentation.company.auth.join.page2.components.PhoneNumberDisplay
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage3ScreenDestination
+import com.billcorea.jikgong.presentation.worker.auth.common.components.CommonBottomSheetInput
 import com.billcorea.jikgong.presentation.worker.auth.common.components.CommonWorkerTopBar
 import com.billcorea.jikgong.presentation.worker.auth.common.constants.WorkerJoinConstants
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedEvent
@@ -187,7 +184,7 @@ fun WorkerJoinPage2Screen(
         )
       }
       //  이름
-      /* item {
+      item {
         CommonTextInput(
           value = uiState.name,
           labelMainText = stringResource(R.string.name),
@@ -247,12 +244,12 @@ fun WorkerJoinPage2Screen(
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateUserMail(it))
           }
         )
-      } */
+      }
 
       item {
         // 라벨
         LabelText(
-          mainText = "생년월일",
+          mainText = stringResource(R.string.birthday),
           appendText = "*",
           appendTextColor = colorResource(R.color.secondary_B)
         )
@@ -260,45 +257,21 @@ fun WorkerJoinPage2Screen(
         Spacer(modifier = Modifier.padding(5.dp))
 
         // 선택 가능한 필드
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-              // 바텀시트나 다이얼로그 표시
-              showBottomSheet = true
-              focusManager.clearFocus()
-            }
-        ) {
-          OutlinedTextField(
-            value = uiState.birthday,
-            onValueChange = { }, // 읽기 전용이므로 빈 함수
-            placeholder = { Text("생년월일을 선택해주세요") },
-            readOnly = true,
-            enabled = false, // enabled를 false로 변경
-            modifier = Modifier.fillMaxWidth(),
-            isError = uiState.validationErrors["birthday"] != null,
-            supportingText = uiState.validationErrors["birthday"]?.let {
-              { Text(text = it) }
-            },
-            trailingIcon = {
-              Icon(
-                painter = painterResource(R.drawable.ic_keyboard_arrow_down_24dp),
-                contentDescription = "arrow down"
-              )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-              disabledTextColor = MaterialTheme.colorScheme.onSurface,
-              disabledBorderColor = MaterialTheme.colorScheme.outline,
-              disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-              disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          )
-        }
+        CommonBottomSheetInput(
+          value = uiState.birthday,
+          placeholderText = stringResource(R.string.checkBirthDay),
+          errorKey = "birthday",
+          validationErrors = uiState.validationErrors,
+          iconPainter = painterResource(R.drawable.ic_keyboard_arrow_down_24dp),
+          onClick = {
+            showBottomSheet = true
+          }
+        )
       }
 
       item {
         LabelText(
-          mainText = "성별",
+          mainText = stringResource(R.string.gender),
           appendText = "*",
           appendTextColor = colorResource(R.color.secondary_B)
         )
@@ -353,54 +326,6 @@ fun WorkerJoinPage2Screen(
           }
         }
       }
-
-
-
-      /*
-      //  사업자 등록 번호
-      item {
-        CommonTextInput(
-          value = uiState.businessNumber,
-          labelMainText = stringResource(R.string.businessNumber),
-          labelAppendText = "*",
-          labelAppendTextColor = colorResource(R.color.secondary_B),
-          placeholder = stringResource(R.string.enterNusinessNumber),
-          validationError = uiState.validationErrors["businessNumber"],
-          modifier = Modifier.fillMaxWidth(),
-          onChange = {
-            workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateBusinessNumber(it))
-          }
-        )
-      }
-      //  회사명
-      item {
-        CommonTextInput(
-          value = uiState.companyName,
-          labelMainText = stringResource(R.string.companyName),
-          labelAppendText = "*",
-          labelAppendTextColor = colorResource(R.color.secondary_B),
-          placeholder = stringResource(R.string.enterCompanyName),
-          validationError = uiState.validationErrors["companyName"],
-          modifier = Modifier.fillMaxWidth(),
-          onChange = {
-            workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateCompanyName(it))
-          }
-        )
-      }
-      //  문의 사항
-      item {
-        CommonTextInput(
-          value = uiState.inquiry,
-          labelMainText = stringResource(R.string.inquiry),
-          placeholder = stringResource(R.string.enterInquiry),
-          maxLines = 3,
-          validationError = uiState.validationErrors["inquiry"],
-          modifier = Modifier.fillMaxWidth(),
-          onChange = {
-            workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateInquiry(it))
-          }
-        )
-      } */
     }
   }
   if (showBottomSheet) {
