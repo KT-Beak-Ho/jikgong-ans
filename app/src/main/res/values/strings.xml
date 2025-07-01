@@ -39,7 +39,7 @@
     <string name="Cancel">취소</string>
     <string name="Apply">적용</string>
     <string name="OK">확인</string>
-    <string name="birthday">생일</string>
+    <string name="birthday">생년월일</string>
     <string name="nationality">국적</string>
     <string name="local">내국인</string>
     <string name="foreigner">외국인</string>
@@ -107,6 +107,7 @@
     <string name="resister">회원가입이 완료되었습니다.</string>
     <string name="validation">중복 확인</string>
     <string name="roadAddress">도로명 주소를 입력 해주세요.</string>
+    <string name="checkBirthDay">생년월일을 선택해주세요.</string>
 
 
     <!-- 구직자 일자리 목록 -->
