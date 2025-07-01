@@ -3,15 +3,10 @@ package com.billcorea.jikgong
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
-import android.webkit.JavascriptInterface
-import android.webkit.WebView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,8 +35,8 @@ import com.billcorea.jikgong.presentation.JoinPage5
 import com.billcorea.jikgong.presentation.JoinPage6
 import com.billcorea.jikgong.presentation.KakaoMapView
 import com.billcorea.jikgong.presentation.SplashScreen
-import com.billcorea.jikgong.presentation.WorkerLoginPage
-import com.billcorea.jikgong.presentation.WorkerProjectList
+import com.billcorea.jikgong.presentation.worker.login.page1.WorkerLoginPage
+import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
 import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPage1Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
@@ -57,26 +52,33 @@ import com.billcorea.jikgong.presentation.destinations.JoinPage4Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage1ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage2ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage3ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage5ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
+import com.billcorea.jikgong.presentation.worker.auth.join.page1.WorkerJoinPage1Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page2.WorkerJoinPage2Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page3.WorkerJoinPage3Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page4.WorkerJoinPage4Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page5.WorkerJoinPage5Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page6.WorkerJoinPage6Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
-import com.google.accompanist.web.AccompanistWebChromeClient
-import com.google.accompanist.web.AccompanistWebViewClient
-import com.google.accompanist.web.WebView
-import com.google.accompanist.web.rememberWebViewNavigator
-import com.google.accompanist.web.rememberWebViewState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMapSdk
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 
 class MainActivity : ComponentActivity() {
 
     val viewModel : MainViewModel by viewModels()
     private val companyJoinViewModel = CompanyJoinSharedViewModel()
+    private val workerJoinViewModel = WorkerJoinSharedViewModel()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -136,6 +138,48 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(WorkerProjectListDestination.route) {
                                 WorkerProjectList(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(WorkerJoinPage1ScreenDestination.route) {
+                                WorkerJoinPage1Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage2ScreenDestination.route) {
+                                WorkerJoinPage2Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage3ScreenDestination.route) {
+                                WorkerJoinPage3Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage4ScreenDestination.route) {
+                                WorkerJoinPage4Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage5ScreenDestination.route) {
+                                WorkerJoinPage5Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage6ScreenDestination.route) {
+                                WorkerJoinPage6Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
                             }
                             composable(CompanyJoinPage1ScreenDestination.route) {
                                 CompanyJoinPage1Screen(
