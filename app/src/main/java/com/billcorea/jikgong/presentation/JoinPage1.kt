@@ -2,6 +2,7 @@ package com.billcorea.jikgong.presentation
 
 import android.content.Context
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
@@ -49,7 +49,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.navigation.compose.rememberNavController
-import com.afollestad.materialdialogs.BuildConfig
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
@@ -122,7 +121,7 @@ fun JoinPage1(
             else if(phoneValResult.indexOf("true") >= 0) {
                 if (phoneNumber.startsWith("010") == true && phoneNumber.length >= 11) {
                     isSecurity = true
-//                    viewModel.doSmsVerification(phoneNumber)
+                    viewModel.doSmsVerification(phoneNumber)
                 } else {
                     isSecurity = false
                     MaterialDialog(context).show {

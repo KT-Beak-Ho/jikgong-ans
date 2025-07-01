@@ -7,14 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -27,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,13 +37,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
-import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
-import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
-import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
-import com.billcorea.jikgong.presentation.destinations.JoinPage3Destination
-import com.billcorea.jikgong.presentation.destinations.JoinPage4Destination
-import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
-import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -54,7 +45,6 @@ import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination(start = true)
@@ -95,8 +85,9 @@ fun JikgongApp (
                         },
                         doJoinPerson = {
                             showBottomSheet = false
-                            navigator.navigate(JoinPage1Destination)
-                        },
+                            // navigator.navigate(JoinPage2Destination)
+                            navigator.navigate(WorkerJoinPage6ScreenDestination)
+                                       },
                         doJoinCorp = {
                             showBottomSheet = false
                             navigator.navigate(CompanyJoinPage1ScreenDestination)
