@@ -35,8 +35,8 @@ import com.billcorea.jikgong.presentation.JoinPage5
 import com.billcorea.jikgong.presentation.JoinPage6
 import com.billcorea.jikgong.presentation.KakaoMapView
 import com.billcorea.jikgong.presentation.SplashScreen
-import com.billcorea.jikgong.presentation.WorkerLoginPage
-import com.billcorea.jikgong.presentation.WorkerProjectList
+import com.billcorea.jikgong.presentation.worker.login.page1.WorkerLoginPage
+import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
 import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPage1Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
