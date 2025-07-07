@@ -1,5 +1,6 @@
 package com.billcorea.jikgong.presentation.company.auth.main.info
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -151,9 +152,9 @@ fun CompanyInfoScreen(
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color(0xFFD32F2F)
                 ),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
-                    brush = null,
-                    width = 1.dp
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = Color(0xFFD32F2F)
                 )
             ) {
                 Text(

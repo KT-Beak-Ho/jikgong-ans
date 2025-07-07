@@ -47,6 +47,7 @@ import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestination
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination(start = true)

@@ -73,6 +73,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMapSdk
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestination
+import com.billcorea.jikgong.presentation.company.auth.login.CompanyLoginScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -198,6 +200,13 @@ class MainActivity : ComponentActivity() {
                             composable(CompanyJoinPage3ScreenDestination.route) {
                                 CompanyJoinPage3Screen(
                                     companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(CompanyLoginScreenDestination.route) {
+                                CompanyLoginScreen(
+                                    viewModel = viewModel,
                                     navigator = navigator,
                                     modifier = Modifier.padding(5.dp)
                                 )

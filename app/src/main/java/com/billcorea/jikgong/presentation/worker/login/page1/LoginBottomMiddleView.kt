@@ -42,6 +42,7 @@ import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestination
 
 @Composable
 fun LoginBottomMiddleView(
@@ -221,7 +222,8 @@ fun LoginBottomMiddleViewPreview() {
                 navigator.navigate(WorkerLoginPageDestination)
             },
             doLoginCorp = {
-
+                //showLoginBottomSheet = false
+                navigator.navigate(CompanyLoginScreenDestination)
             }
         )
     }
