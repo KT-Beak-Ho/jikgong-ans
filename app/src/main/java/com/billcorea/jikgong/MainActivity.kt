@@ -79,10 +79,6 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMapSdk
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-// Koin 관련 import 추가
-import org.koin.androidx.viewmodel.ext.android.getViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
-
 
 
 class MainActivity : ComponentActivity() {
@@ -153,48 +149,48 @@ class MainActivity : ComponentActivity() {
                             composable(WorkerProjectListDestination.route) {
                                 WorkerProjectList(viewModel, navigator, modifier = Modifier.padding(5.dp))
                             }
-                            composable(WorkerJoinPage1ScreenDestination.route) {
-                                WorkerJoinPage1Screen(
-                                    workerJoinViewModel = workerJoinViewModel,
-                                    navigator = navigator,
-                                    modifier = Modifier.padding(5.dp)
-                                )
-                            }
-                            composable(WorkerJoinPage2ScreenDestination.route) {
-                                WorkerJoinPage2Screen(
-                                    workerJoinViewModel = workerJoinViewModel,
-                                    navigator = navigator,
-                                    modifier = Modifier.padding(5.dp)
-                                )
-                            }
-                            composable(WorkerJoinPage3ScreenDestination.route) {
-                                WorkerJoinPage3Screen(
-                                    workerJoinViewModel = workerJoinViewModel,
-                                    navigator = navigator,
-                                    modifier = Modifier.padding(5.dp)
-                                )
-                            }
-                            composable(WorkerJoinPage4ScreenDestination.route) {
-                                WorkerJoinPage4Screen(
-                                    workerJoinViewModel = workerJoinViewModel,
-                                    navigator = navigator,
-                                    modifier = Modifier.padding(5.dp)
-                                )
-                            }
-                            composable(WorkerJoinPage5ScreenDestination.route) {
-                                WorkerJoinPage5Screen(
-                                    workerJoinViewModel = workerJoinViewModel,
-                                    navigator = navigator,
-                                    modifier = Modifier.padding(5.dp)
-                                )
-                            }
-                            composable(WorkerJoinPage6ScreenDestination.route) {
-                                WorkerJoinPage6Screen(
-                                    workerJoinViewModel = workerJoinViewModel,
-                                    navigator = navigator,
-                                    modifier = Modifier.padding(5.dp)
-                                )
-                            }
+//                            composable(WorkerJoinPage1ScreenDestination.route) {
+//                                WorkerJoinPage1Screen(
+//                                    workerJoinViewModel = workerJoinViewModel,
+//                                    navigator = navigator,
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
+//                            composable(WorkerJoinPage2ScreenDestination.route) {
+//                                WorkerJoinPage2Screen(
+//                                    workerJoinViewModel = workerJoinViewModel,
+//                                    navigator = navigator,
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
+//                            composable(WorkerJoinPage3ScreenDestination.route) {
+//                                WorkerJoinPage3Screen(
+//                                    workerJoinViewModel = workerJoinViewModel,
+//                                    navigator = navigator,
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
+//                            composable(WorkerJoinPage4ScreenDestination.route) {
+//                                WorkerJoinPage4Screen(
+//                                    workerJoinViewModel = workerJoinViewModel,
+//                                    navigator = navigator,
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
+//                            composable(WorkerJoinPage5ScreenDestination.route) {
+//                                WorkerJoinPage5Screen(
+//                                    workerJoinViewModel = workerJoinViewModel,
+//                                    navigator = navigator,
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
+//                            composable(WorkerJoinPage6ScreenDestination.route) {
+//                                WorkerJoinPage6Screen(
+//                                    workerJoinViewModel = workerJoinViewModel,
+//                                    navigator = navigator,
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
                             composable(CompanyJoinPage1ScreenDestination.route) {
                                 CompanyJoinPage1Screen(
                                     companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
@@ -216,13 +212,13 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier.padding(5.dp)
                                 )
                             }
-                            composable(CompanyLoginScreenDestination.route) {
-                                CompanyLoginScreen(
-                                    viewModel = viewModel,
-                                    navigator = navigator,
-                                    modifier = Modifier.padding(5.dp)
-                                )
-                            }
+//                            composable(CompanyLoginScreenDestination.route) {
+//                                CompanyLoginScreen(
+//                                    viewModel = viewModel,
+//                                    navigator = navigator,
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
                         }
                     }
                 }
