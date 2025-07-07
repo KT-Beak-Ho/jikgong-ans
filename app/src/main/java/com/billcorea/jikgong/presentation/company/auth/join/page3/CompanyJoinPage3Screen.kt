@@ -31,11 +31,10 @@ import com.billcorea.jikgong.api.models.response.EmailValidationResponse
 import com.billcorea.jikgong.api.models.response.LoginIdValidationResponse
 import com.billcorea.jikgong.api.models.response.PhoneValidationResponse
 import com.billcorea.jikgong.api.models.response.SmsVerificationResponse
-import com.billcorea.jikgong.api.repository.JoinRepository
+import com.billcorea.jikgong.api.repository.join.JoinRepository
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTopBar
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants
-import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPage1Screen
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedEvent
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination

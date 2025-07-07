@@ -1,9 +1,8 @@
 package com.billcorea.jikgong.presentation.company.auth.join.shared
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.billcorea.jikgong.api.repository.JoinRepository
+import com.billcorea.jikgong.api.repository.join.JoinRepository
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants.TOTAL_PAGES
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

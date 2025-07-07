@@ -53,160 +53,160 @@ import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestina
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination(start = true)
 @Composable
-fun JikgongApp (
-    navigator: DestinationsNavigator,
-    modifier: Modifier
+fun JikgongApp(
+  navigator: DestinationsNavigator,
+  modifier: Modifier
 ) {
-    val config = LocalConfiguration.current
-    val screenHeight = config.screenHeightDp
-    val screenWidth = config.screenWidthDp
-    val isDark = isSystemInDarkTheme()
-    val navOptions = NavOptions.Builder()
-        .setPopUpTo(0, true)
-        .setLaunchSingleTop(true)
-        .build()
+  val config = LocalConfiguration.current
+  val screenHeight = config.screenHeightDp
+  val screenWidth = config.screenWidthDp
+  val isDark = isSystemInDarkTheme()
+  val navOptions = NavOptions.Builder()
+    .setPopUpTo(0, true)
+    .setLaunchSingleTop(true)
+    .build()
 
-    val sheetState = rememberModalBottomSheetState( skipPartiallyExpanded = false)
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var showLoginBottomSheet by remember { mutableStateOf(false) }
+  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+  var showBottomSheet by remember { mutableStateOf(false) }
+  var showLoginBottomSheet by remember { mutableStateOf(false) }
 
-    Scaffold(
-        bottomBar = {
-            if (showBottomSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = {
-                        showBottomSheet = false
-                    }
-                    , sheetState = sheetState
-                    , modifier = Modifier.height((screenHeight * .8).dp)
-                ) {
-                    BottomMiddleView(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(5.dp),
-                        doCloseBottom = {
-                            showBottomSheet = false
-                        },
-                        doJoinPerson = {
-                            showBottomSheet = false
-                            // navigator.navigate(JoinPage2Destination)
-                            navigator.navigate(WorkerJoinPage6ScreenDestination)
-                                       },
-                        doJoinCorp = {
-                            showBottomSheet = false
+  Scaffold(
+    bottomBar = {
+      if (showBottomSheet) {
+        ModalBottomSheet(
+          onDismissRequest = {
+            showBottomSheet = false
+          }, sheetState = sheetState, modifier = Modifier.height((screenHeight * .8).dp)
+        ) {
+          BottomMiddleView(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(5.dp),
+            doCloseBottom = {
+              showBottomSheet = false
+            },
+            doJoinPerson = {
+              showBottomSheet = false
+              // navigator.navigate(JoinPage2Destination)
+              navigator.navigate(WorkerJoinPage6ScreenDestination)
+            },
+            doJoinCorp = {
+              showBottomSheet = false
 //                            navigator.navigate(CompanyJoinPage1ScreenDestination)
-                            navigator.navigate(CompanyJoinPage2ScreenDestination)
-                        }
-                    )
-                }
+              navigator.navigate(CompanyJoinPage2ScreenDestination)
             }
-            if (showLoginBottomSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = {
-                        showLoginBottomSheet = false
-                    }
-                    , sheetState = sheetState
-                    , modifier = Modifier.height((screenHeight * .8).dp)
-                ) {
-                  LoginBottomMiddleView(
-                    modifier = Modifier
-                      .fillMaxWidth()
-                      .padding(5.dp),
-                    doCloseBottom = {
-                      showLoginBottomSheet = false
-                    },
-                    doLoginPerson = {
-                      showLoginBottomSheet = false
-                      navigator.navigate(WorkerLoginPageDestination)
-                    },
-                    doLoginCorp = {
-
-                    }
-                  )
-                }
-            }
+          )
         }
-    ) { innerPadding ->
-
-        Column (
-            modifier = modifier.fillMaxSize().padding(innerPadding),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Box(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .height((screenHeight * .6).dp)
-                    .wrapContentWidth(Alignment.CenterHorizontally)
-            ) {
-                Column(modifier=Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Image(
-                        painter = painterResource(if (isDark) R.drawable.ic_jikgong_white else R.drawable.ic_jikgong_v1),
-                        contentDescription = "Logo"
-                    )
-                    Image(
-                        painter = painterResource(if (isDark) R.drawable.ic_example else R.drawable.ic_example_black),
-                        contentDescription = "example"
-                    )
-                }
+      }
+      if (showLoginBottomSheet) {
+        ModalBottomSheet(
+          onDismissRequest = {
+            showLoginBottomSheet = false
+          }, sheetState = sheetState, modifier = Modifier.height((screenHeight * .8).dp)
+        ) {
+          LoginBottomMiddleView(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(5.dp),
+            doCloseBottom = {
+              showLoginBottomSheet = false
+            },
+            doLoginPerson = {
+              showLoginBottomSheet = false
+              navigator.navigate(WorkerLoginPageDestination)
+            },
+            doLoginCorp = {
+              showLoginBottomSheet = false
+              navigator.navigate(CompanyLoginScreenDestination)
             }
-
-            Card(
-                modifier = Modifier
-                    .width((screenWidth * .95).dp)
-                    .wrapContentWidth(Alignment.CenterHorizontally)
-            ) {
-                TextButton(
-                    onClick = {
-                        showBottomSheet = true
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(color = colorScheme.primary)
-                ) {
-                    Text(
-                        text = stringResource(R.string.joinMember),
-                        style = AppTypography.bodyLarge.copy(
-                            colorScheme.onPrimary
-                        )
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Card(
-                modifier = Modifier
-                    .width((screenWidth * .95).dp)
-                    .wrapContentWidth(Alignment.CenterHorizontally)
-            ) {
-                TextButton(
-                    onClick = {
-                        showLoginBottomSheet = true
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(color = appColorScheme.secondary)
-                ) {
-                    Text(
-                        text = stringResource(R.string.login),
-                        style = AppTypography.bodyLarge.copy(
-                            appColorScheme.onSecondary
-                        )
-                    )
-                }
-            }
+          )
         }
+      }
     }
+  ) { innerPadding ->
+
+    Column(
+      modifier = modifier
+        .fillMaxSize()
+        .padding(innerPadding),
+      verticalArrangement = Arrangement.Center,
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      Box(
+        modifier = modifier
+          .fillMaxWidth()
+          .height((screenHeight * .6).dp)
+          .wrapContentWidth(Alignment.CenterHorizontally)
+      ) {
+        Column(
+          modifier = Modifier.fillMaxSize(),
+          verticalArrangement = Arrangement.Center,
+          horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+          Image(
+            painter = painterResource(if (isDark) R.drawable.ic_jikgong_white else R.drawable.ic_jikgong_v1),
+            contentDescription = "Logo"
+          )
+          Image(
+            painter = painterResource(if (isDark) R.drawable.ic_example else R.drawable.ic_example_black),
+            contentDescription = "example"
+          )
+        }
+      }
+
+      Card(
+        modifier = Modifier
+          .width((screenWidth * .95).dp)
+          .wrapContentWidth(Alignment.CenterHorizontally)
+      ) {
+        TextButton(
+          onClick = {
+            showBottomSheet = true
+          },
+          modifier = Modifier
+            .fillMaxWidth()
+            .background(color = colorScheme.primary)
+        ) {
+          Text(
+            text = stringResource(R.string.joinMember),
+            style = AppTypography.bodyLarge.copy(
+              colorScheme.onPrimary
+            )
+          )
+        }
+      }
+      Spacer(modifier = Modifier.height(10.dp))
+      Card(
+        modifier = Modifier
+          .width((screenWidth * .95).dp)
+          .wrapContentWidth(Alignment.CenterHorizontally)
+      ) {
+        TextButton(
+          onClick = {
+            showLoginBottomSheet = true
+          },
+          modifier = Modifier
+            .fillMaxWidth()
+            .background(color = appColorScheme.secondary)
+        ) {
+          Text(
+            text = stringResource(R.string.login),
+            style = AppTypography.bodyLarge.copy(
+              appColorScheme.onSecondary
+            )
+          )
+        }
+      }
+    }
+  }
 }
 
 @Preview
 @Composable
 fun JikgongAppPreview() {
-    val navController = rememberNavController()
-    val navigator = navController.toDestinationsNavigator()
-    Jikgong1111Theme {
-        JikgongApp(navigator, modifier = Modifier.padding(3.dp))
-    }
+  val navController = rememberNavController()
+  val navigator = navController.toDestinationsNavigator()
+  Jikgong1111Theme {
+    JikgongApp(navigator, modifier = Modifier.padding(3.dp))
+  }
 }

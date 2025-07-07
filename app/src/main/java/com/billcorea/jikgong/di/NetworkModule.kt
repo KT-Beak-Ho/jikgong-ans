@@ -2,6 +2,7 @@ package com.billcorea.jikgong.di
 
 import android.util.Log
 import com.billcorea.jikgong.BuildConfig
+import com.billcorea.jikgong.api.service.AuthApi
 import com.billcorea.jikgong.api.service.JoinApi
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -52,5 +53,8 @@ val networkModule = module {
 
   single<JoinApi> {
     get<Retrofit>().create(JoinApi::class.java)
+  }
+  single<AuthApi> {
+    get<Retrofit>().create(AuthApi::class.java)
   }
 }

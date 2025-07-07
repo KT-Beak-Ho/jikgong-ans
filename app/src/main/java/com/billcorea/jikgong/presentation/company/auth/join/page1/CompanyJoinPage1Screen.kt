@@ -30,7 +30,7 @@ import com.billcorea.jikgong.api.models.response.EmailValidationResponse
 import com.billcorea.jikgong.api.models.response.LoginIdValidationResponse
 import com.billcorea.jikgong.api.models.response.PhoneValidationResponse
 import com.billcorea.jikgong.api.models.response.SmsVerificationResponse
-import com.billcorea.jikgong.api.repository.JoinRepository
+import com.billcorea.jikgong.api.repository.join.JoinRepository
 import com.billcorea.jikgong.presentation.common.KeyboardConstants
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
@@ -83,7 +83,7 @@ fun CompanyJoinPage1Screen(
     }
   }
 
-  // 🚨 에러 다이얼로그 처리
+  /** 에러 다이얼로그 처리 */
   uiState.errorMessage?.let { message ->
     AlertDialog(
       onDismissRequest = {
@@ -103,7 +103,7 @@ fun CompanyJoinPage1Screen(
     )
   }
 
-  //  화면 시작
+  /** 화면 시작 */
   Scaffold(
     modifier = modifier
       .fillMaxSize()
@@ -135,7 +135,7 @@ fun CompanyJoinPage1Screen(
       )
     }
   ) {
-    //  중앙 (메인)
+    /** 중앙 (메인) */
       innerPadding ->
     //  전화 번호 입력 섹션
     Column(
