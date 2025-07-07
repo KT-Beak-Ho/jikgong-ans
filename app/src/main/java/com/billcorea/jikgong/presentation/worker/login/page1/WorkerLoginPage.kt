@@ -1,9 +1,8 @@
-package com.billcorea.jikgong.presentation
+package com.billcorea.jikgong.presentation.worker.login.page1
 
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -36,8 +34,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -50,10 +48,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.navigation.compose.rememberNavController
-import com.afollestad.materialdialogs.BuildConfig
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -82,7 +78,7 @@ fun WorkerLoginPage(
 
     var loginIdOrPhone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
+    val focusRequester = remember { FocusRequester() }
     val _loginResult = viewModel.loginResult.observeAsState()
     val _loginError = viewModel.loginError.observeAsState()
     val loginResult = _loginResult.value

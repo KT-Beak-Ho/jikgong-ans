@@ -1,8 +1,6 @@
-package com.billcorea.jikgong.presentation
+package com.billcorea.jikgong.presentation.worker.login.page1
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,22 +30,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestination
 
 @Composable
 fun LoginBottomMiddleView(
@@ -227,7 +222,8 @@ fun LoginBottomMiddleViewPreview() {
                 navigator.navigate(WorkerLoginPageDestination)
             },
             doLoginCorp = {
-
+                //showLoginBottomSheet = false
+                navigator.navigate(CompanyLoginScreenDestination)
             }
         )
     }

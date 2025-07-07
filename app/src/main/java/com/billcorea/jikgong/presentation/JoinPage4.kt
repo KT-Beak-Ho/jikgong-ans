@@ -1,7 +1,6 @@
 package com.billcorea.jikgong.presentation
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -9,7 +8,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -47,8 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -66,14 +61,11 @@ import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.billcorea.jikgong.utils.AddressFindActivity
 import com.billcorea.jikgong.utils.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.require
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import org.koin.androidx.compose.koinViewModel
-import com.ramcosta.composedestinations.navigation.DestinationDependenciesContainer
 
 
 @Destination
@@ -183,7 +175,7 @@ fun JoinPage4(
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             result.data.let { data ->
                 val getAddress = data?.getStringExtra("data")
-                Log.e("", "data=$getAddress")
+                Log.e("looaf", "data=$getAddress")
                 if (getAddress != null) {
                     viewModel.doKakaoGeocoding(getAddress)
                     viewModel._respAddress.value = getAddress
