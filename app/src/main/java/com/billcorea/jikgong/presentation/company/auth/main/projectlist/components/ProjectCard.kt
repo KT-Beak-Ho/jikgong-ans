@@ -21,10 +21,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.billcorea.jikgong.presentation.company.main.auth.projectlist.data.ProjectData
-import com.billcorea.jikgong.presentation.company.main.auth.projectlist.data.ProjectPriority
-import com.billcorea.jikgong.presentation.company.main.auth.projectlist.data.ProjectSampleData
-import com.billcorea.jikgong.presentation.company.main.auth.projectlist.data.ProjectStatus
+import com.billcorea.jikgong.presentation.company.auth.main.projectlist.data.ProjectData
+import com.billcorea.jikgong.presentation.company.auth.main.projectlist.data.ProjectPriority
+import com.billcorea.jikgong.presentation.company.auth.main.projectlist.data.ProjectSampleData
+import com.billcorea.jikgong.presentation.company.auth.main.projectlist.data.ProjectStatus
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
