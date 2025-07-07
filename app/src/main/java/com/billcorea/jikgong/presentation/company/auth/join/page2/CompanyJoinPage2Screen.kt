@@ -27,10 +27,17 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
+import com.billcorea.jikgong.api.models.response.ApiResult
+import com.billcorea.jikgong.api.models.response.EmailValidationResponse
+import com.billcorea.jikgong.api.models.response.LoginIdValidationResponse
+import com.billcorea.jikgong.api.models.response.PhoneValidationResponse
+import com.billcorea.jikgong.api.models.response.SmsVerificationResponse
+import com.billcorea.jikgong.api.repository.JoinRepository
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTopBar
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants
+import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPage1Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page2.components.PhoneNumberDisplay
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedEvent
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
@@ -75,7 +82,10 @@ fun CompanyJoinPage2Screen(
 
   // 페이지 실행 시 초기화
   LaunchedEffect(Unit) {
+    //  로컬 변수 초기화
     companyJoinViewModel.onEvent(CompanyJoinSharedEvent.ResetJoin2Flow)
+    //  에러 변수 초기화
+    companyJoinViewModel.onEvent(CompanyJoinSharedEvent.ClearError)
   }
 
   // 네비게이션 이벤트 처리 - 다음페이지
@@ -115,6 +125,8 @@ fun CompanyJoinPage2Screen(
       CommonButton(
         text = stringResource(R.string.business_partnership_application),
         onClick = {
+          //  여기에 사용자 ID, Email 등록여부 검증 로직 추가 필요함
+          //  NextPage 함수 정의에 들어가서 currentPage=2 인 경우 위 두 함수 실행하는 로직 추가하면될듯
           companyJoinViewModel.onEvent(CompanyJoinSharedEvent.NextPage)
         },
         enabled = uiState.isPage2Complete,
@@ -267,9 +279,21 @@ fun JoinPage2ScreenPreview() {
   val navController = rememberNavController()
   val navigator = navController.toDestinationsNavigator()
 
+  // 빈 Repository로 ViewModel 생성 (네트워크 호출 무시)
+  val emptyRepository = object : JoinRepository {
+    override suspend fun sendSmsVerification(phoneNumber: String): ApiResult<SmsVerificationResponse> =
+      ApiResult.Error(Exception("Preview mode"))
+    override suspend fun validatePhone(phoneNumber: String): ApiResult<PhoneValidationResponse> =
+      ApiResult.Error(Exception("Preview mode"))
+    override suspend fun validateLoginId(loginId: String): ApiResult<LoginIdValidationResponse> =
+      ApiResult.Error(Exception("Preview mode"))
+    override suspend fun validateEmail(email: String): ApiResult<EmailValidationResponse> =
+      ApiResult.Error(Exception("Preview mode"))
+  }
+
   Jikgong1111Theme {
     CompanyJoinPage2Screen(
-      companyJoinViewModel = CompanyJoinSharedViewModel(), // ViewModel 직접 생성
+      companyJoinViewModel = CompanyJoinSharedViewModel(emptyRepository), // ViewModel 직접 생성
       navigator = navigator,
       modifier = Modifier.padding(3.dp)
     )

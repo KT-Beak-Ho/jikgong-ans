@@ -1,18 +1,18 @@
 package com.billcorea.jikgong.presentation.company.auth.join.shared
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.billcorea.jikgong.network.RetrofitAPI
-import com.billcorea.jikgong.network.SmsVerificationRequest
-import com.billcorea.jikgong.network.SmsVerificationResponse
+import androidx.lifecycle.viewModelScope
+import com.billcorea.jikgong.api.repository.JoinRepository
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants.TOTAL_PAGES
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.launch
 
-class CompanyJoinSharedViewModel : ViewModel() {
+class CompanyJoinSharedViewModel(
+  private val joinRepository: JoinRepository
+) : ViewModel() {
 
   private val _uiState = MutableStateFlow(CompanyJoinSharedUiState())
   val uiState: StateFlow<CompanyJoinSharedUiState> = _uiState.asStateFlow()
@@ -78,29 +78,84 @@ class CompanyJoinSharedViewModel : ViewModel() {
   }
 
   /**
+   * server에 해당 전화번호 존재 유뮤 체크
+   */
+  private fun checkPhoneNumberRegist(phone: String) {
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isWaiting = true)
+
+      joinRepository.validatePhone(phone)
+        .onSuccess { response ->
+          // 성공 시 전화번호가 사용 가능함을 의미 (서버에 등록되지 않음)
+          _uiState.value = _uiState.value.copy(
+            isSecurityStepActive = true,
+            isPhoneNumberAvailable = true,
+            isWaiting = false,
+            errorMessage = null
+          )
+        }
+        .onError { error ->
+          _uiState.value = _uiState.value.copy(
+            isPhoneNumberAvailable = false,
+            isWaiting = false,
+            isSecurityStepActive=false,
+            errorMessage = "네트워크 오류: ${error.message}"
+          )
+        }
+        .onHttpError { code, message, errorBody ->
+          val errorMessage = when (code) {
+            409 -> "이미 등록된 전화번호입니다"
+            400 -> "잘못된 전화번호 형식입니다"
+            500 -> "서버 오류가 발생했습니다"
+            else -> "HTTP $code: $message"
+          }
+          _uiState.value = _uiState.value.copy(
+            isPhoneNumberAvailable = false,
+            isWaiting = false,
+            isSecurityStepActive=false,
+            errorMessage = errorMessage
+          )
+        }
+    }
+  }
+
+  /**
    * 인증코드 발송 요청
    */
   private fun doSmsVerification(phone: String) {
-    val smsBody = SmsVerificationRequest(phone)
-    RetrofitAPI.create().smsVerification(smsBody).enqueue(object :
-      Callback<SmsVerificationResponse> {
-      override fun onResponse(
-        call: Call<SmsVerificationResponse>,
-        response: Response<SmsVerificationResponse>
-      ) {
-        //  Log.e("", "response ${response.body()?.data?.authCode}")
-        _uiState.value = _uiState.value.copy(
-          authCode = response.body()?.data?.authCode,
-          isWaiting = false
-        )
-      }
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isWaiting = true)
 
-      override fun onFailure(call: Call<SmsVerificationResponse>, t: Throwable) {
-        // Log.e("", "error ${t.localizedMessage}")
-        // 실패 시에도 isWaiting = false로 변경
-        _uiState.value = _uiState.value.copy(isWaiting = false)
-      }
-    })
+      joinRepository.sendSmsVerification(phone)
+        .onSuccess { response ->
+          _uiState.value = _uiState.value.copy(
+            authCode = response.verificationId ?: "",
+            isWaiting = false,
+            isSecurityStepActive = true,
+            errorMessage = null
+          )
+        }
+        .onError { error ->
+          _uiState.value = _uiState.value.copy(
+            isWaiting = false,
+            errorMessage = "SMS 발송 실패: ${error.message}"
+          )
+        }
+        .onHttpError { code, message, errorBody ->
+
+          val errorMessage = when (code) {
+            400 -> "잘못된 전화번호입니다"
+            429 -> "요청이 너무 많습니다. 잠시 후 다시 시도해주세요"
+            500 -> "서버 오류로 SMS 발송에 실패했습니다"
+            else -> "SMS 발송 실패: HTTP $code"
+          }
+
+          _uiState.value = _uiState.value.copy(
+            isWaiting = false,
+            errorMessage = errorMessage
+          )
+        }
+    }
   }
 
   /**
@@ -156,6 +211,48 @@ class CompanyJoinSharedViewModel : ViewModel() {
   }
 
   /**
+   * server에 해당 ID 존재 유뮤 체크 ( 수정 필요 )
+   */
+  private fun checkIdRegist(id: String) {
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isWaiting = true)
+
+      joinRepository.validatePhone(id)
+        .onSuccess { response ->
+          // 성공 시 ID가 사용 가능함을 의미 (서버에 등록되지 않음)
+          _uiState.value = _uiState.value.copy(
+            isSecurityStepActive = true,
+            isPhoneNumberAvailable = true,
+            isWaiting = false,
+            errorMessage = null
+          )
+        }
+        .onError { error ->
+          _uiState.value = _uiState.value.copy(
+            isPhoneNumberAvailable = false,
+            isWaiting = false,
+            isSecurityStepActive=false,
+            errorMessage = "네트워크 오류: ${error.message}"
+          )
+        }
+        .onHttpError { code, message, errorBody ->
+          val errorMessage = when (code) {
+            409 -> "이미 등록된 전화번호입니다"
+            400 -> "잘못된 전화번호 형식입니다"
+            500 -> "서버 오류가 발생했습니다"
+            else -> "HTTP $code: $message"
+          }
+          _uiState.value = _uiState.value.copy(
+            isPhoneNumberAvailable = false,
+            isWaiting = false,
+            isSecurityStepActive=false,
+            errorMessage = errorMessage
+          )
+        }
+    }
+  }
+
+  /**
    * 아이디 입력 검증 함수
    */
   private fun validateUserId(id: String) {
@@ -199,6 +296,48 @@ class CompanyJoinSharedViewModel : ViewModel() {
     _uiState.value = currentState.copy(
       validationErrors = errors,
     )
+  }
+
+  /**
+   * server에 해당 email 존재 유무 체크 ( 수정 필요 )
+   */
+  private fun checkEmailRegist(email: String) {
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isWaiting = true)
+
+      joinRepository.validatePhone(email)
+        .onSuccess { response ->
+          // 성공 시 ID가 사용 가능함을 의미 (서버에 등록되지 않음)
+          _uiState.value = _uiState.value.copy(
+            isSecurityStepActive = true,
+            isPhoneNumberAvailable = true,
+            isWaiting = false,
+            errorMessage = null
+          )
+        }
+        .onError { error ->
+          _uiState.value = _uiState.value.copy(
+            isPhoneNumberAvailable = false,
+            isWaiting = false,
+            isSecurityStepActive=false,
+            errorMessage = "네트워크 오류: ${error.message}"
+          )
+        }
+        .onHttpError { code, message, errorBody ->
+          val errorMessage = when (code) {
+            409 -> "이미 등록된 전화번호입니다"
+            400 -> "잘못된 전화번호 형식입니다"
+            500 -> "서버 오류가 발생했습니다"
+            else -> "HTTP $code: $message"
+          }
+          _uiState.value = _uiState.value.copy(
+            isPhoneNumberAvailable = false,
+            isWaiting = false,
+            isSecurityStepActive=false,
+            errorMessage = errorMessage
+          )
+        }
+    }
   }
 
   /**
@@ -337,12 +476,16 @@ class CompanyJoinSharedViewModel : ViewModel() {
       is CompanyJoinSharedEvent.RequestVerificationCode -> {
         // 인증 절차넘어감 + 인증번호 받기버튼 로딩상태 변경
         _uiState.value = _uiState.value.copy(
-          isSecurityStepActive = true,
           isWaiting = true,
           authCode = "" // 기존에 받은 인증번호 초기화
         )
+        // 해당 번호가 이미 등록되어 있는 번호인가?
+        checkPhoneNumberRegist(_uiState.value.phoneNumber)
         // 인증번호 요청
-        doSmsVerification(_uiState.value.phoneNumber)
+        val currentState = _uiState.value
+        if (currentState.isPhoneNumberAvailable) {
+          doSmsVerification(currentState.phoneNumber)
+        }
       }
       /**
        * 인증번호 입력
@@ -359,14 +502,15 @@ class CompanyJoinSharedViewModel : ViewModel() {
        */
       is CompanyJoinSharedEvent.ResetJoin1Flow -> {
         _uiState.value = _uiState.value.copy(
-          phoneNumber = "",              //  전화번호
-          verificationCode = "",         //  인증코드(사용자 입력)
-          authCode = "",                 //  인증코드(sms 인증으로 받아옴)
-          isValidPhoneNumber = false,    //  전화번호 양식 일치
-          isPhoneVerified = false,       //  전화번호 검증 완료
-          isSecurityStepActive = false,  //  인증절차 단계
-          isWaiting = false,
-          currentPage = 1                //  현재 페이지 위치 1
+          phoneNumber = "",               //  전화번호
+          verificationCode = "",          //  인증코드(사용자 입력)
+          authCode = "",                  //  인증코드(sms 인증으로 받아옴)
+          isValidPhoneNumber = false,     //  전화번호 양식 일치
+          isPhoneVerified = false,        //  전화번호 검증 완료
+          isSecurityStepActive = false,   //  인증절차 단계
+          isWaiting = false,              //  현재 상태가 대기상태인가?
+          isPhoneNumberAvailable  = false,//  전화번호가 사용가능한가?
+          currentPage = 1,                //  현재 페이지 위치 1
         )
       }
       /**
@@ -389,6 +533,17 @@ class CompanyJoinSharedViewModel : ViewModel() {
           id = event.id
         )
         validateUserId(event.id)
+      }
+      /**
+       * 사용자 아이디 입력 후 등록 여부 확인
+       */
+      is CompanyJoinSharedEvent.RequestVerificationID ->{
+//        _uiState.value = _uiState.value.copy(
+//          isWaiting = true,
+//          authCode = "" // 기존에 받은 인증번호 초기화
+//        )
+//        // 해당 번호가 이미 등록되어 있는 번호인가?
+//        checkPhoneNumberRegist(_uiState.value.phoneNumber)
       }
       /**
        * 사용자 비밀번호 입력
@@ -416,6 +571,10 @@ class CompanyJoinSharedViewModel : ViewModel() {
         )
         validateEmail(event.email)
       }
+      /**
+       * 사용자 Email 입력 후 등록 여부 확인
+       */
+      is CompanyJoinSharedEvent.RequestVerificationEmail ->{}
       /**
        * 사업자등록번호
        */
@@ -467,7 +626,8 @@ class CompanyJoinSharedViewModel : ViewModel() {
        */
       CompanyJoinSharedEvent.ClearError -> {
         _uiState.value = _uiState.value.copy(
-          validationErrors = emptyMap() //  현재 페이지의 모든 에러 제거
+          validationErrors = emptyMap(), //  현재 페이지의 모든 에러 제거
+          errorMessage = null
         )
       }
     }

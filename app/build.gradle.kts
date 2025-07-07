@@ -35,11 +35,15 @@ android {
             isShrinkResources = false
             buildConfigField("String", "KAKAO_REST_API", '"' + properties["KAKAO_REST_API"].toString() + '"')
             buildConfigField("String", "KAKAO_API",  '"' + properties["KAKAO_API"].toString() + '"')
+            //  Base Url 생성
+            buildConfigField("String", "BASE_URL",  '"' + properties["BASE_URL"].toString() + '"')
         }
         release {
             isMinifyEnabled = false
             buildConfigField("String", "KAKAO_REST_API", '"' + properties["KAKAO_REST_API"].toString() + '"')
             buildConfigField("String", "KAKAO_API",  '"' + properties["KAKAO_API"].toString() + '"')
+            //  Base Url 생성
+            buildConfigField("String", "BASE_URL",  '"' + properties["BASE_URL"].toString() + '"')
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -62,6 +66,14 @@ android {
 dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // 추가
+    // ===== 추가된 네트워크 관련 의존성 =====
+    // OkHttp Logging Interceptor (로깅용)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Gson (JSON 파싱)
+    implementation("com.google.code.gson:gson:2.10.1")
+    // 추가
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

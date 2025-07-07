@@ -99,8 +99,8 @@ fun JikgongApp (
                         },
                         doJoinCorp = {
                             showBottomSheet = false
-                            navigator.navigate(CompanyJoinPage1ScreenDestination)
-//                            navigator.navigate(CompanyJoinPage2ScreenDestination)
+//                            navigator.navigate(CompanyJoinPage1ScreenDestination)
+                            navigator.navigate(CompanyJoinPage2ScreenDestination)
                         }
                     )
                 }
