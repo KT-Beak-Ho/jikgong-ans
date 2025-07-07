@@ -43,9 +43,13 @@ import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPag
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
+// 누락된 import 추가
+import com.billcorea.jikgong.presentation.company.auth.login.CompanyLoginScreen
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
+// 누락된 destination import 추가
+import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestination
 import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
 import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
@@ -75,7 +79,6 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMapSdk
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-import org.koin.android.ext.android.inject
 
 
 class MainActivity : ComponentActivity() {
@@ -84,7 +87,9 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     // Koin을 사용하여 SharedViewModel 주입
-    private val companyJoinViewModel: CompanyJoinSharedViewModel by inject()
+    private val companyJoinViewModel: CompanyJoinSharedViewModel by viewModel()
+    // workerJoinViewModel 추가
+    private val workerJoinViewModel: WorkerJoinSharedViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
