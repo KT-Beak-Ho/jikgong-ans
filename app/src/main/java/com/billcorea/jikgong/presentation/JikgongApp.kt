@@ -36,9 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
-import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
+import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.presentation.worker.login.page1.LoginBottomMiddleView
@@ -48,8 +47,6 @@ import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestination
-import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination(start = true)
