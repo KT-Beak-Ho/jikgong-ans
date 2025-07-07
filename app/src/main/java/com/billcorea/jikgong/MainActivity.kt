@@ -26,6 +26,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.afollestad.materialdialogs.MaterialDialog
+import com.billcorea.jikgong.api.repository.JoinRepositoryImpl
+import com.billcorea.jikgong.api.service.JoinApi
 import com.billcorea.jikgong.presentation.JikgongApp
 import com.billcorea.jikgong.presentation.JoinPage1
 import com.billcorea.jikgong.presentation.JoinPage2
@@ -73,15 +75,15 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMapSdk
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestination
-import com.billcorea.jikgong.presentation.company.auth.login.CompanyLoginScreen
+
 
 class MainActivity : ComponentActivity() {
 
     val viewModel : MainViewModel by viewModels()
-    private val companyJoinViewModel = CompanyJoinSharedViewModel()
-    private val workerJoinViewModel = WorkerJoinSharedViewModel()
+
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    // Koin을 사용하여 SharedViewModel 주입
+    private val companyJoinViewModel: CompanyJoinSharedViewModel by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
