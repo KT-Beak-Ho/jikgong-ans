@@ -142,14 +142,14 @@ class CompanyJoinSharedViewModel(
           )
         }
         .onHttpError { code, message, errorBody ->
-
           val errorMessage = when (code) {
             400 -> "잘못된 전화번호입니다"
+            408 -> "네트워크 지연(요청실패)"
             429 -> "요청이 너무 많습니다. 잠시 후 다시 시도해주세요"
             500 -> "서버 오류로 SMS 발송에 실패했습니다"
             else -> "SMS 발송 실패: HTTP $code"
           }
-
+//          Log.e("SMS", "Final error message: $errorMessage")
           _uiState.value = _uiState.value.copy(
             isWaiting = false,
             errorMessage = errorMessage
