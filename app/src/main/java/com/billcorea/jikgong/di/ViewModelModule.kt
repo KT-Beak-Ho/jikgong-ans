@@ -13,4 +13,5 @@ val viewModelModule = module {
   viewModel { CompanyLoginSharedViewModel(get()) }
 
   viewModel { CompanyInfoSharedViewModel() }
+  viewModel { CompanyMoneySharedViewModel() }
 }
