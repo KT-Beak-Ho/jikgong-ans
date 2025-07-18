@@ -107,9 +107,11 @@ class CompanyMoneySharedViewModel : ViewModel() {
             // 기타
             is CompanyMoneySharedEvent.GeneratePaymentReport -> generateReport()
             is CompanyMoneySharedEvent.ExportPayments -> exportPayments(event.format)
-            else -> {
-                // 아직 구현되지 않은 이벤트들
-            }
+
+            // 누락된 이벤트들 추가
+            is CompanyMoneySharedEvent.UpdateDisplaySettings -> updateDisplaySettings(event.showCompletedPayments)
+            is CompanyMoneySharedEvent.ShowPaymentStatistics -> showPaymentStatistics()
+            is CompanyMoneySharedEvent.ShowProjectDetail -> showProjectDetail(event.projectId)
         }
     }
 
@@ -427,6 +429,11 @@ class CompanyMoneySharedViewModel : ViewModel() {
         _shouldNavigateToWorkerDetail.value = workerId
     }
 
+    private fun showProjectDetail(projectId: String) {
+        // 프로젝트 상세 네비게이션 로직 추가
+        // 예: _shouldNavigateToProjectDetail.value = projectId
+    }
+
     private fun dismissDialogs() {
         _uiState.value = _uiState.value.copy(
             showPaymentDialog = false,
@@ -439,6 +446,16 @@ class CompanyMoneySharedViewModel : ViewModel() {
     private fun toggleShowCompleted(show: Boolean) {
         _uiState.value = _uiState.value.copy(showCompletedPayments = show)
         applyFilters()
+    }
+
+    private fun updateDisplaySettings(showCompletedPayments: Boolean) {
+        _uiState.value = _uiState.value.copy(showCompletedPayments = showCompletedPayments)
+        applyFilters()
+    }
+
+    private fun showPaymentStatistics() {
+        // 통계 화면 표시 로직
+        // 예: 통계 다이얼로그나 별도 화면으로 네비게이션
     }
 
     private fun clearError() {

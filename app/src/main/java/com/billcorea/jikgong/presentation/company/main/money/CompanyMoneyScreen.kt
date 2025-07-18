@@ -20,6 +20,7 @@ import com.billcorea.jikgong.presentation.company.main.money.components.PaymentC
 import com.billcorea.jikgong.presentation.company.main.money.data.PaymentStatus
 import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoneySharedEvent
 import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoneySharedViewModel
+import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoneySharedUiState
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme

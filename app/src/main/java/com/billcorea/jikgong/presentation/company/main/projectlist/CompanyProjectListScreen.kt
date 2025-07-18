@@ -48,7 +48,7 @@ private val DarkGray = Color(0xFF343A46)
 private val BlueHighlight = Color(0xFF5BA7F7)
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination
+@Destination(route = "company_project_list")
 @Composable
 fun CompanyProjectListScreen(
     navigator: DestinationsNavigator,
@@ -190,6 +190,7 @@ private fun CompanyProjectListScreenContent(
                 currentRoute = currentRoute,
                 onTabSelected = { route ->
                     currentRoute = route
+                    // TODO: 다른 화면으로 네비게이션 처리
                 }
             )
         },

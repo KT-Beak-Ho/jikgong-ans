@@ -1,9 +1,9 @@
-
 package com.billcorea.jikgong.di
 
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
 import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedViewModel
 import com.billcorea.jikgong.presentation.company.main.info.shared.CompanyInfoSharedViewModel
+import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoneySharedViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
