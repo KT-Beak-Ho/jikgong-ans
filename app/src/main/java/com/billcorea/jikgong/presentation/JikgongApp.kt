@@ -37,9 +37,8 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
-import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
-import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerProjectDestination
 import com.billcorea.jikgong.presentation.worker.login.page1.LoginBottomMiddleView
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -88,7 +87,7 @@ fun JikgongApp (
                         doJoinPerson = {
                             showBottomSheet = false
                             // navigator.navigate(JoinPage2Destination)
-                            navigator.navigate(WorkerJoinPage6ScreenDestination)
+                            navigator.navigate(WorkerProjectDestination)
                                        },
                         doJoinCorp = {
                             showBottomSheet = false

@@ -126,7 +126,7 @@ fun JoinPage4(
             },
             text = {
                 Text(
-                    text = errorMessage,
+                    text = "주소 검색 중 오류가 발생했습니다. 다시 시도해주세요.",
                     style = AppTypography.bodyMedium
                 )
             },
@@ -145,7 +145,7 @@ fun JoinPage4(
                     )
                 }
             },
-            dismissButton = {
+            /* dismissButton = {
                 TextButton(
                     onClick = {
                         showErrorDialog = false
@@ -160,7 +160,7 @@ fun JoinPage4(
                         color = appColorScheme.secondary
                     )
                 }
-            }
+            } */
         )
     }
 
