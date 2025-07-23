@@ -55,6 +55,11 @@ sealed class CompanyMoneySharedEvent {
     data class ShowConfirmDialog(val message: String, val action: () -> Unit) : CompanyMoneySharedEvent()
     object DismissDialog : CompanyMoneySharedEvent()
 
+    // 바텀 시트 관련 (누락된 이벤트들 추가)
+    data class ShowBottomSheet(val type: BottomSheetType) : CompanyMoneySharedEvent()
+    object HideBottomSheet : CompanyMoneySharedEvent()
+    object ToggleBottomSheet : CompanyMoneySharedEvent()
+
     // 설정
     data class ToggleShowCompleted(val show: Boolean) : CompanyMoneySharedEvent()
     data class UpdateDisplaySettings(val showCompletedPayments: Boolean) : CompanyMoneySharedEvent()
@@ -70,12 +75,21 @@ sealed class CompanyMoneySharedEvent {
     object GeneratePaymentReport : CompanyMoneySharedEvent()
     data class ExportPayments(val format: ExportFormat) : CompanyMoneySharedEvent()
     object ShowPaymentStatistics : CompanyMoneySharedEvent()
+
+    // 테스트용 데이터 토글 (누락된 이벤트 추가)
+    object ToggleDataMode : CompanyMoneySharedEvent()
 }
 
 enum class ExportFormat {
     CSV,
     EXCEL,
     PDF
+}
+
+enum class BottomSheetType {
+    FILTER,
+    SORT,
+    ACTIONS
 }
 
 data class PaymentFilterOptions(

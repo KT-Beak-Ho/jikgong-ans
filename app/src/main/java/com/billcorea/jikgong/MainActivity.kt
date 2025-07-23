@@ -41,6 +41,7 @@ import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPag
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
 import com.billcorea.jikgong.presentation.company.auth.login.CompanyLoginScreen
 import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedViewModel
+import com.billcorea.jikgong.presentation.company.main.money.CompanyMoneyScreen
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
@@ -139,6 +140,7 @@ class MainActivity : ComponentActivity() {
               composable(WorkerProjectListDestination.route) {
                 WorkerProjectList(viewModel, navigator, modifier = Modifier.padding(5.dp))
               }
+              // Worker Join Pages (주석 처리된 부분들 - 필요시 주석 해제)
 //                            composable(WorkerJoinPage1ScreenDestination.route) {
 //                                WorkerJoinPage1Screen(
 //                                    workerJoinViewModel = workerJoinViewModel,
@@ -181,30 +183,25 @@ class MainActivity : ComponentActivity() {
 //                                    modifier = Modifier.padding(5.dp)
 //                                )
 //                            }
-//                            composable(CompanyProjectListScreenDestination.route) {
-//                                CompanyProjectListScreenContent(
-//                                    companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
-//                                    navigator = navigator,
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
+
+              // Company Join Pages
               composable(CompanyJoinPage1ScreenDestination.route) {
                 CompanyJoinPage1Screen(
-                  companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
+                  companyJoinViewModel = companyJoinViewModel,
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(CompanyJoinPage2ScreenDestination.route) {
                 CompanyJoinPage2Screen(
-                  companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
+                  companyJoinViewModel = companyJoinViewModel,
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(CompanyJoinPage3ScreenDestination.route) {
                 CompanyJoinPage3Screen(
-                  companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
+                  companyJoinViewModel = companyJoinViewModel,
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
@@ -216,11 +213,23 @@ class MainActivity : ComponentActivity() {
                   modifier = Modifier.padding(5.dp)
                 )
               }
+
+              // Company Main Pages
               composable("company_money_screen") {
-                com.billcorea.jikgong.presentation.company.main.money.CompanyMoneyScreen(
+                CompanyMoneyScreen(
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
+              }
+
+              // Company Project List (주석 처리된 부분 - 필요시 주석 해제)
+//                            composable(CompanyProjectListScreenDestination.route) {
+//                                CompanyProjectListScreenContent(
+//                                    companyJoinViewModel = companyJoinViewModel,
+//                                    navigator = navigator,
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
             }
           }
         }

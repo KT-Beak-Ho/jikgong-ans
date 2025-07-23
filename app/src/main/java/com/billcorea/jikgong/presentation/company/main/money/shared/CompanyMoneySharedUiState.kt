@@ -45,6 +45,10 @@ data class CompanyMoneySharedUiState(
     val showConfirmDialog: Boolean = false,
     val confirmDialogMessage: String = "",
 
+    // 바텀 시트 상태 (누락된 프로퍼티들 추가)
+    val showBottomSheet: Boolean = false,
+    val bottomSheetType: BottomSheetType? = null,
+
     // 네비게이션 상태
     val shouldNavigateToDetail: String? = null,
     val shouldNavigateToWorkerDetail: String? = null

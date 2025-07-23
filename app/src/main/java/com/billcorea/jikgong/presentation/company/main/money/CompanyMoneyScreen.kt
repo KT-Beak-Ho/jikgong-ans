@@ -25,7 +25,7 @@ import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoney
 import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoneySharedViewModel
 import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoneySharedUiState
 import com.billcorea.jikgong.ui.theme.AppTypography
-import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
+import com.billcorea.jikgong.ui.theme.JikgongTheme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -392,7 +392,7 @@ fun CompanyMoneyScreenWithDataPreview() {
         isLoading = false
     )
 
-    Jikgong1111Theme {
+    JikgongTheme {
         CompanyMoneyScreenContent(
             uiState = sampleUiState
         )
@@ -409,7 +409,7 @@ fun CompanyMoneyScreenEmptyPreview() {
         isLoading = false
     )
 
-    Jikgong1111Theme {
+    JikgongTheme {
         CompanyMoneyScreenContent(
             uiState = emptyUiState
         )
@@ -425,7 +425,7 @@ fun CompanyMoneyScreenLoadingPreview() {
         isLoading = true
     )
 
-    Jikgong1111Theme {
+    JikgongTheme {
         CompanyMoneyScreenContent(
             uiState = loadingUiState
         )
@@ -435,7 +435,7 @@ fun CompanyMoneyScreenLoadingPreview() {
 @Preview(name = "긴급 알림", showBackground = true)
 @Composable
 fun UrgentPaymentCardPreview() {
-    Jikgong1111Theme {
+    JikgongTheme {
         UrgentPaymentCard(
             urgentCount = 3,
             totalPendingAmount = 1293800L,
