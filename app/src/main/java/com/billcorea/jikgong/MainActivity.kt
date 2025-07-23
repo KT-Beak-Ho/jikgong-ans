@@ -39,13 +39,9 @@ import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPag
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
-import com.billcorea.jikgong.presentation.company.auth.login.CompanyLoginScreen
-import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedViewModel
-import com.billcorea.jikgong.presentation.company.main.money.CompanyMoneyScreen
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
-import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestination
 import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
 import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
@@ -54,9 +50,24 @@ import com.billcorea.jikgong.presentation.destinations.JoinPage4Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage1ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage2ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage3ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage5ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerProjectDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
+import com.billcorea.jikgong.presentation.worker.auth.join.page1.WorkerJoinPage1Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page2.WorkerJoinPage2Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page3.WorkerJoinPage3Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page4.WorkerJoinPage4Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page5.WorkerJoinPage5Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page6.WorkerJoinPage6Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
 import com.billcorea.jikgong.presentation.worker.login.page1.WorkerLoginPage
+import com.billcorea.jikgong.presentation.worker.project.WorkerProject
 import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
@@ -64,18 +75,13 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMapSdk
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-import org.koin.android.ext.android.inject
-
 
 class MainActivity : ComponentActivity() {
 
-  val viewModel: MainViewModel by viewModels()
-
+  val viewModel : MainViewModel by viewModels()
+  private val companyJoinViewModel = CompanyJoinSharedViewModel()
+  private val workerJoinViewModel = WorkerJoinSharedViewModel()
   private lateinit var fusedLocationClient: FusedLocationProviderClient
-
-  /** Koin을 사용하여 SharedViewModel 주입 */
-  private val companyJoinViewModel: CompanyJoinSharedViewModel by inject()
-  private val companyLoginViewModel: CompanyLoginSharedViewModel by inject()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -88,12 +94,12 @@ class MainActivity : ComponentActivity() {
 
     setContent {
 
-      var isSplash by remember { mutableStateOf(true) }
+      var isSplash by remember { mutableStateOf(true)}
       val navController = rememberNavController()
       val navigator = navController.toDestinationsNavigator()
 
       Jikgong1111Theme(dynamicColor = true) {
-        Surface(tonalElevation = 5.dp) {
+        Surface (tonalElevation = 5.dp) {
           if (isSplash) {
             SplashScreen(modifier = Modifier.padding(3.dp), onTimeout = {
               Log.e("", "이제 뭐 하지 ???")
@@ -118,12 +124,7 @@ class MainActivity : ComponentActivity() {
                 JoinPage3(viewModel, navigator, modifier = Modifier.padding(5.dp))
               }
               composable(JoinPage4Destination.route) {
-                JoinPage4(
-                  viewModel,
-                  navigator,
-                  modifier = Modifier.padding(5.dp),
-                  this@MainActivity
-                )
+                JoinPage4(viewModel, navigator, modifier = Modifier.padding(5.dp), this@MainActivity)
               }
               composable(KakaoMapViewDestination.route) {
                 KakaoMapView(viewModel, navigator)
@@ -140,96 +141,73 @@ class MainActivity : ComponentActivity() {
               composable(WorkerProjectListDestination.route) {
                 WorkerProjectList(viewModel, navigator, modifier = Modifier.padding(5.dp))
               }
-              // Worker Join Pages (주석 처리된 부분들 - 필요시 주석 해제)
-//                            composable(WorkerJoinPage1ScreenDestination.route) {
-//                                WorkerJoinPage1Screen(
-//                                    workerJoinViewModel = workerJoinViewModel,
-//                                    navigator = navigator,
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
-//                            composable(WorkerJoinPage2ScreenDestination.route) {
-//                                WorkerJoinPage2Screen(
-//                                    workerJoinViewModel = workerJoinViewModel,
-//                                    navigator = navigator,
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
-//                            composable(WorkerJoinPage3ScreenDestination.route) {
-//                                WorkerJoinPage3Screen(
-//                                    workerJoinViewModel = workerJoinViewModel,
-//                                    navigator = navigator,
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
-//                            composable(WorkerJoinPage4ScreenDestination.route) {
-//                                WorkerJoinPage4Screen(
-//                                    workerJoinViewModel = workerJoinViewModel,
-//                                    navigator = navigator,
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
-//                            composable(WorkerJoinPage5ScreenDestination.route) {
-//                                WorkerJoinPage5Screen(
-//                                    workerJoinViewModel = workerJoinViewModel,
-//                                    navigator = navigator,
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
-//                            composable(WorkerJoinPage6ScreenDestination.route) {
-//                                WorkerJoinPage6Screen(
-//                                    workerJoinViewModel = workerJoinViewModel,
-//                                    navigator = navigator,
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
+              composable(WorkerProjectDestination.route) {
+                WorkerProject()
+              }
 
-              // Company Join Pages
+              composable(WorkerJoinPage1ScreenDestination.route) {
+                WorkerJoinPage1Screen(
+                  workerJoinViewModel = workerJoinViewModel,
+                  navigator = navigator,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              composable(WorkerJoinPage2ScreenDestination.route) {
+                WorkerJoinPage2Screen(
+                  workerJoinViewModel = workerJoinViewModel,
+                  navigator = navigator,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              composable(WorkerJoinPage3ScreenDestination.route) {
+                WorkerJoinPage3Screen(
+                  workerJoinViewModel = workerJoinViewModel,
+                  navigator = navigator,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              composable(WorkerJoinPage4ScreenDestination.route) {
+                WorkerJoinPage4Screen(
+                  workerJoinViewModel = workerJoinViewModel,
+                  navigator = navigator,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              composable(WorkerJoinPage5ScreenDestination.route) {
+                WorkerJoinPage5Screen(
+                  workerJoinViewModel = workerJoinViewModel,
+                  navigator = navigator,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              composable(WorkerJoinPage6ScreenDestination.route) {
+                WorkerJoinPage6Screen(
+                  workerJoinViewModel = workerJoinViewModel,
+                  navigator = navigator,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
               composable(CompanyJoinPage1ScreenDestination.route) {
                 CompanyJoinPage1Screen(
-                  companyJoinViewModel = companyJoinViewModel,
+                  companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(CompanyJoinPage2ScreenDestination.route) {
                 CompanyJoinPage2Screen(
-                  companyJoinViewModel = companyJoinViewModel,
+                  companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(CompanyJoinPage3ScreenDestination.route) {
                 CompanyJoinPage3Screen(
-                  companyJoinViewModel = companyJoinViewModel,
+                  companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
-              composable(CompanyLoginScreenDestination.route) {
-                CompanyLoginScreen(
-                  companyLoginViewModel = companyLoginViewModel,
-                  navigator = navigator,
-                  modifier = Modifier.padding(5.dp)
-                )
-              }
-
-              // Company Main Pages
-              composable("company_money_screen") {
-                CompanyMoneyScreen(
-                  navigator = navigator,
-                  modifier = Modifier.padding(5.dp)
-                )
-              }
-
-              // Company Project List (주석 처리된 부분 - 필요시 주석 해제)
-//                            composable(CompanyProjectListScreenDestination.route) {
-//                                CompanyProjectListScreenContent(
-//                                    companyJoinViewModel = companyJoinViewModel,
-//                                    navigator = navigator,
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
             }
           }
         }
@@ -240,8 +218,7 @@ class MainActivity : ComponentActivity() {
   private fun checkLocationPermission() {
     Log.e("", "checkLocationPermission ...")
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-      == PackageManager.PERMISSION_GRANTED
-    ) {
+      == PackageManager.PERMISSION_GRANTED) {
       getLastKnownLocation()
     } else {
       requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -268,15 +245,14 @@ class MainActivity : ComponentActivity() {
   @SuppressLint("CommitPrefEdits")
   private fun getLastKnownLocation() {
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-      != PackageManager.PERMISSION_GRANTED
-    ) {
+      != PackageManager.PERMISSION_GRANTED) {
       checkLocationPermission()
       return
     }
   }
 
   fun getKeyHash(context: Context): String? {
-    return KakaoMapSdk.INSTANCE.getHashKey()
+    return  KakaoMapSdk.INSTANCE.getHashKey()
   }
 }
 
@@ -286,7 +262,7 @@ fun AppPreview() {
   val navController = rememberNavController()
   val navigator = navController.toDestinationsNavigator()
   Jikgong1111Theme(dynamicColor = true) {
-    Surface(tonalElevation = 5.dp) {
+    Surface (tonalElevation = 5.dp) {
       JikgongApp(navigator = navigator, modifier = Modifier.padding(3.dp))
     }
   }
@@ -297,11 +273,10 @@ fun AppPreview() {
 fun DarkAppPreview() {
   val navController = rememberNavController()
   val navigator = navController.toDestinationsNavigator()
-  Jikgong1111Theme(
-    darkTheme = true,
+  Jikgong1111Theme(darkTheme = true,
     dynamicColor = true
   ) {
-    Surface(tonalElevation = 5.dp) {
+    Surface (tonalElevation = 5.dp) {
       JikgongApp(navigator = navigator, modifier = Modifier.padding(3.dp))
     }
   }
