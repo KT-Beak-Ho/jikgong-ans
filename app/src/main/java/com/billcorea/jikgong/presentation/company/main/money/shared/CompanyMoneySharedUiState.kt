@@ -1,6 +1,5 @@
 package com.billcorea.jikgong.presentation.company.main.money.shared
 
-
 import com.billcorea.jikgong.presentation.company.main.money.data.PaymentData
 import com.billcorea.jikgong.presentation.company.main.money.data.PaymentStatus
 import com.billcorea.jikgong.presentation.company.main.money.data.PaymentSummary
@@ -86,23 +85,3 @@ data class CompanyMoneySharedUiState(
     val selectedDateTotalAmount: Long
         get() = calendarPayments[selectedCalendarDate]?.sumOf { it.totalAmount.toLong() } ?: 0L
 }
-
-enum class PaymentSortOption {
-    DUE_DATE,        // 지급 예정일
-    CREATED_DATE,    // 생성일
-    AMOUNT,          // 금액
-    WORKER_NAME,     // 근로자명
-    PROJECT_NAME,    // 프로젝트명
-    STATUS           // 상태
-}
-
-data class PaymentFilterOptions(
-    val status: PaymentStatus? = null,
-    val paymentType: PaymentType? = null,
-    val dateFrom: LocalDate? = null,
-    val dateTo: LocalDate? = null,
-    val minAmount: Int? = null,
-    val maxAmount: Int? = null,
-    val projectId: String? = null,
-    val workerId: String? = null
-)

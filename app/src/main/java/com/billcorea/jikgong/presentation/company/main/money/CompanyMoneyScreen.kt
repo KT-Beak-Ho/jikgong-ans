@@ -12,12 +12,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.money.components.PaymentCard
 import com.billcorea.jikgong.presentation.company.main.money.data.PaymentStatus
+import com.billcorea.jikgong.presentation.company.main.money.data.PaymentSampleData
 import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoneySharedEvent
 import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoneySharedViewModel
 import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoneySharedUiState
@@ -80,135 +83,81 @@ fun CompanyMoneyScreen(
         )
     }
 
+    CompanyMoneyScreenContent(
+        uiState = uiState,
+        viewModel = viewModel,
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CompanyMoneyScreenContent(
+    uiState: CompanyMoneySharedUiState,
+    viewModel: CompanyMoneySharedViewModel? = null,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        // 상단바
+        // 상단바 - Figma 디자인에 맞게 수정
         TopAppBar(
             title = {
                 Text(
-                    text = "임금 관리",
+                    text = "지급 내역",
                     style = AppTypography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    )
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    ),
+                    color = appColorScheme.onSurface
                 )
             },
             actions = {
-                // 멀티 선택 모드 토글
+                // 검색 버튼
                 IconButton(
                     onClick = {
-                        viewModel.onEvent(CompanyMoneySharedEvent.ToggleMultiSelectMode)
+                        // TODO: 검색 기능 구현
                     }
                 ) {
                     Icon(
-                        imageVector = if (uiState.isMultiSelectMode) {
-                            Icons.Default.CheckCircle
-                        } else {
-                            Icons.Default.Checklist
-                        },
-                        contentDescription = "다중 선택",
-                        tint = if (uiState.isMultiSelectMode) {
-                            appColorScheme.primary
-                        } else {
-                            appColorScheme.onSurface
-                        }
-                    )
-                }
-
-                // 필터
-                IconButton(
-                    onClick = {
-                        viewModel.onEvent(CompanyMoneySharedEvent.ShowFilterDialog)
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FilterList,
-                        contentDescription = "필터",
-                        tint = if (uiState.hasActiveFilters) {
-                            appColorScheme.primary
-                        } else {
-                            appColorScheme.onSurface
-                        }
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "검색",
+                        tint = appColorScheme.onSurface
                     )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = appColorScheme.surface,
+                containerColor = Color.White,
                 titleContentColor = appColorScheme.onSurface
             )
         )
 
-        // 요약 정보 카드
+        // 긴급 지급 알림 카드 (48시간 이내 지급 필요)
         uiState.summary?.let { summary ->
-            UrgentPaymentCard(
-                urgentCount = summary.urgentPaymentsCount,
-                totalPendingAmount = summary.totalPendingAmount,
-                onViewUrgentPayments = {
-                    viewModel.onEvent(CompanyMoneySharedEvent.FilterByStatus(PaymentStatus.URGENT))
-                }
-            )
+            if (summary.urgentPaymentsCount > 0) {
+                UrgentPaymentCard(
+                    urgentCount = summary.urgentPaymentsCount,
+                    totalPendingAmount = summary.totalPendingAmount,
+                    onViewUrgentPayments = {
+                        viewModel?.onEvent(CompanyMoneySharedEvent.FilterByStatus(PaymentStatus.URGENT))
+                    }
+                )
+            }
         }
 
-        // 선택된 항목 액션 바 (멀티 선택 모드일 때)
-        if (uiState.isMultiSelectMode && uiState.selectedPaymentIds.isNotEmpty()) {
-            SelectedPaymentsActionBar(
-                selectedCount = uiState.selectedPaymentsInfo.first,
-                totalAmount = uiState.selectedPaymentsInfo.second,
-                onProcessSelected = {
-                    viewModel.onEvent(CompanyMoneySharedEvent.ProcessSelectedPayments)
+        // 메인 콘텐츠
+        if (uiState.isLoading) {
+            LoadingContent(modifier = Modifier.fillMaxSize())
+        } else if (uiState.filteredPayments.isEmpty()) {
+            EmptyContent(
+                hasFilters = uiState.hasActiveFilters,
+                onClearFilters = {
+                    viewModel?.onEvent(CompanyMoneySharedEvent.ClearFilters)
                 },
-                onClearSelection = {
-                    viewModel.onEvent(CompanyMoneySharedEvent.ClearSelection)
-                }
-            )
-        }
-
-        // 하단 탭바
-        TabRow(
-            selectedTabIndex = uiState.selectedTabIndex,
-            modifier = Modifier.fillMaxWidth(),
-            containerColor = appColorScheme.surface,
-            contentColor = appColorScheme.primary
-        ) {
-            Tab(
-                selected = uiState.selectedTabIndex == 0,
-                onClick = {
-                    viewModel.onEvent(CompanyMoneySharedEvent.ChangeTab(0))
-                },
-                text = {
-                    Text(
-                        text = "지급 목록 (${uiState.filteredPayments.size})",
-                        style = AppTypography.titleMedium.copy(
-                            fontWeight = if (uiState.selectedTabIndex == 0) FontWeight.Bold else FontWeight.Normal
-                        )
-                    )
-                }
-            )
-
-            Tab(
-                selected = uiState.selectedTabIndex == 1,
-                onClick = {
-                    viewModel.onEvent(CompanyMoneySharedEvent.ChangeTab(1))
-                },
-                text = {
-                    Text(
-                        text = "캘린더",
-                        style = AppTypography.titleMedium.copy(
-                            fontWeight = if (uiState.selectedTabIndex == 1) FontWeight.Bold else FontWeight.Normal
-                        )
-                    )
-                }
-            )
-        }
-
-        // 탭 콘텐츠
-        when (uiState.selectedTabIndex) {
-            0 -> PaymentListContent(
-                uiState = uiState,
-                viewModel = viewModel,
                 modifier = Modifier.fillMaxSize()
             )
-            1 -> PaymentCalendarContent(
+        } else {
+            PaymentListContent(
                 uiState = uiState,
                 viewModel = viewModel,
                 modifier = Modifier.fillMaxSize()
@@ -223,117 +172,160 @@ private fun UrgentPaymentCard(
     totalPendingAmount: Long,
     onViewUrgentPayments: () -> Unit
 ) {
-    if (urgentCount > 0) {
-        Card(
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0x1AFF5722) // 연한 주황색 배경
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFFFEBEE) // 연한 빨간색 배경
-            ),
-            shape = RoundedCornerShape(12.dp)
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.AccessTime,
-                    contentDescription = "긴급",
-                    tint = Color(0xFFD32F2F),
-                    modifier = Modifier.size(24.dp)
+            Icon(
+                imageVector = Icons.Default.AccessTime,
+                contentDescription = "긴급",
+                tint = Color(0xFFFF5722),
+                modifier = Modifier.size(24.dp)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "48시간 이내 지급 필요",
+                    style = AppTypography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFFF5722)
+                    )
                 )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "48시간 이내 지급 필요",
-                        style = AppTypography.titleSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFD32F2F)
-                        )
+                Text(
+                    text = "${urgentCount}건 • ${NumberFormat.getNumberInstance(Locale.KOREA).format(totalPendingAmount)}원",
+                    style = AppTypography.bodySmall.copy(
+                        color = Color(0xFF757575)
                     )
-                    Text(
-                        text = "${urgentCount}건 (${NumberFormat.getNumberInstance(Locale.KOREA).format(totalPendingAmount)}원)",
-                        style = AppTypography.bodySmall.copy(
-                            color = Color(0xFF757575)
-                        )
-                    )
-                }
+                )
+            }
 
-                TextButton(
-                    onClick = onViewUrgentPayments
-                ) {
-                    Text(
-                        text = "확인하기",
-                        color = Color(0xFFD32F2F),
-                        style = AppTypography.labelMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        )
+            TextButton(
+                onClick = onViewUrgentPayments,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = Color(0xFFFF5722)
+                )
+            ) {
+                Text(
+                    text = "확인하기",
+                    style = AppTypography.labelMedium.copy(
+                        fontWeight = FontWeight.Bold
                     )
-                }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun SelectedPaymentsActionBar(
-    selectedCount: Int,
-    totalAmount: Long,
-    onProcessSelected: () -> Unit,
-    onClearSelection: () -> Unit
+private fun LoadingContent(
+    modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = appColorScheme.primaryContainer,
-        tonalElevation = 4.dp
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column {
-                Text(
-                    text = "${selectedCount}건 선택",
-                    style = AppTypography.titleSmall.copy(
-                        fontWeight = FontWeight.Bold
+            CircularProgressIndicator(
+                color = appColorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "지급 내역을 불러오는 중...",
+                style = AppTypography.bodyMedium,
+                color = appColorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyContent(
+    hasFilters: Boolean,
+    onClearFilters: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(40.dp)
+        ) {
+            // Figma 디자인의 빈 상태 이미지 대신 아이콘 사용
+            Icon(
+                imageVector = Icons.Default.Payment,
+                contentDescription = "지급 내역 없음",
+                modifier = Modifier.size(64.dp),
+                tint = Color(0xFFBDBDBD)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = if (hasFilters) {
+                    "조건에 맞는 지급 내역이 없습니다"
+                } else {
+                    "0원"
+                },
+                style = AppTypography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
+                ),
+                color = appColorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = if (hasFilters) {
+                    "다른 조건으로 검색해보세요"
+                } else {
+                    "아직 지급 내역이 없습니다"
+                },
+                style = AppTypography.bodyLarge.copy(
+                    fontSize = 16.sp
+                ),
+                color = Color(0xFF757575),
+                textAlign = TextAlign.Center
+            )
+
+            if (hasFilters) {
+                Spacer(modifier = Modifier.height(24.dp))
+                OutlinedButton(
+                    onClick = onClearFilters,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = appColorScheme.primary
                     ),
-                    color = appColorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = "총 ${NumberFormat.getNumberInstance(Locale.KOREA).format(totalAmount)}원",
-                    style = AppTypography.bodySmall,
-                    color = appColorScheme.onPrimaryContainer
-                )
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                TextButton(onClick = onClearSelection) {
-                    Text("취소")
-                }
-
-                Button(
-                    onClick = onProcessSelected,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = appColorScheme.primary
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        width = 1.dp
                     )
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Payment,
-                        contentDescription = "지급 처리",
-                        modifier = Modifier.size(18.dp)
+                    Text(
+                        text = "전체 보기",
+                        style = AppTypography.labelMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        )
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("지급 처리")
                 }
             }
         }
@@ -343,146 +335,111 @@ private fun SelectedPaymentsActionBar(
 @Composable
 private fun PaymentListContent(
     uiState: CompanyMoneySharedUiState,
-    viewModel: CompanyMoneySharedViewModel,
+    viewModel: CompanyMoneySharedViewModel?,
     modifier: Modifier = Modifier
 ) {
-    if (uiState.isLoading) {
-        Box(
-            modifier = modifier,
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-    } else if (uiState.filteredPayments.isEmpty()) {
-        Box(
-            modifier = modifier,
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Payment,
-                    contentDescription = "지급 목록",
-                    modifier = Modifier.size(64.dp),
-                    tint = appColorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = if (uiState.hasActiveFilters) {
-                        "필터 조건에 맞는 지급 내역이 없습니다"
-                    } else {
-                        "지급할 임금이 없습니다"
-                    },
-                    style = AppTypography.titleMedium,
-                    color = appColorScheme.onSurfaceVariant
-                )
-
-                Text(
-                    text = if (uiState.hasActiveFilters) {
-                        "필터를 변경하거나 초기화해보세요"
-                    } else {
-                        "프로젝트 완료 후 임금을 지급하세요"
-                    },
-                    style = AppTypography.bodyMedium,
-                    color = appColorScheme.onSurfaceVariant
-                )
-
-                if (uiState.hasActiveFilters) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    TextButton(
-                        onClick = {
-                            viewModel.onEvent(CompanyMoneySharedEvent.ClearFilters)
-                        }
-                    ) {
-                        Text("필터 초기화")
-                    }
-                }
-            }
-        }
-    } else {
-        LazyColumn(
-            modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(
-                items = uiState.filteredPayments,
-                key = { it.id }
-            ) { payment ->
-                PaymentCard(
-                    payment = payment,
-                    isSelected = payment.id in uiState.selectedPaymentIds,
-                    isMultiSelectMode = uiState.isMultiSelectMode,
-                    onPaymentClick = {
-                        viewModel.onEvent(CompanyMoneySharedEvent.ShowPaymentDetail(it.id))
-                    },
-                    onToggleSelection = { paymentId ->
-                        viewModel.onEvent(CompanyMoneySharedEvent.TogglePaymentSelection(paymentId))
-                    },
-                    onProcessPayment = { paymentId ->
-                        viewModel.onEvent(CompanyMoneySharedEvent.ProcessSinglePayment(paymentId))
-                    },
-                    onMarkUrgent = { paymentId ->
-                        viewModel.onEvent(CompanyMoneySharedEvent.MarkAsUrgent(paymentId))
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PaymentCalendarContent(
-    uiState: CompanyMoneySharedUiState,
-    viewModel: CompanyMoneySharedViewModel,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.CalendarMonth,
-                contentDescription = "지급 캘린더",
-                modifier = Modifier.size(64.dp),
-                tint = appColorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+        // 지급 건수 헤더
+        item {
             Text(
-                text = "캘린더 뷰 준비 중",
-                style = AppTypography.titleMedium,
-                color = appColorScheme.onSurfaceVariant
+                text = "총 ${uiState.filteredPayments.size}건",
+                style = AppTypography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = appColorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
+        }
 
-            Text(
-                text = "임금 지급 일정을 달력으로 확인하세요",
-                style = AppTypography.bodyMedium,
-                color = appColorScheme.onSurfaceVariant
+        // 지급 목록
+        items(
+            items = uiState.filteredPayments,
+            key = { it.id }
+        ) { payment ->
+            PaymentCard(
+                payment = payment,
+                isSelected = payment.id in uiState.selectedPaymentIds,
+                isMultiSelectMode = uiState.isMultiSelectMode,
+                onPaymentClick = {
+                    viewModel?.onEvent(CompanyMoneySharedEvent.ShowPaymentDetail(it.id))
+                },
+                onToggleSelection = { paymentId ->
+                    viewModel?.onEvent(CompanyMoneySharedEvent.TogglePaymentSelection(paymentId))
+                },
+                onProcessPayment = { paymentId ->
+                    viewModel?.onEvent(CompanyMoneySharedEvent.ProcessSinglePayment(paymentId))
+                },
+                onMarkUrgent = { paymentId ->
+                    viewModel?.onEvent(CompanyMoneySharedEvent.MarkAsUrgent(paymentId))
+                }
             )
         }
     }
 }
 
-@Preview(showBackground = true)
+// 프리뷰들
+@Preview(name = "데이터 있는 상태", showBackground = true)
 @Composable
-fun CompanyMoneyScreenPreview() {
-    val navController = rememberNavController()
-    val navigator = navController.toDestinationsNavigator()
+fun CompanyMoneyScreenWithDataPreview() {
+    val sampleUiState = CompanyMoneySharedUiState(
+        payments = PaymentSampleData.getSamplePayments(),
+        filteredPayments = PaymentSampleData.getSamplePayments(),
+        summary = PaymentSampleData.getSampleSummary(),
+        isLoading = false
+    )
 
     Jikgong1111Theme {
-        CompanyMoneyScreen(
-            navigator = navigator,
-            viewModel = CompanyMoneySharedViewModel()
+        CompanyMoneyScreenContent(
+            uiState = sampleUiState
+        )
+    }
+}
+
+@Preview(name = "빈 상태", showBackground = true)
+@Composable
+fun CompanyMoneyScreenEmptyPreview() {
+    val emptyUiState = CompanyMoneySharedUiState(
+        payments = emptyList(),
+        filteredPayments = emptyList(),
+        summary = PaymentSampleData.getEmptySummary(),
+        isLoading = false
+    )
+
+    Jikgong1111Theme {
+        CompanyMoneyScreenContent(
+            uiState = emptyUiState
+        )
+    }
+}
+
+@Preview(name = "로딩 상태", showBackground = true)
+@Composable
+fun CompanyMoneyScreenLoadingPreview() {
+    val loadingUiState = CompanyMoneySharedUiState(
+        payments = emptyList(),
+        filteredPayments = emptyList(),
+        isLoading = true
+    )
+
+    Jikgong1111Theme {
+        CompanyMoneyScreenContent(
+            uiState = loadingUiState
+        )
+    }
+}
+
+@Preview(name = "긴급 알림", showBackground = true)
+@Composable
+fun UrgentPaymentCardPreview() {
+    Jikgong1111Theme {
+        UrgentPaymentCard(
+            urgentCount = 3,
+            totalPendingAmount = 1293800L,
+            onViewUrgentPayments = {}
         )
     }
 }

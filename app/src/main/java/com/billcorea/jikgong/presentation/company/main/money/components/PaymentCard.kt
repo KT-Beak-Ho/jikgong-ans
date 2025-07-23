@@ -249,7 +249,7 @@ fun PaymentCard(
                         }
                     }
 
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier.padding(vertical = 8.dp),
                         color = appColorScheme.outline.copy(alpha = 0.3f)
                     )

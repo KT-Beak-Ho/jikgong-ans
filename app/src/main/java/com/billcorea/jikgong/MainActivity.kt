@@ -216,6 +216,11 @@ class MainActivity : ComponentActivity() {
                   modifier = Modifier.padding(5.dp)
                 )
               }
+              composable("company_money_screen") {
+                com.billcorea.jikgong.presentation.company.main.money.CompanyMoneyScreen(
+                  navigator = navigator,
+                  modifier = Modifier.padding(5.dp)
+                )
             }
           }
         }

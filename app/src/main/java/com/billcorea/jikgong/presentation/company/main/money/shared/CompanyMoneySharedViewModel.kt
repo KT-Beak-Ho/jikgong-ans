@@ -24,62 +24,43 @@ class CompanyMoneySharedViewModel : ViewModel() {
     private val _shouldNavigateToWorkerDetail = MutableStateFlow<String?>(null)
     val shouldNavigateToWorkerDetail: StateFlow<String?> = _shouldNavigateToWorkerDetail.asStateFlow()
 
+    // 데이터 모드 (테스트용)
+    private var dataMode: Boolean = false
+
     init {
-        loadPayments()
-        loadPaymentSummary()
+        loadEmptyState() // 기본적으로 빈 상태로 시작
     }
 
     fun onEvent(event: CompanyMoneySharedEvent) {
         when (event) {
-            // 데이터 로딩
             is CompanyMoneySharedEvent.LoadPayments -> loadPayments()
             is CompanyMoneySharedEvent.RefreshPayments -> refreshPayments()
             is CompanyMoneySharedEvent.LoadPaymentSummary -> loadPaymentSummary()
-
-            // 탭 변경
-            is CompanyMoneySharedEvent.ChangeTab -> {
-                _uiState.value = _uiState.value.copy(selectedTabIndex = event.tabIndex)
-                if (event.tabIndex == 1) { // 캘린더 탭
-                    loadCalendarPayments()
-                }
-            }
-
-            // 필터링
+            is CompanyMoneySharedEvent.ChangeTab -> handleChangeTab(event.tabIndex)
             is CompanyMoneySharedEvent.FilterByStatus -> filterByStatus(event.status)
             is CompanyMoneySharedEvent.FilterByPaymentType -> filterByPaymentType(event.type)
             is CompanyMoneySharedEvent.FilterByDateRange -> filterByDateRange(event.from, event.to)
             is CompanyMoneySharedEvent.SearchPayments -> searchPayments(event.query)
             is CompanyMoneySharedEvent.ClearFilters -> clearFilters()
             is CompanyMoneySharedEvent.ApplyFilters -> applyFilters(event.options)
-
-            // 정렬
             is CompanyMoneySharedEvent.ChangeSortOption -> changeSortOption(event.sortBy, event.ascending)
             is CompanyMoneySharedEvent.ToggleSortDirection -> toggleSortDirection()
-
-            // 선택
             is CompanyMoneySharedEvent.SelectPayment -> selectPayment(event.paymentId)
             is CompanyMoneySharedEvent.DeselectPayment -> deselectPayment(event.paymentId)
             is CompanyMoneySharedEvent.TogglePaymentSelection -> togglePaymentSelection(event.paymentId)
             is CompanyMoneySharedEvent.SelectAllVisible -> selectAllVisible()
             is CompanyMoneySharedEvent.ClearSelection -> clearSelection()
             is CompanyMoneySharedEvent.ToggleMultiSelectMode -> toggleMultiSelectMode()
-
-            // 지급 처리
             is CompanyMoneySharedEvent.ProcessSelectedPayments -> processSelectedPayments()
             is CompanyMoneySharedEvent.ProcessSinglePayment -> processSinglePayment(event.paymentId)
             is CompanyMoneySharedEvent.MarkAsUrgent -> markAsUrgent(event.paymentId)
             is CompanyMoneySharedEvent.AddPaymentNote -> addPaymentNote(event.paymentId, event.note)
             is CompanyMoneySharedEvent.RetryFailedPayment -> retryFailedPayment(event.paymentId)
-
-            // 캘린더
             is CompanyMoneySharedEvent.SelectCalendarDate -> selectCalendarDate(event.date)
             is CompanyMoneySharedEvent.LoadCalendarPayments -> loadCalendarPayments(event.month, event.year)
-
-            // 상세 정보
             is CompanyMoneySharedEvent.ShowPaymentDetail -> showPaymentDetail(event.paymentId)
             is CompanyMoneySharedEvent.ShowWorkerDetail -> showWorkerDetail(event.workerId)
-
-            // 다이얼로그
+            is CompanyMoneySharedEvent.ShowProjectDetail -> showProjectDetail(event.projectId)
             is CompanyMoneySharedEvent.ShowPaymentDialog -> {
                 _uiState.value = _uiState.value.copy(showPaymentDialog = true)
             }
@@ -93,26 +74,46 @@ class CompanyMoneySharedViewModel : ViewModel() {
                 )
             }
             is CompanyMoneySharedEvent.DismissDialog -> dismissDialogs()
-
-            // 설정
+            is CompanyMoneySharedEvent.ShowBottomSheet -> showBottomSheet(event.type)
+            is CompanyMoneySharedEvent.HideBottomSheet -> hideBottomSheet()
+            is CompanyMoneySharedEvent.ToggleBottomSheet -> toggleBottomSheet()
             is CompanyMoneySharedEvent.ToggleShowCompleted -> toggleShowCompleted(event.show)
-
-            // 에러 처리
+            is CompanyMoneySharedEvent.UpdateDisplaySettings -> updateDisplaySettings(event.showCompletedPayments)
             is CompanyMoneySharedEvent.ClearError -> clearError()
             is CompanyMoneySharedEvent.ShowError -> showError(event.message)
-
-            // 네비게이션
             is CompanyMoneySharedEvent.ClearNavigation -> clearNavigation()
-
-            // 기타
             is CompanyMoneySharedEvent.GeneratePaymentReport -> generateReport()
             is CompanyMoneySharedEvent.ExportPayments -> exportPayments(event.format)
-
-            // 누락된 이벤트들 추가
-            is CompanyMoneySharedEvent.UpdateDisplaySettings -> updateDisplaySettings(event.showCompletedPayments)
             is CompanyMoneySharedEvent.ShowPaymentStatistics -> showPaymentStatistics()
-            is CompanyMoneySharedEvent.ShowProjectDetail -> showProjectDetail(event.projectId)
+            is CompanyMoneySharedEvent.ToggleDataMode -> toggleDataMode()
         }
+    }
+
+    private fun handleChangeTab(tabIndex: Int) {
+        _uiState.value = _uiState.value.copy(selectedTabIndex = tabIndex)
+        if (tabIndex == 1) { // 캘린더 탭
+            loadCalendarPayments()
+        }
+    }
+
+    private fun toggleDataMode() {
+        dataMode = !dataMode
+        if (dataMode) {
+            loadPayments()
+            loadPaymentSummary()
+        } else {
+            loadEmptyState()
+        }
+    }
+
+    private fun loadEmptyState() {
+        _uiState.value = _uiState.value.copy(
+            payments = emptyList(),
+            filteredPayments = emptyList(),
+            summary = getEmptySummary(),
+            isLoading = false,
+            errorMessage = null
+        )
     }
 
     private fun loadPayments() {
@@ -120,7 +121,6 @@ class CompanyMoneySharedViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
             try {
-                // 실제로는 Repository에서 데이터를 가져옴
                 val payments = PaymentSampleData.getSamplePayments()
                 val filteredPayments = applyCurrentFilters(payments)
 
@@ -142,10 +142,11 @@ class CompanyMoneySharedViewModel : ViewModel() {
     private fun refreshPayments() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isRefreshing = true)
-
-            // 새로고침 로직
-            loadPayments()
-
+            if (dataMode) {
+                loadPayments()
+            } else {
+                loadEmptyState()
+            }
             _uiState.value = _uiState.value.copy(isRefreshing = false)
         }
     }
@@ -153,7 +154,11 @@ class CompanyMoneySharedViewModel : ViewModel() {
     private fun loadPaymentSummary() {
         viewModelScope.launch {
             try {
-                val summary = PaymentSampleData.getSampleSummary()
+                val summary = if (dataMode) {
+                    PaymentSampleData.getSampleSummary()
+                } else {
+                    getEmptySummary()
+                }
                 _uiState.value = _uiState.value.copy(summary = summary)
             } catch (e: Exception) {
                 showError("요약 정보를 불러오는데 실패했습니다")
@@ -161,6 +166,34 @@ class CompanyMoneySharedViewModel : ViewModel() {
         }
     }
 
+    private fun getEmptySummary() = com.billcorea.jikgong.presentation.company.main.money.data.PaymentSummary(
+        totalPendingAmount = 0L,
+        totalPendingCount = 0,
+        urgentPaymentsCount = 0,
+        completedThisMonthAmount = 0L,
+        completedThisMonthCount = 0,
+        averageProcessingTime = 0.0
+    )
+
+    // 하단 시트 관련 메소드들
+    private fun showBottomSheet(type: BottomSheetType) {
+        _uiState.value = _uiState.value.copy(
+            showBottomSheet = true,
+            bottomSheetType = type
+        )
+    }
+
+    private fun hideBottomSheet() {
+        _uiState.value = _uiState.value.copy(showBottomSheet = false)
+    }
+
+    private fun toggleBottomSheet() {
+        _uiState.value = _uiState.value.copy(
+            showBottomSheet = !_uiState.value.showBottomSheet
+        )
+    }
+
+    // 기존 메소드들
     private fun filterByStatus(status: PaymentStatus?) {
         _uiState.value = _uiState.value.copy(selectedStatus = status)
         applyFilters()
@@ -203,18 +236,13 @@ class CompanyMoneySharedViewModel : ViewModel() {
         val currentState = _uiState.value
 
         return payments.filter { payment ->
-            // 상태 필터
             (currentState.selectedStatus == null || payment.status == currentState.selectedStatus) &&
-                    // 지급 유형 필터
                     (currentState.selectedPaymentType == null || payment.paymentType == currentState.selectedPaymentType) &&
-                    // 날짜 범위 필터
                     (currentState.selectedDateRange.first == null || payment.workDate >= currentState.selectedDateRange.first!!) &&
                     (currentState.selectedDateRange.second == null || payment.workDate <= currentState.selectedDateRange.second!!) &&
-                    // 검색 쿼리 필터
                     (currentState.searchQuery.isEmpty() ||
                             payment.worker.name.contains(currentState.searchQuery, true) ||
                             payment.project.name.contains(currentState.searchQuery, true)) &&
-                    // 완료된 지급 표시 옵션
                     (currentState.showCompletedPayments || payment.status != PaymentStatus.COMPLETED)
         }
     }
@@ -296,14 +324,13 @@ class CompanyMoneySharedViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(isProcessingPayment = true)
 
             try {
-                // 실제로는 Repository를 통해 지급 처리 API 호출
                 selectedIds.forEach { paymentId ->
-                    // API 호출 시뮬레이션
                     processSinglePaymentInternal(paymentId)
                 }
 
-                // 성공 후 데이터 새로고침
-                loadPayments()
+                if (dataMode) {
+                    loadPayments()
+                }
                 clearSelection()
 
             } catch (e: Exception) {
@@ -320,7 +347,9 @@ class CompanyMoneySharedViewModel : ViewModel() {
 
             try {
                 processSinglePaymentInternal(paymentId)
-                loadPayments()
+                if (dataMode) {
+                    loadPayments()
+                }
             } catch (e: Exception) {
                 showError("지급 처리에 실패했습니다: ${e.message}")
             } finally {
@@ -330,10 +359,6 @@ class CompanyMoneySharedViewModel : ViewModel() {
     }
 
     private suspend fun processSinglePaymentInternal(paymentId: String) {
-        // 실제 API 호출 로직
-        // 예: paymentRepository.processPayment(paymentId)
-
-        // 시뮬레이션: 지급 상태를 PROCESSING으로 변경
         val currentPayments = _uiState.value.payments.toMutableList()
         val paymentIndex = currentPayments.indexOfFirst { it.id == paymentId }
         if (paymentIndex != -1) {
@@ -347,7 +372,6 @@ class CompanyMoneySharedViewModel : ViewModel() {
     private fun markAsUrgent(paymentId: String) {
         viewModelScope.launch {
             try {
-                // 실제로는 API 호출
                 val currentPayments = _uiState.value.payments.toMutableList()
                 val paymentIndex = currentPayments.indexOfFirst { it.id == paymentId }
                 if (paymentIndex != -1) {
@@ -366,7 +390,6 @@ class CompanyMoneySharedViewModel : ViewModel() {
     private fun addPaymentNote(paymentId: String, note: String) {
         viewModelScope.launch {
             try {
-                // 실제로는 API 호출
                 val currentPayments = _uiState.value.payments.toMutableList()
                 val paymentIndex = currentPayments.indexOfFirst { it.id == paymentId }
                 if (paymentIndex != -1) {
@@ -384,9 +407,10 @@ class CompanyMoneySharedViewModel : ViewModel() {
     private fun retryFailedPayment(paymentId: String) {
         viewModelScope.launch {
             try {
-                // 실패한 지급 재시도 로직
                 processSinglePaymentInternal(paymentId)
-                loadPayments()
+                if (dataMode) {
+                    loadPayments()
+                }
             } catch (e: Exception) {
                 showError("지급 재시도에 실패했습니다")
             }
@@ -406,7 +430,6 @@ class CompanyMoneySharedViewModel : ViewModel() {
                     _uiState.value.selectedCalendarDate
                 }
 
-                // 해당 월의 지급 데이터 그룹화
                 val monthlyPayments = _uiState.value.payments
                     .filter {
                         it.workDate.month == targetDate.month &&
@@ -431,7 +454,6 @@ class CompanyMoneySharedViewModel : ViewModel() {
 
     private fun showProjectDetail(projectId: String) {
         // 프로젝트 상세 네비게이션 로직 추가
-        // 예: _shouldNavigateToProjectDetail.value = projectId
     }
 
     private fun dismissDialogs() {
@@ -455,7 +477,6 @@ class CompanyMoneySharedViewModel : ViewModel() {
 
     private fun showPaymentStatistics() {
         // 통계 화면 표시 로직
-        // 예: 통계 다이얼로그나 별도 화면으로 네비게이션
     }
 
     private fun clearError() {
@@ -474,8 +495,6 @@ class CompanyMoneySharedViewModel : ViewModel() {
     private fun generateReport() {
         viewModelScope.launch {
             try {
-                // 리포트 생성 로직
-                // 실제로는 PDF나 Excel 파일 생성
                 showError("리포트 생성 기능은 준비 중입니다")
             } catch (e: Exception) {
                 showError("리포트 생성에 실패했습니다")
@@ -486,18 +505,6 @@ class CompanyMoneySharedViewModel : ViewModel() {
     private fun exportPayments(format: ExportFormat) {
         viewModelScope.launch {
             try {
-                // 내보내기 로직
-                when (format) {
-                    ExportFormat.CSV -> {
-                        // CSV 파일 생성
-                    }
-                    ExportFormat.EXCEL -> {
-                        // Excel 파일 생성
-                    }
-                    ExportFormat.PDF -> {
-                        // PDF 파일 생성
-                    }
-                }
                 showError("내보내기 기능은 준비 중입니다")
             } catch (e: Exception) {
                 showError("파일 내보내기에 실패했습니다")
