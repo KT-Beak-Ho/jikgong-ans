@@ -18,6 +18,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavTabs
+import com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavigation
 import com.billcorea.jikgong.presentation.company.main.info.components.InfoCard
 import com.billcorea.jikgong.presentation.company.main.info.components.InfoHeader
 import com.billcorea.jikgong.presentation.company.main.info.shared.CompanyInfoSharedEvent
@@ -40,6 +42,7 @@ fun CompanyInfoScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val shouldNavigateToLogin by viewModel.shouldNavigateToLogin.collectAsStateWithLifecycle()
     val selectedMenuId by viewModel.selectedMenuId.collectAsStateWithLifecycle()
+    var currentRoute by remember { mutableStateOf(CompanyBottomNavTabs.INFO.route) }
 
     // 네비게이션 이벤트 처리
     LaunchedEffect(shouldNavigateToLogin) {
@@ -97,55 +100,76 @@ fun CompanyInfoScreen(
         )
     }
 
-    if (uiState.isLoading) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        bottomBar = {
+            CompanyBottomNavigation(
+                currentRoute = currentRoute,
+                onTabSelected = { route ->
+                    currentRoute = route
+                    // TODO: 다른 화면으로 네비게이션 처리
+                }
+            )
         }
-    } else {
-        LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // 프로필 헤더
-            item {
-                InfoHeader(companyInfo = uiState.companyInfo)
+    ) { innerPadding ->
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 프로필 헤더
+                item {
+                    InfoHeader(companyInfo = uiState.companyInfo)
+                }
 
-            // 메뉴 아이템들
-            items(uiState.menuItems) { menuItem ->
-                InfoCard(menuItem = menuItem)
-            }
+                // 메뉴 아이템들
+                items(uiState.menuItems) { menuItem ->
+                    InfoCard(menuItem = menuItem)
+                }
 
-            // 로그아웃 버튼
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
+                // 로그아웃 버튼
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedButton(
-                    onClick = {
-                        viewModel.onEvent(CompanyInfoSharedEvent.Logout)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFD32F2F)
-                    ),
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = Color(0xFFD32F2F)
-                    )
-                ) {
-                    Text(
-                        text = "로그아웃",
-                        style = AppTypography.titleMedium.copy(
-                            fontWeight = FontWeight.Medium
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.onEvent(CompanyInfoSharedEvent.Logout)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFFD32F2F)
+                        ),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = Color(0xFFD32F2F)
                         )
-                    )
+                    ) {
+                        Text(
+                            text = "로그아웃",
+                            style = AppTypography.titleMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
+                }
+
+                // 하단 여백 (바텀 네비게이션을 위한 공간)
+                item {
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }
