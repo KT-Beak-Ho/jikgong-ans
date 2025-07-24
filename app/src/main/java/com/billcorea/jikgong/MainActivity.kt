@@ -57,7 +57,6 @@ import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDest
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage5ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
-import com.billcorea.jikgong.presentation.destinations.WorkerProjectDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
 import com.billcorea.jikgong.presentation.worker.auth.join.page1.WorkerJoinPage1Screen
 import com.billcorea.jikgong.presentation.worker.auth.join.page2.WorkerJoinPage2Screen
@@ -67,7 +66,6 @@ import com.billcorea.jikgong.presentation.worker.auth.join.page5.WorkerJoinPage5
 import com.billcorea.jikgong.presentation.worker.auth.join.page6.WorkerJoinPage6Screen
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
 import com.billcorea.jikgong.presentation.worker.login.page1.WorkerLoginPage
-import com.billcorea.jikgong.presentation.worker.project.WorkerProject
 import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
@@ -79,8 +77,6 @@ import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 class MainActivity : ComponentActivity() {
 
   val viewModel : MainViewModel by viewModels()
-  private val companyJoinViewModel = CompanyJoinSharedViewModel()
-  private val workerJoinViewModel = WorkerJoinSharedViewModel()
   private lateinit var fusedLocationClient: FusedLocationProviderClient
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -141,69 +137,57 @@ class MainActivity : ComponentActivity() {
               composable(WorkerProjectListDestination.route) {
                 WorkerProjectList(viewModel, navigator, modifier = Modifier.padding(5.dp))
               }
-              composable(WorkerProjectDestination.route) {
-                WorkerProject()
-              }
 
               composable(WorkerJoinPage1ScreenDestination.route) {
                 WorkerJoinPage1Screen(
-                  workerJoinViewModel = workerJoinViewModel,
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(WorkerJoinPage2ScreenDestination.route) {
                 WorkerJoinPage2Screen(
-                  workerJoinViewModel = workerJoinViewModel,
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(WorkerJoinPage3ScreenDestination.route) {
                 WorkerJoinPage3Screen(
-                  workerJoinViewModel = workerJoinViewModel,
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(WorkerJoinPage4ScreenDestination.route) {
                 WorkerJoinPage4Screen(
-                  workerJoinViewModel = workerJoinViewModel,
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(WorkerJoinPage5ScreenDestination.route) {
                 WorkerJoinPage5Screen(
-                  workerJoinViewModel = workerJoinViewModel,
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(WorkerJoinPage6ScreenDestination.route) {
                 WorkerJoinPage6Screen(
-                  workerJoinViewModel = workerJoinViewModel,
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(CompanyJoinPage1ScreenDestination.route) {
                 CompanyJoinPage1Screen(
-                  companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(CompanyJoinPage2ScreenDestination.route) {
                 CompanyJoinPage2Screen(
-                  companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               composable(CompanyJoinPage3ScreenDestination.route) {
                 CompanyJoinPage3Screen(
-                  companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
                   navigator = navigator,
                   modifier = Modifier.padding(5.dp)
                 )
