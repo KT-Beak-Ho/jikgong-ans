@@ -3,6 +3,7 @@ package com.billcorea.jikgong.presentation.company.main.money
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -17,9 +18,9 @@ import com.billcorea.jikgong.presentation.company.main.money.components.ProjectP
 import com.billcorea.jikgong.presentation.company.main.money.components.ProjectPaymentFilterBar
 import com.billcorea.jikgong.presentation.company.main.money.components.ProjectPaymentSummaryCard
 import com.billcorea.jikgong.presentation.company.main.money.components.EmptyMoneyState
+import com.billcorea.jikgong.presentation.company.main.money.components.ScrollBar
 import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentSampleData
 import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentStatus
-import com.billcorea.jikgong.presentation.company.main.money.shared.CompanyMoneySharedViewModel
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -36,24 +37,38 @@ fun CompanyMoneyScreen(
 ) {
     var currentRoute by remember { mutableStateOf(com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavTabs.MONEY.route) }
 
-    // 더 많은 데이터로 스크롤 테스트 - 총 15개 항목
+    // 샘플 데이터 (빈 상태 테스트를 위해 변경 가능)
+    val hasData = true // false로 변경하면 빈 상태
+
     val projectPayments = remember {
-        val originalData = ProjectPaymentSampleData.getSampleProjectPayments()
-        val copyData1 = originalData.map { project ->
-            project.copy(
-                id = "${project.id}_copy_1",
-                projectTitle = "${project.projectTitle} (복사본1)"
-            )
+        if (hasData) {
+            val originalData = ProjectPaymentSampleData.getSampleProjectPayments()
+            val copyData1 = originalData.map { project ->
+                project.copy(
+                    id = "${project.id}_copy_1",
+                    projectTitle = "${project.projectTitle} (복사본1)"
+                )
+            }
+            val copyData2 = originalData.map { project ->
+                project.copy(
+                    id = "${project.id}_copy_2",
+                    projectTitle = "${project.projectTitle} (복사본2)"
+                )
+            }
+            originalData + copyData1 + copyData2
+        } else {
+            emptyList()
         }
-        val copyData2 = originalData.map { project ->
-            project.copy(
-                id = "${project.id}_copy_2",
-                projectTitle = "${project.projectTitle} (복사본2)"
-            )
-        }
-        originalData + copyData1 + copyData2
     }
-    val summary = remember { ProjectPaymentSampleData.getSampleProjectPaymentSummary() }
+
+    val summary = remember {
+        if (hasData) {
+            ProjectPaymentSampleData.getSampleProjectPaymentSummary()
+        } else {
+            ProjectPaymentSampleData.getEmptyProjectPaymentSummary()
+        }
+    }
+
     var selectedStatus by remember { mutableStateOf<ProjectPaymentStatus?>(null) }
 
     // 필터링된 프로젝트 목록
@@ -147,7 +162,7 @@ private fun ScrollableContentWithScrollbar(
 ) {
     val scrollState = rememberLazyListState()
 
-    // 스크롤 진행률 계산 (개선된 버전)
+    // 스크롤 진행률 계산
     val scrollProgress by remember {
         derivedStateOf {
             if (scrollState.layoutInfo.totalItemsCount <= 1) return@derivedStateOf 0f
@@ -167,7 +182,7 @@ private fun ScrollableContentWithScrollbar(
         }
     }
 
-    // 스크롤 가능 여부 확인 (개선된 버전)
+    // 스크롤 가능 여부 확인
     val canScroll by remember {
         derivedStateOf {
             scrollState.layoutInfo.totalItemsCount > 0 &&
@@ -181,14 +196,14 @@ private fun ScrollableContentWithScrollbar(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(end = if (canScroll) 12.dp else 0.dp), // 스크롤바 공간 확보
-            verticalArrangement = Arrangement.spacedBy(12.dp), // 간격 줄임
+            verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                top = 8.dp, // 상단 패딩 줄임
+                top = 8.dp,
                 bottom = 120.dp // 하단 네비게이션 공간 확보
             ),
-            userScrollEnabled = true // 명시적으로 스크롤 활성화
+            userScrollEnabled = true
         ) {
             // 상단 통계 카드
             item {
@@ -234,17 +249,16 @@ private fun ScrollableContentWithScrollbar(
                 ProjectPaymentCard(
                     projectPayment = projectPayment,
                     onPaymentAction = onPaymentAction
-                    // animateItemPlacement() 제거 - API 호환성 문제
                 )
             }
 
-            // 하단 여백 (추가 공간)
+            // 하단 여백
             item {
                 Spacer(modifier = Modifier.height(40.dp))
             }
         }
 
-        // 개선된 세로 스크롤바
+        // 스크롤바
         if (canScroll) {
             ScrollBar(
                 scrollProgress = scrollProgress,
@@ -255,7 +269,7 @@ private fun ScrollableContentWithScrollbar(
                     .padding(
                         end = 4.dp,
                         top = 16.dp,
-                        bottom = 120.dp // 하단 네비게이션 공간
+                        bottom = 120.dp
                     )
             )
         }
@@ -282,10 +296,15 @@ fun CompanyMoneyScreenEmptyPreview() {
     val navigator = navController.toDestinationsNavigator()
 
     Jikgong1111Theme {
-        // 빈 상태를 보여주기 위해 수정된 화면
-        EmptyMoneyState(
-            onCreateProjectClick = {},
-            modifier = Modifier.fillMaxSize()
-        )
+        // 빈 상태를 위한 별도 컴포저블
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            EmptyMoneyState(
+                onCreateProjectClick = {},
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
