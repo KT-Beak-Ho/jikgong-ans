@@ -3,22 +3,15 @@ package com.billcorea.jikgong.presentation.company.main.money.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,7 +23,6 @@ import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import java.text.NumberFormat
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,9 +49,7 @@ fun ProjectPaymentCard(
         ) {
             // 헤더: 프로젝트 정보와 확장/축소 아이콘
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded },
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -70,12 +60,14 @@ fun ProjectPaymentCard(
                             fontWeight = FontWeight.Bold
                         ),
                         color = appColorScheme.onSurface,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
 
+                    Spacer(modifier = Modifier.height(4.dp))
+
                     Text(
-                        text = "시작일 낙동5블럭이 낙동강 온도 측정 센터 신축...",
+                        text = projectPayment.projectLocation,
                         style = AppTypography.bodySmall,
                         color = appColorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -83,13 +75,15 @@ fun ProjectPaymentCard(
                     )
                 }
 
-                // 확장/축소 아이콘
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = if (isExpanded) "접기" else "펼치기",
-                    tint = appColorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
+                IconButton(
+                    onClick = { isExpanded = !isExpanded }
+                ) {
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = if (isExpanded) "접기" else "펼치기",
+                        tint = appColorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -115,7 +109,7 @@ fun ProjectPaymentCard(
                 )
             }
 
-            // 1일 05일 09:30 작업 완료 메시지
+            // 작업 완료 메시지
             if (projectPayment.notes.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -125,34 +119,24 @@ fun ProjectPaymentCard(
                 )
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 수수료 절감 표시
+            SavingsIndicator(
+                originalAmount = projectPayment.originalServiceFee,
+                savedAmount = projectPayment.totalSavings,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // 입금 버튼
-            Button(
-                onClick = { onPaymentAction(projectPayment, "deposit") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (projectPayment.status == ProjectPaymentStatus.COMPLETED) {
-                        appColorScheme.surfaceVariant
-                    } else {
-                        Color(0xFF2E3A59) // 다크 블루 색상
-                    }
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = if (projectPayment.status == ProjectPaymentStatus.COMPLETED) "입금 완료" else "입금",
-                    style = AppTypography.labelLarge.copy(
-                        fontWeight = FontWeight.Medium
-                    ),
-                    color = if (projectPayment.status == ProjectPaymentStatus.COMPLETED) {
-                        appColorScheme.onSurfaceVariant
-                    } else {
-                        Color.White
-                    },
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-            }
+            DepositButton(
+                status = projectPayment.status,
+                totalAmount = projectPayment.totalAmount,
+                onDepositClick = { onPaymentAction(projectPayment, "deposit") },
+                modifier = Modifier.fillMaxWidth()
+            )
 
             // 확장된 상세 정보
             AnimatedVisibility(
@@ -168,6 +152,15 @@ fun ProjectPaymentCard(
                         modifier = Modifier.padding(vertical = 8.dp),
                         color = appColorScheme.outline.copy(alpha = 0.2f)
                     )
+
+                    // 상세 수수료 절감 정보
+                    DetailedSavingsCard(
+                        originalServiceFee = projectPayment.originalServiceFee,
+                        currentServiceFee = projectPayment.currentServiceFee,
+                        totalSavings = projectPayment.totalSavings
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // 작업자 목록 헤더
                     Row(
@@ -231,7 +224,7 @@ private fun WorkerPaymentItem(
                     color = appColorScheme.onSurface
                 )
                 Text(
-                    text = worker.jobType,
+                    text = "${worker.jobType} • ${worker.workHours}시간",
                     style = AppTypography.bodySmall,
                     color = appColorScheme.onSurfaceVariant
                 )
@@ -239,7 +232,7 @@ private fun WorkerPaymentItem(
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(worker.totalAmount)}원",
+                    text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(worker.finalAmount)}원",
                     style = AppTypography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium
                     ),
@@ -248,12 +241,12 @@ private fun WorkerPaymentItem(
 
                 // 개별 상태 표시
                 Surface(
-                    modifier = Modifier.clip(RoundedCornerShape(4.dp)),
+                    shape = RoundedCornerShape(4.dp),
                     color = when (worker.status) {
-                        ProjectPaymentStatus.PENDING -> Color(0xFFFFA726).copy(alpha = 0.1f)
-                        ProjectPaymentStatus.PROCESSING -> Color(0xFF42A5F5).copy(alpha = 0.1f)
-                        ProjectPaymentStatus.COMPLETED -> Color(0xFF66BB6A).copy(alpha = 0.1f)
-                        ProjectPaymentStatus.FAILED -> Color(0xFFEF5350).copy(alpha = 0.1f)
+                        ProjectPaymentStatus.PENDING -> appColorScheme.secondary.copy(alpha = 0.1f)
+                        ProjectPaymentStatus.PROCESSING -> appColorScheme.primary.copy(alpha = 0.1f)
+                        ProjectPaymentStatus.COMPLETED -> appColorScheme.tertiary.copy(alpha = 0.1f)
+                        ProjectPaymentStatus.FAILED -> appColorScheme.error.copy(alpha = 0.1f)
                     }
                 ) {
                     Text(
@@ -265,10 +258,10 @@ private fun WorkerPaymentItem(
                         },
                         style = AppTypography.labelSmall,
                         color = when (worker.status) {
-                            ProjectPaymentStatus.PENDING -> Color(0xFFFFA726)
-                            ProjectPaymentStatus.PROCESSING -> Color(0xFF42A5F5)
-                            ProjectPaymentStatus.COMPLETED -> Color(0xFF66BB6A)
-                            ProjectPaymentStatus.FAILED -> Color(0xFFEF5350)
+                            ProjectPaymentStatus.PENDING -> appColorScheme.secondary
+                            ProjectPaymentStatus.PROCESSING -> appColorScheme.primary
+                            ProjectPaymentStatus.COMPLETED -> appColorScheme.tertiary
+                            ProjectPaymentStatus.FAILED -> appColorScheme.error
                         },
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
@@ -278,44 +271,13 @@ private fun WorkerPaymentItem(
     }
 }
 
-@Composable
-private fun InfoItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = appColorScheme.onSurfaceVariant,
-            modifier = Modifier.size(16.dp)
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = text,
-            style = AppTypography.bodySmall,
-            color = appColorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun ProjectPaymentCardPreview() {
     Jikgong1111Theme {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            ProjectPaymentCard(
-                projectPayment = ProjectPaymentSampleData.getSampleProjectPayments().first()
-            )
-        }
+        ProjectPaymentCard(
+            projectPayment = ProjectPaymentSampleData.getSampleProjectPayments().first(),
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
