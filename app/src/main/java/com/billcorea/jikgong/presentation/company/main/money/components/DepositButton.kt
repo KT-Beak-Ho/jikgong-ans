@@ -5,6 +5,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,6 +19,18 @@ import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPayment
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import java.text.NumberFormat
+import java.util.*
+
+// 내부에서만 사용하는 버튼 설정 클래스
+private data class ButtonConfig(
+    val text: String,
+    val subText: String,
+    val backgroundColor: Color,
+    val contentColor: Color,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val enabled: Boolean
+)
 
 @Composable
 fun DepositButton(
@@ -26,29 +40,45 @@ fun DepositButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    val (buttonText, buttonColor, textColor, icon) = when (status) {
+    val buttonConfig = when (status) {
         ProjectPaymentStatus.PENDING -> {
-            Pair(
-                Pair("입금", Color(0xFF2E3A59)),
-                Pair(Color.White, Icons.Default.AccountBalance)
+            ButtonConfig(
+                text = "임금 입금하기",
+                subText = "2일 이내 지급 완료",
+                backgroundColor = Color(0xFF2E3A59),
+                contentColor = Color.White,
+                icon = Icons.Default.AccountBalance,
+                enabled = true
             )
         }
         ProjectPaymentStatus.PROCESSING -> {
-            Pair(
-                Pair("처리중", appColorScheme.primary.copy(alpha = 0.6f)),
-                Pair(Color.White, Icons.Default.AccountBalance)
+            ButtonConfig(
+                text = "입금 처리중",
+                subText = "처리 완료까지 약 1-2시간",
+                backgroundColor = appColorScheme.primary.copy(alpha = 0.6f),
+                contentColor = Color.White,
+                icon = Icons.Default.Schedule,
+                enabled = false
             )
         }
         ProjectPaymentStatus.COMPLETED -> {
-            Pair(
-                Pair("입금 완료", appColorScheme.surfaceVariant),
-                Pair(appColorScheme.onSurfaceVariant, Icons.Default.Check)
+            ButtonConfig(
+                text = "입금 완료",
+                subText = "지급이 완료되었습니다",
+                backgroundColor = appColorScheme.surfaceVariant,
+                contentColor = appColorScheme.onSurfaceVariant,
+                icon = Icons.Default.Check,
+                enabled = false
             )
         }
         ProjectPaymentStatus.FAILED -> {
-            Pair(
-                Pair("재시도", Color(0xFFEF5350)),
-                Pair(Color.White, Icons.Default.AccountBalance)
+            ButtonConfig(
+                text = "입금 재시도",
+                subText = "입금에 실패했습니다",
+                backgroundColor = Color(0xFFEF5350),
+                contentColor = Color.White,
+                icon = Icons.Default.Refresh,
+                enabled = true
             )
         }
     }
@@ -56,37 +86,56 @@ fun DepositButton(
     Button(
         onClick = onDepositClick,
         modifier = modifier.fillMaxWidth(),
-        enabled = enabled && status != ProjectPaymentStatus.COMPLETED,
+        enabled = enabled && buttonConfig.enabled,
         colors = ButtonDefaults.buttonColors(
-            containerColor = buttonColor.first,
-            contentColor = buttonColor.second,
+            containerColor = buttonConfig.backgroundColor,
+            contentColor = buttonConfig.contentColor,
             disabledContainerColor = appColorScheme.surfaceVariant,
             disabledContentColor = appColorScheme.onSurfaceVariant
         ),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
         elevation = ButtonDefaults.buttonElevation(
             defaultElevation = if (status == ProjectPaymentStatus.COMPLETED) 0.dp else 2.dp
-        )
+        ),
+        contentPadding = PaddingValues(16.dp)
     ) {
         Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(vertical = 4.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                imageVector = icon.second,
-                contentDescription = buttonText.first,
-                modifier = Modifier.size(18.dp)
+                imageVector = buttonConfig.icon,
+                contentDescription = buttonConfig.text,
+                modifier = Modifier.size(24.dp)
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = buttonText.first,
-                style = AppTypography.labelLarge.copy(
-                    fontWeight = FontWeight.Medium
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = buttonConfig.text,
+                    style = AppTypography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    )
                 )
-            )
+
+                Text(
+                    text = buttonConfig.subText,
+                    style = AppTypography.bodySmall,
+                    color = buttonConfig.contentColor.copy(alpha = 0.8f)
+                )
+            }
+
+            // 금액 표시 (완료 상태가 아닌 경우)
+            if (status != ProjectPaymentStatus.COMPLETED) {
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(totalAmount)}원",
+                        style = AppTypography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+            }
         }
     }
 }
@@ -141,7 +190,7 @@ fun DepositButtonPreview() {
     Jikgong1111Theme {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             DepositButton(
                 status = ProjectPaymentStatus.PENDING,
@@ -158,6 +207,12 @@ fun DepositButtonPreview() {
             DepositButton(
                 status = ProjectPaymentStatus.COMPLETED,
                 totalAmount = 210000L,
+                onDepositClick = {}
+            )
+
+            DepositButton(
+                status = ProjectPaymentStatus.FAILED,
+                totalAmount = 150000L,
                 onDepositClick = {}
             )
 

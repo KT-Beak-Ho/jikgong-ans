@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.TrendingDown
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,7 +32,7 @@ fun EmptyMoneyState(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(horizontal = 40.dp)
+            modifier = Modifier.padding(horizontal = 32.dp)
         ) {
             // 빈 상태 아이콘
             Surface(
@@ -74,100 +75,12 @@ fun EmptyMoneyState(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 혜택 안내 카드
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF4CAF50).copy(alpha = 0.05f)
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 2.dp
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.TrendingDown,
-                            contentDescription = "혜택",
-                            tint = Color(0xFF4CAF50),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Text(
-                            text = "직직직 수수료 혜택",
-                            style = AppTypography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = Color(0xFF4CAF50)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "기존 인력사무소 대비 50% 절감",
-                        style = AppTypography.bodyMedium.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = appColorScheme.onSurface,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "기존",
-                                style = AppTypography.labelSmall,
-                                color = appColorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "10%",
-                                style = AppTypography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = appColorScheme.error
-                            )
-                        }
-
-                        Icon(
-                            imageVector = Icons.Default.TrendingDown,
-                            contentDescription = "화살표",
-                            tint = Color(0xFF4CAF50),
-                            modifier = Modifier.size(20.dp)
-                        )
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "직직직",
-                                style = AppTypography.labelSmall,
-                                color = appColorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "5%",
-                                style = AppTypography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = Color(0xFF4CAF50)
-                            )
-                        }
-                    }
-                }
-            }
+            // 직직직 혜택 카드들
+            BenefitCardsSection()
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 프로젝트 생성 버튼
+            // 프로젝트 등록 버튼
             Button(
                 onClick = onCreateProjectClick,
                 modifier = Modifier
@@ -199,6 +112,110 @@ fun EmptyMoneyState(
                         )
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BenefitCardsSection(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // 수수료 절감 혜택 카드
+        BenefitCard(
+            icon = Icons.Default.TrendingDown,
+            title = "수수료 50% 절감",
+            description = "기존 인력사무소 대비 50% 절감된 수수료",
+            highlight = "월 평균 30만원 절약",
+            color = Color(0xFF4CAF50)
+        )
+
+        // 빠른 지급 혜택 카드
+        BenefitCard(
+            icon = Icons.Default.AttachMoney,
+            title = "신속한 임금 지급",
+            description = "업무일 기준 2일 이내 입금 보장",
+            highlight = "당일 임금 지급 시스템",
+            color = Color(0xFF2196F3)
+        )
+
+        // 디지털 관리 혜택 카드
+        BenefitCard(
+            icon = Icons.Default.Star,
+            title = "스마트 임금 관리",
+            description = "AI 기반 자동 계산 및 체계적 관리",
+            highlight = "관리 효율성 300% 향상",
+            color = Color(0xFF9C27B0)
+        )
+    }
+}
+
+@Composable
+private fun BenefitCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    description: String,
+    highlight: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = color.copy(alpha = 0.05f)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // 아이콘
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = color
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(6.dp)
+                )
+            }
+
+            // 텍스트 정보
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = AppTypography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = color
+                )
+
+                Text(
+                    text = description,
+                    style = AppTypography.bodySmall,
+                    color = appColorScheme.onSurfaceVariant
+                )
+
+                Text(
+                    text = highlight,
+                    style = AppTypography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = color
+                )
             }
         }
     }

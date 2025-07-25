@@ -121,10 +121,11 @@ fun ProjectPaymentCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 수수료 절감 표시
-            SavingsIndicator(
-                originalAmount = projectPayment.originalServiceFee,
-                savedAmount = projectPayment.totalSavings,
+            // 수수료 절감 표시 (하이라이트 처리)
+            SavingsHighlightCard(
+                originalServiceFee = projectPayment.originalServiceFee,
+                currentServiceFee = projectPayment.currentServiceFee,
+                totalSavings = projectPayment.totalSavings,
                 modifier = Modifier.fillMaxWidth()
             )
 
