@@ -18,8 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
-import com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavTabs
-import com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavigation
 import com.billcorea.jikgong.presentation.company.main.info.components.InfoCard
 import com.billcorea.jikgong.presentation.company.main.info.components.InfoHeader
 import com.billcorea.jikgong.presentation.company.main.info.shared.CompanyInfoSharedEvent
@@ -37,12 +35,12 @@ import org.koin.androidx.compose.koinViewModel
 fun CompanyInfoScreen(
     navigator: DestinationsNavigator,
     viewModel: CompanyInfoSharedViewModel = koinViewModel(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showBottomBar: Boolean = true
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val shouldNavigateToLogin by viewModel.shouldNavigateToLogin.collectAsStateWithLifecycle()
     val selectedMenuId by viewModel.selectedMenuId.collectAsStateWithLifecycle()
-    var currentRoute by remember { mutableStateOf(CompanyBottomNavTabs.INFO.route) }
 
     // 네비게이션 이벤트 처리
     LaunchedEffect(shouldNavigateToLogin) {
@@ -101,16 +99,7 @@ fun CompanyInfoScreen(
     }
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
-        bottomBar = {
-            CompanyBottomNavigation(
-                currentRoute = currentRoute,
-                onTabSelected = { route ->
-                    currentRoute = route
-                    // TODO: 다른 화면으로 네비게이션 처리
-                }
-            )
-        }
+        modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         if (uiState.isLoading) {
             Box(
@@ -169,7 +158,7 @@ fun CompanyInfoScreen(
 
                 // 하단 여백 (바텀 네비게이션을 위한 공간)
                 item {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(if (showBottomBar) 20.dp else 0.dp))
                 }
             }
         }
@@ -185,7 +174,8 @@ fun CompanyInfoScreenPreview() {
     Jikgong1111Theme {
         CompanyInfoScreen(
             navigator = navigator,
-            viewModel = CompanyInfoSharedViewModel()
+            viewModel = CompanyInfoSharedViewModel(),
+            showBottomBar = false
         )
     }
 }

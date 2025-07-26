@@ -21,8 +21,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
-import com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavTabs
-import com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavigation
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -52,12 +50,13 @@ private val BlueHighlight = Color(0xFF5BA7F7)
 @Composable
 fun CompanyProjectListScreen(
     navigator: DestinationsNavigator,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showBottomBar: Boolean = true
 ) {
-    // 프로젝트 상태에 따라 데이터 설정 (테스트용)
     CompanyProjectListScreenContent(
         navigator = navigator,
-        hasProjects = false, // true로 변경하면 프로젝트가 있는 상태
+        hasProjects = false,
+        showBottomBar = showBottomBar,
         modifier = modifier
     )
 }
@@ -67,9 +66,9 @@ fun CompanyProjectListScreen(
 private fun CompanyProjectListScreenContent(
     navigator: DestinationsNavigator,
     hasProjects: Boolean,
+    showBottomBar: Boolean,
     modifier: Modifier = Modifier
 ) {
-    // 프로젝트 데이터
     val projects = if (hasProjects) {
         listOf(
             ProjectItem(
@@ -89,9 +88,6 @@ private fun CompanyProjectListScreenContent(
         emptyList()
     }
 
-    var currentRoute by remember { mutableStateOf(CompanyBottomNavTabs.PROJECT_LIST.route) }
-
-    // 통계 계산
     val inProgressCount = projects.size
     val scheduledCount = 0
     val completedCount = 0
@@ -122,7 +118,6 @@ private fun CompanyProjectListScreenContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // 직공 TIP 버튼
                         Surface(
                             shape = RoundedCornerShape(16.dp),
                             color = Color.Gray.copy(alpha = 0.3f)
@@ -136,7 +131,6 @@ private fun CompanyProjectListScreenContent(
                             )
                         }
 
-                        // 알림 버튼
                         IconButton(
                             onClick = { /* TODO: 알림 화면으로 이동 */ },
                             modifier = Modifier.size(40.dp)
@@ -151,7 +145,6 @@ private fun CompanyProjectListScreenContent(
                     }
                 }
 
-                // 프로젝트 목록 타이틀
                 Text(
                     text = "프로젝트 목록",
                     fontSize = 18.sp,
@@ -160,39 +153,17 @@ private fun CompanyProjectListScreenContent(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
 
-                // 통계 탭들
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    StatTab(
-                        title = "진행중",
-                        count = inProgressCount,
-                        isSelected = true
-                    )
-                    StatTab(
-                        title = "예정",
-                        count = scheduledCount,
-                        isSelected = false
-                    )
-                    StatTab(
-                        title = "완료",
-                        count = completedCount,
-                        isSelected = false
-                    )
+                    StatTab(title = "진행중", count = inProgressCount, isSelected = true)
+                    StatTab(title = "예정", count = scheduledCount, isSelected = false)
+                    StatTab(title = "완료", count = completedCount, isSelected = false)
                 }
             }
-        },
-        bottomBar = {
-            CompanyBottomNavigation(
-                currentRoute = currentRoute,
-                onTabSelected = { route ->
-                    currentRoute = route
-                    // TODO: 다른 화면으로 네비게이션 처리
-                }
-            )
         },
         floatingActionButton = {
             if (hasProjects) {
@@ -202,7 +173,10 @@ private fun CompanyProjectListScreenContent(
                     },
                     containerColor = DarkBlue,
                     contentColor = Color.White,
-                    modifier = Modifier.padding(bottom = 80.dp, end = 16.dp)
+                    modifier = Modifier.padding(
+                        bottom = if (showBottomBar) 80.dp else 16.dp,
+                        end = 16.dp
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -255,7 +229,6 @@ private fun CompanyProjectListScreenContent(
                             modifier = Modifier.padding(bottom = 40.dp)
                         )
 
-                        // 프로젝트 등록 버튼
                         Button(
                             onClick = {
                                 // TODO: 프로젝트 생성 화면으로 이동
@@ -285,7 +258,6 @@ private fun CompanyProjectListScreenContent(
                     }
                 }
             } else {
-                // 프로젝트 리스트
                 LazyColumn(
                     modifier = Modifier
                         .weight(1f)
@@ -301,9 +273,8 @@ private fun CompanyProjectListScreenContent(
                         )
                     }
 
-                    // 하단 여백 추가
                     item {
-                        Spacer(modifier = Modifier.height(80.dp))
+                        Spacer(modifier = Modifier.height(if (showBottomBar) 80.dp else 20.dp))
                     }
                 }
             }
@@ -368,7 +339,6 @@ private fun ProjectCard(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // 프로젝트 제목과 더보기 버튼
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -402,7 +372,6 @@ private fun ProjectCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 날짜 정보
             Column(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -447,7 +416,6 @@ private fun ProjectCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 관리 버튼
             Button(
                 onClick = { onProjectClick(project) },
                 modifier = Modifier.fillMaxWidth(),
@@ -471,7 +439,6 @@ private fun ProjectCard(
     }
 }
 
-// 날짜 포맷 함수
 private fun formatDate(date: LocalDate): String {
     return try {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd (E)", Locale.KOREAN)
@@ -504,7 +471,8 @@ fun CompanyProjectListScreenWithProjectsPreview() {
     Jikgong1111Theme {
         CompanyProjectListScreenContent(
             navigator = navigator,
-            hasProjects = true
+            hasProjects = true,
+            showBottomBar = false
         )
     }
 }
@@ -518,7 +486,8 @@ fun CompanyProjectListScreenEmptyPreview() {
     Jikgong1111Theme {
         CompanyProjectListScreenContent(
             navigator = navigator,
-            hasProjects = false
+            hasProjects = false,
+            showBottomBar = false
         )
     }
 }

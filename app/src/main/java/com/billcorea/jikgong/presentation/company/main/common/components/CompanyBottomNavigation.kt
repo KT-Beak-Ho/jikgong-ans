@@ -1,11 +1,9 @@
 package com.billcorea.jikgong.presentation.company.main.common.components
 
-
-
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -28,25 +26,25 @@ data class CompanyBottomNavTab(
 object CompanyBottomNavTabs {
     val PROJECT_LIST = CompanyBottomNavTab(
         route = "company_project_list",
-        title = "프로젝트",
+        title = "프로젝트 목록",
         icon = Icons.Default.List
     )
 
     val SCOUT = CompanyBottomNavTab(
         route = "company_scout",
-        title = "스카웃",
+        title = "인력 스카웃",
         icon = Icons.Default.Search
     )
 
     val MONEY = CompanyBottomNavTab(
         route = "company_money",
-        title = "임금관리",
-        icon = Icons.Default.CalendarMonth
+        title = "지급 관리",
+        icon = Icons.Default.AttachMoney
     )
 
     val INFO = CompanyBottomNavTab(
         route = "company_info",
-        title = "정보",
+        title = "사업자 정보",
         icon = Icons.Default.AccountCircle
     )
 

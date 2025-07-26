@@ -33,10 +33,9 @@ import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 @Composable
 fun CompanyMoneyScreen(
     navigator: DestinationsNavigator,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showBottomBar: Boolean = true
 ) {
-    var currentRoute by remember { mutableStateOf(com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavTabs.MONEY.route) }
-
     // 샘플 데이터 (빈 상태 테스트를 위해 변경 가능)
     val hasData = true // false로 변경하면 빈 상태
 
@@ -81,16 +80,7 @@ fun CompanyMoneyScreen(
     }
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
-        bottomBar = {
-            com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavigation(
-                currentRoute = currentRoute,
-                onTabSelected = { route ->
-                    currentRoute = route
-                    // TODO: 다른 화면으로 네비게이션 처리
-                }
-            )
-        }
+        modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -144,7 +134,8 @@ fun CompanyMoneyScreen(
                     onPaymentAction = { project, action ->
                         // TODO: 임금 지급 액션 처리
                     },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    showBottomBar = showBottomBar
                 )
             }
         }
@@ -158,7 +149,8 @@ private fun ScrollableContentWithScrollbar(
     selectedStatus: ProjectPaymentStatus?,
     onStatusSelected: (ProjectPaymentStatus?) -> Unit,
     onPaymentAction: (com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentData, String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showBottomBar: Boolean = true
 ) {
     val scrollState = rememberLazyListState()
 
@@ -201,7 +193,7 @@ private fun ScrollableContentWithScrollbar(
                 start = 16.dp,
                 end = 16.dp,
                 top = 8.dp,
-                bottom = 120.dp // 하단 네비게이션 공간 확보
+                bottom = if (showBottomBar) 120.dp else 40.dp // 하단 네비게이션 공간 확보
             ),
             userScrollEnabled = true
         ) {
@@ -269,7 +261,7 @@ private fun ScrollableContentWithScrollbar(
                     .padding(
                         end = 4.dp,
                         top = 16.dp,
-                        bottom = 120.dp
+                        bottom = if (showBottomBar) 120.dp else 40.dp
                     )
             )
         }
@@ -284,7 +276,8 @@ fun CompanyMoneyScreenWithDataPreview() {
 
     Jikgong1111Theme {
         CompanyMoneyScreen(
-            navigator = navigator
+            navigator = navigator,
+            showBottomBar = false
         )
     }
 }

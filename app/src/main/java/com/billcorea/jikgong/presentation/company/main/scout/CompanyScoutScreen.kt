@@ -8,8 +8,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
-import com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavTabs
-import com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavigation
 import com.billcorea.jikgong.presentation.company.main.scout.pages.WorkerListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.ProposalListPage
 import com.billcorea.jikgong.ui.theme.AppTypography
@@ -24,23 +22,14 @@ import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 @Composable
 fun CompanyScoutScreen(
     navigator: DestinationsNavigator,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showBottomBar: Boolean = true
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
-    var currentRoute by remember { mutableStateOf(CompanyBottomNavTabs.SCOUT.route) }
     val tabs = listOf("인력 목록", "제안 목록")
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
-        bottomBar = {
-            CompanyBottomNavigation(
-                currentRoute = currentRoute,
-                onTabSelected = { route ->
-                    currentRoute = route
-                    // TODO: 다른 화면으로 네비게이션 처리
-                }
-            )
-        }
+        modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -110,6 +99,9 @@ fun CompanyScoutScreenPreview() {
     val navigator = navController.toDestinationsNavigator()
 
     Jikgong1111Theme {
-        CompanyScoutScreen(navigator = navigator)
+        CompanyScoutScreen(
+            navigator = navigator,
+            showBottomBar = false
+        )
     }
 }
