@@ -9,11 +9,15 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
+import com.billcorea.jikgong.ui.theme.appColorScheme
 
 // 바텀 네비게이션 탭 데이터 클래스
 data class CompanyBottomNavTab(
@@ -58,7 +62,10 @@ fun CompanyBottomNavigation(
     modifier: Modifier = Modifier
 ) {
     NavigationBar(
-        modifier = modifier
+        modifier = modifier,
+        containerColor = appColorScheme.surface,
+        contentColor = appColorScheme.primary,
+        tonalElevation = NavigationBarDefaults.Elevation
     ) {
         CompanyBottomNavTabs.tabs.forEach { tab ->
             NavigationBarItem(
@@ -78,5 +85,72 @@ fun CompanyBottomNavigation(
                 }
             )
         }
+    }
+}
+
+// Preview 컴포저블들
+@Preview(name = "프로젝트 목록 선택", showBackground = true)
+@Composable
+fun CompanyBottomNavigationProjectListPreview() {
+    Jikgong1111Theme {
+        CompanyBottomNavigation(
+            currentRoute = CompanyBottomNavTabs.PROJECT_LIST.route,
+            onTabSelected = {}
+        )
+    }
+}
+
+@Preview(name = "인력 스카웃 선택", showBackground = true)
+@Composable
+fun CompanyBottomNavigationScoutPreview() {
+    Jikgong1111Theme {
+        CompanyBottomNavigation(
+            currentRoute = CompanyBottomNavTabs.SCOUT.route,
+            onTabSelected = {}
+        )
+    }
+}
+
+@Preview(name = "지급 관리 선택", showBackground = true)
+@Composable
+fun CompanyBottomNavigationMoneyPreview() {
+    Jikgong1111Theme {
+        CompanyBottomNavigation(
+            currentRoute = CompanyBottomNavTabs.MONEY.route,
+            onTabSelected = {}
+        )
+    }
+}
+
+@Preview(name = "사업자 정보 선택", showBackground = true)
+@Composable
+fun CompanyBottomNavigationInfoPreview() {
+    Jikgong1111Theme {
+        CompanyBottomNavigation(
+            currentRoute = CompanyBottomNavTabs.INFO.route,
+            onTabSelected = {}
+        )
+    }
+}
+
+@Preview(name = "다크 테마", showBackground = true)
+@Composable
+fun CompanyBottomNavigationDarkPreview() {
+    Jikgong1111Theme(darkTheme = true) {
+        CompanyBottomNavigation(
+            currentRoute = CompanyBottomNavTabs.PROJECT_LIST.route,
+            onTabSelected = {}
+        )
+    }
+}
+
+@Preview(name = "모든 탭 표시", showBackground = true, widthDp = 360)
+@Composable
+fun CompanyBottomNavigationAllTabsPreview() {
+    Jikgong1111Theme {
+        CompanyBottomNavigation(
+            currentRoute = "", // 아무것도 선택되지 않은 상태
+            onTabSelected = {}
+        )
     }
 }

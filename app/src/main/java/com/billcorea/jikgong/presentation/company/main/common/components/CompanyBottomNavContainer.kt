@@ -20,10 +20,9 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 /**
- * 기업용 바텀 네비게이션 컨테이너
- * 프로젝트 목록, 스카웃, 임금 관리, 정보 화면을 관리합니다.
+ * 기업용 바텀 네비게이션 컨테이너 - 메인 진입점
  */
-@Destination(route = "company_main")
+@Destination(route = "company_main") // 이것만 @Destination!
 @Composable
 fun CompanyBottomNavContainer(
     navigator: DestinationsNavigator,
@@ -86,35 +85,35 @@ private fun CompanyBottomNavHost(
         startDestination = CompanyBottomNavTabs.PROJECT_LIST.route,
         modifier = modifier
     ) {
-        // 프로젝트 목록 화면
+        // 프로젝트 목록 화면 - @Destination 제거됨
         composable(CompanyBottomNavTabs.PROJECT_LIST.route) {
             CompanyProjectListScreen(
                 navigator = navigator,
-                showBottomBar = false // 바텀바를 표시하지 않음
+                showBottomBar = true
             )
         }
 
-        // 인력 스카웃 화면
+        // 인력 스카웃 화면 - @Destination 제거됨
         composable(CompanyBottomNavTabs.SCOUT.route) {
             CompanyScoutScreen(
                 navigator = navigator,
-                showBottomBar = false // 바텀바를 표시하지 않음
+                showBottomBar = true
             )
         }
 
-        // 임금 관리 화면
+        // 임금 관리 화면 - @Destination 제거됨
         composable(CompanyBottomNavTabs.MONEY.route) {
             CompanyMoneyScreen(
                 navigator = navigator,
-                showBottomBar = false // 바텀바를 표시하지 않음
+                showBottomBar = true
             )
         }
 
-        // 사업자 정보 화면
+        // 사업자 정보 화면 - @Destination 제거됨
         composable(CompanyBottomNavTabs.INFO.route) {
             CompanyInfoScreen(
                 navigator = navigator,
-                showBottomBar = false // 바텀바를 표시하지 않음
+                showBottomBar = true
             )
         }
     }
