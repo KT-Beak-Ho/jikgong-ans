@@ -355,7 +355,7 @@ private fun ProjectCardMenu(
             )
         }
 
-        Divider()
+        HorizontalDivider()
 
         DropdownMenuItem(
             text = {
@@ -404,14 +404,6 @@ fun ProjectCardPreview() {
         updatedAt = LocalDateTime.now()
     )
 
-    val sampleProject2 = sampleProject.copy(
-        id = "project2",
-        title = "직공센터 공사",
-        status = ProjectStatus.IN_PROGRESS,
-        completedWorkers = 6,
-        isUrgent = false
-    )
-
     Jikgong1111Theme {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -419,11 +411,6 @@ fun ProjectCardPreview() {
         ) {
             ProjectCard(
                 project = sampleProject,
-                onProjectClick = {}
-            )
-
-            ProjectCard(
-                project = sampleProject2,
                 onProjectClick = {}
             )
         }

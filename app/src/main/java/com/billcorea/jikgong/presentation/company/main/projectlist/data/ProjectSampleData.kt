@@ -1,136 +1,160 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.data
 
-import androidx.compose.ui.graphics.Color
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-// 프로젝트 상태
-enum class ProjectStatus {
-    RECRUITING,   // 모집중
-    IN_PROGRESS,  // 진행중
-    COMPLETED,    // 완료
-    CANCELLED     // 취소
-}
+object ProjectSampleData {
 
-// 작업 타입
-enum class JobType {
-    GENERAL_WORKER,    // 보통인부
-    SKILLED_WORKER,    // 기능공
-    SPECIALIST,        // 전문기술자
-    SUPERVISOR,        // 작업반장
-    DRIVER,           // 운전기사
-    CRANE_OPERATOR,   // 크레인 기사
-    EXCAVATOR_OPERATOR // 굴삭기 기사
-}
+    fun getSampleProjects(): List<ProjectData> {
+        val today = LocalDate.now()
 
-// 프로젝트 데이터
-data class ProjectData(
-    val id: String,
-    val title: String,
-    val description: String,
-    val location: String,
-    val detailAddress: String = "",
-    val latitude: Double = 0.0,
-    val longitude: Double = 0.0,
-    val distance: Double = 0.0, // km 단위
+        return listOf(
+            ProjectData(
+                id = "project1",
+                title = "사하구 낙동5블럭 낙동강 온도 측정 센터 신축공사",
+                description = "친환경 온도 측정 센터 건립을 위한 신축 공사입니다. 최신 기술을 적용한 스마트 빌딩으로 건설될 예정입니다.",
+                location = "부산 사하구",
+                detailAddress = "부산광역시 사하구 낙동대로 123",
+                distance = 2.5,
+                jobTypes = listOf(JobType.GENERAL_WORKER, JobType.SKILLED_WORKER, JobType.SUPERVISOR),
+                totalWorkers = 15,
+                completedWorkers = 2,
+                dailyWage = 130000,
+                startDate = today.plusDays(3),
+                endDate = today.plusDays(25),
+                startTime = "08:00",
+                endTime = "17:00",
+                status = ProjectStatus.RECRUITING,
+                isUrgent = true,
+                requirements = listOf("안전화 필수", "작업복 착용", "안전교육 이수"),
+                providedItems = listOf("중식 제공", "교통비 지급", "안전장비 제공"),
+                notes = "신축 공사로 깔끔한 작업 환경입니다."
+            ),
 
-    // 작업 정보
-    val jobTypes: List<JobType>,
-    val totalWorkers: Int,
-    val completedWorkers: Int = 0,
-    val dailyWage: Int,
-    val startDate: LocalDate,
-    val endDate: LocalDate,
-    val startTime: String,
-    val endTime: String,
+            ProjectData(
+                id = "project2",
+                title = "직공센터 공사",
+                description = "현대적인 업무 시설 구축을 위한 인테리어 공사",
+                location = "인천 연수구",
+                detailAddress = "인천광역시 연수구 컨벤시아대로 456",
+                distance = 12.8,
+                jobTypes = listOf(JobType.GENERAL_WORKER, JobType.SKILLED_WORKER),
+                totalWorkers = 8,
+                completedWorkers = 8,
+                dailyWage = 140000,
+                startDate = today.minusDays(10),
+                endDate = today.minusDays(1),
+                startTime = "09:00",
+                endTime = "18:00",
+                status = ProjectStatus.COMPLETED,
+                isUrgent = false,
+                requirements = listOf("인테리어 경험 우대", "섬세한 작업 가능자"),
+                providedItems = listOf("중식 제공", "간식 제공"),
+                notes = "완료된 프로젝트입니다."
+            ),
 
-    // 프로젝트 상태
-    val status: ProjectStatus = ProjectStatus.RECRUITING,
-    val isUrgent: Boolean = false,
-    val priority: Int = 0, // 0: 일반, 1: 중요, 2: 매우중요
+            ProjectData(
+                id = "project3",
+                title = "아파트 외벽 도색 작업",
+                description = "15층 아파트 외벽 전체 도색 및 방수 작업",
+                location = "서울 강남구",
+                detailAddress = "서울특별시 강남구 테헤란로 789",
+                distance = 45.2,
+                jobTypes = listOf(JobType.SKILLED_WORKER, JobType.SPECIALIST),
+                totalWorkers = 12,
+                completedWorkers = 7,
+                dailyWage = 160000,
+                startDate = today.plusDays(1),
+                endDate = today.plusDays(14),
+                startTime = "07:30",
+                endTime = "16:30",
+                status = ProjectStatus.IN_PROGRESS,
+                isUrgent = false,
+                requirements = listOf("고소작업 가능자", "도색 경험 필수", "안전교육 이수"),
+                providedItems = listOf("중식 제공", "교통비 지급", "안전장비 제공", "작업복 제공"),
+                notes = "고소작업이므로 안전에 각별히 유의해주세요."
+            ),
 
-    // 추가 정보
-    val requirements: List<String> = emptyList(),
-    val providedItems: List<String> = emptyList(), // 제공 사항 (점심, 교통비 등)
-    val notes: String = "",
+            ProjectData(
+                id = "project4",
+                title = "물류센터 건설",
+                description = "대형 물류센터 신축을 위한 토목 및 건축 공사",
+                location = "경기 화성시",
+                detailAddress = "경기도 화성시 동탄대로 321",
+                distance = 18.7,
+                jobTypes = listOf(JobType.GENERAL_WORKER, JobType.CRANE_OPERATOR, JobType.SUPERVISOR),
+                totalWorkers = 25,
+                completedWorkers = 12,
+                dailyWage = 145000,
+                startDate = today.minusDays(5),
+                endDate = today.plusDays(30),
+                startTime = "08:00",
+                endTime = "17:30",
+                status = ProjectStatus.IN_PROGRESS,
+                isUrgent = true,
+                priority = 1,
+                requirements = listOf("대형 건설 경험", "크레인 조종 자격증", "팀워크 중시"),
+                providedItems = listOf("중식 제공", "교통비 지급", "숙박 시설 제공"),
+                notes = "대규모 프로젝트로 장기간 안정적인 근무가 가능합니다."
+            ),
 
-    // 메타데이터
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
-    val createdBy: String = "",
-    val companyId: String = ""
-) {
-    // 진행률 계산
-    val progressPercentage: Float
-        get() = if (totalWorkers > 0) {
-            (completedWorkers.toFloat() / totalWorkers.toFloat()) * 100f
-        } else 0f
-
-    // 상태별 색상
-    val statusColor: Color
-        get() = when (status) {
-            ProjectStatus.RECRUITING -> Color(0xFFFFA726)
-            ProjectStatus.IN_PROGRESS -> Color(0xFF42A5F5)
-            ProjectStatus.COMPLETED -> Color(0xFF66BB6A)
-            ProjectStatus.CANCELLED -> Color(0xFFEF5350)
-        }
-
-    // 작업 시간 표시
-    val workTimeDisplay: String
-        get() = "$startTime - $endTime"
-
-    // 작업 기간 계산 (일 단위)
-    val workDurationDays: Long
-        get() = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1
-
-    // 모집 남은 인원
-    val remainingWorkers: Int
-        get() = (totalWorkers - completedWorkers).coerceAtLeast(0)
-
-    // 모집 완료 여부
-    val isRecruitmentCompleted: Boolean
-        get() = completedWorkers >= totalWorkers
-
-    // 긴급 모집 여부 (마감일 3일 이내)
-    val isUrgentRecruitment: Boolean
-        get() = isUrgent || java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), startDate) <= 3
-
-    // 주요 직종 표시 (최대 2개)
-    val mainJobTypesDisplay: String
-        get() = jobTypes.take(2).joinToString(", ") { it.displayName } +
-                if (jobTypes.size > 2) " 외 ${jobTypes.size - 2}개" else ""
-}
-
-// 직종별 한글명
-val JobType.displayName: String
-    get() = when (this) {
-        JobType.GENERAL_WORKER -> "보통인부"
-        JobType.SKILLED_WORKER -> "기능공"
-        JobType.SPECIALIST -> "전문기술자"
-        JobType.SUPERVISOR -> "작업반장"
-        JobType.DRIVER -> "운전기사"
-        JobType.CRANE_OPERATOR -> "크레인기사"
-        JobType.EXCAVATOR_OPERATOR -> "굴삭기기사"
+            ProjectData(
+                id = "project5",
+                title = "교량 보수 공사",
+                description = "노후화된 교량의 안전성 강화를 위한 보수 작업",
+                location = "부산 해운대구",
+                detailAddress = "부산광역시 해운대구 해운대해변로 567",
+                distance = 5.3,
+                jobTypes = listOf(JobType.SKILLED_WORKER, JobType.SPECIALIST, JobType.SUPERVISOR),
+                totalWorkers = 10,
+                completedWorkers = 0,
+                dailyWage = 175000,
+                startDate = today.plusDays(7),
+                endDate = today.plusDays(21),
+                startTime = "08:30",
+                endTime = "17:00",
+                status = ProjectStatus.RECRUITING,
+                isUrgent = false,
+                requirements = listOf("교량 공사 경험", "용접 자격증", "고소작업 가능"),
+                providedItems = listOf("중식 제공", "교통비 지급", "안전장비 제공"),
+                notes = "전문성이 요구되는 고급 기술 작업입니다."
+            )
+        )
     }
 
-// 프로젝트 필터
-data class ProjectFilter(
-    val status: ProjectStatus? = null,
-    val jobTypes: List<JobType> = emptyList(),
-    val location: String? = null,
-    val minWage: Int? = null,
-    val maxWage: Int? = null,
-    val dateRange: Pair<LocalDate?, LocalDate?> = Pair(null, null),
-    val isUrgentOnly: Boolean = false,
-    val maxDistance: Double? = null
-)
+    fun getEmptyProjects(): List<ProjectData> {
+        return emptyList()
+    }
 
-// 프로젝트 정렬 옵션
-enum class ProjectSortBy {
-    CREATED_DATE,     // 등록일순
-    START_DATE,       // 시작일순
-    WAGE,            // 임금순
-    DISTANCE,        // 거리순
-    PRIORITY,        // 우선순위순
-    STATUS           // 상태순
+    fun getProjectsByStatus(status: ProjectStatus): List<ProjectData> {
+        return getSampleProjects().filter { it.status == status }
+    }
+
+    fun getUrgentProjects(): List<ProjectData> {
+        return getSampleProjects().filter { it.isUrgent || it.isUrgentRecruitment }
+    }
+
+    fun getProjectsByLocation(location: String): List<ProjectData> {
+        return getSampleProjects().filter {
+            it.location.contains(location, ignoreCase = true)
+        }
+    }
+
+    fun getProjectsByJobType(jobType: JobType): List<ProjectData> {
+        return getSampleProjects().filter {
+            it.jobTypes.contains(jobType)
+        }
+    }
+
+    fun getProjectsNearby(maxDistance: Double): List<ProjectData> {
+        return getSampleProjects().filter {
+            it.distance <= maxDistance
+        }.sortedBy { it.distance }
+    }
+
+    fun getHighWageProjects(minWage: Int): List<ProjectData> {
+        return getSampleProjects().filter {
+            it.dailyWage >= minWage
+        }.sortedByDescending { it.dailyWage }
+    }
 }
