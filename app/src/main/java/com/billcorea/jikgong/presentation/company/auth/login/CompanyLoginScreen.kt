@@ -1,333 +1,457 @@
-package com.billcorea.jikgong.presentation.company.auth.login
+package com.billcorea.jikgong.presentation.company.main.projectlist
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
-import com.afollestad.materialdialogs.MaterialDialog
-import com.billcorea.jikgong.R
-import com.billcorea.jikgong.api.models.response.ApiResult
-import com.billcorea.jikgong.api.models.response.EmailValidationResponse
-import com.billcorea.jikgong.api.models.response.LoginIdValidationResponse
-import com.billcorea.jikgong.api.models.response.LoginResponse
-import com.billcorea.jikgong.api.models.response.PhoneValidationResponse
-import com.billcorea.jikgong.api.models.response.SmsVerificationResponse
-import com.billcorea.jikgong.api.repository.join.JoinRepository
-import com.billcorea.jikgong.api.repository.login.LoginRepository
-import com.billcorea.jikgong.presentation.common.KeyboardConstants
-import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
-import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
-import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTopBar
-import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants
-import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedEvent
-import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
-import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedEvent
-import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedViewModel
-import com.billcorea.jikgong.presentation.destinations.CompanyProjectListScreenDestination
+import com.billcorea.jikgong.presentation.company.main.projectlist.components.EmptyProjectState
+import com.billcorea.jikgong.presentation.company.main.projectlist.components.ProjectCard
+import com.billcorea.jikgong.presentation.company.main.projectlist.components.ProjectFilterTabs
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectData
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectStatus
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.billcorea.jikgong.utils.MainViewModel
-import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-import org.koin.androidx.compose.koinViewModel
+import java.time.LocalDate
+import java.time.LocalDateTime
 
-@Destination
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CompanyLoginScreen(
-    companyLoginViewModel: CompanyLoginSharedViewModel = koinViewModel(),
+fun CompanyProjectListScreen(
     navigator: DestinationsNavigator,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showBottomBar: Boolean = true
 ) {
-
-    val uiState by companyLoginViewModel.uiState.collectAsStateWithLifecycle()
-//    val shouldNavigateToNextPage by companyLoginSharedViewModel.shouldNavigateToNextPage.collectAsStateWithLifecycle()
-//    val shouldNavigateBack by companyLoginSharedViewModel.shouldNavigateBack.collectAsStateWithLifecycle()
-
-    // 페이지 실행 시 초기화
-    LaunchedEffect(Unit) {
-        //  로컬 변수 초기화
-        companyLoginViewModel.onEvent(CompanyLoginSharedEvent.ResetJoin1Flow)
-        //  에러 변수 초기화
-        companyLoginViewModel.onEvent(CompanyLoginSharedEvent.ClearError)
-    }
-
-//    LaunchedEffect(loginResult) {
-//        loginResult?.let {
-//            // 기업 로그인 성공 시 CompanyProjectListScreen으로 이동
-//            navigator.navigate(CompanyProjectListScreenDestination)
-//        }
-//    }
-    /** 에러 다이얼로그 처리 */
-    uiState.errorMessage?.let { message ->
-        AlertDialog(
-            onDismissRequest = {
-                companyLoginViewModel.onEvent(CompanyLoginSharedEvent.ClearError)
-            },
-            title = { Text("알림") },
-            text = { Text(message) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        companyLoginViewModel.onEvent(CompanyLoginSharedEvent.ClearError)
-                    }
-                ) {
-                    Text("확인")
-                }
-            }
+    // 샘플 데이터 직접 정의
+    val projects = remember {
+        val today = LocalDate.now()
+        listOf(
+            ProjectData(
+                id = "project1",
+                title = "사하구 낙동5블럭 낙동강 온도 측정 센터 신축공사",
+                description = "친환경 온도 측정 센터 건립을 위한 신축 공사입니다.",
+                location = "부산 사하구",
+                detailAddress = "부산광역시 사하구 낙동대로 123",
+                distance = 2.5,
+                jobTypes = listOf(),
+                totalWorkers = 15,
+                completedWorkers = 2,
+                dailyWage = 130000,
+                startDate = today.plusDays(3),
+                endDate = today.plusDays(25),
+                startTime = "08:00",
+                endTime = "17:00",
+                status = ProjectStatus.RECRUITING,
+                isUrgent = true,
+                requirements = listOf("안전화 필수", "작업복 착용"),
+                providedItems = listOf("중식 제공", "교통비 지급"),
+                notes = "신축 공사로 깔끔한 작업 환경입니다.",
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now()
+            ),
+            ProjectData(
+                id = "project2",
+                title = "직공센터 공사",
+                description = "현대적인 업무 시설 구축을 위한 인테리어 공사",
+                location = "인천 연수구",
+                detailAddress = "인천광역시 연수구 컨벤시아대로 456",
+                distance = 12.8,
+                jobTypes = listOf(),
+                totalWorkers = 8,
+                completedWorkers = 8,
+                dailyWage = 140000,
+                startDate = today.minusDays(10),
+                endDate = today.minusDays(1),
+                startTime = "09:00",
+                endTime = "18:00",
+                status = ProjectStatus.COMPLETED,
+                isUrgent = false,
+                requirements = listOf("인테리어 경험 우대"),
+                providedItems = listOf("중식 제공"),
+                notes = "완료된 프로젝트입니다.",
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now()
+            )
         )
     }
 
-    /** 화면 시작 */
+    var selectedStatus by remember { mutableStateOf<ProjectStatus?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    // 필터링된 프로젝트
+    val filteredProjects = remember(projects, selectedStatus) {
+        if (selectedStatus == null) {
+            projects
+        } else {
+            projects.filter { it.status == selectedStatus }
+        }
+    }
+
     Scaffold(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(top = 20.dp)
-            .drawBehind {
-                val strokeWidth = 1.dp.toPx()
-                val y = size.height - strokeWidth / 2
-                drawLine(
-                    color = appColorScheme.outlineVariant,
-                    start = Offset(0f, y),
-                    end = Offset(size.width, y),
-                    strokeWidth = strokeWidth
-                )
-            },
+        modifier = modifier.fillMaxSize(),
         topBar = {
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(5.dp),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                IconButton(onClick = {
-//                    Log.e("", "backArrow")
-//                    navigator.navigateUp()
-//                }) {
-//                    Icon(
-//                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-//                        contentDescription = "Arrow Back"
-//                    )
-//                }
-//                Text(
-//                    text = "기업 로그인",
-//                    color = appColorScheme.onPrimaryContainer,
-//                    style = AppTypography.titleMedium,
-//                )
-//            }
-            CommonTopBar(
-                currentPage = uiState.currentPage,
-                totalPages = JoinConstants.TOTAL_PAGES,
-                onBackClick = {
-                    companyLoginViewModel.onEvent(CompanyLoginSharedEvent.PreviousPage)
+            ProjectListTopBar(
+                onSearchClick = {
+                    // TODO: 검색 기능 구현
+                },
+                onFilterClick = {
+                    // TODO: 필터 기능 구현
+                }
+            )
+        },
+        floatingActionButton = {
+            ProjectCreateFAB(
+                onClick = {
+                    // TODO: 프로젝트 생성 화면으로 이동
                 }
             )
         }
-    ) {
-        /** 중앙 (메인) */
-        innerPadding ->
-//        Text(
-//            text = stringResource(R.string.enterYourInfo),
-//            color = appColorScheme.primary,
-//            lineHeight = 1.33.em,
-//            style = AppTypography.titleLarge,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .wrapContentHeight(align = Alignment.CenterVertically)
-//        )
+    ) { innerPadding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp)
         ) {
-            /** Login ID 입력 받는 섹션*/
-            CommonTextInput(
-                value = uiState.id,
-//                labelMainText = stringResource(R.string.id),
-//                labelAppendText = "*",
-//                labelAppendTextColor = colorResource(R.color.secondary_B),
-                placeholder = stringResource(R.string.enterId),
-                validationError = uiState.validationErrors["id"],
-                modifier = Modifier.fillMaxWidth(),
-                onChange = {
-//                    companyLoginViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserId(it))
+            if (isLoading) {
+                // 로딩 상태
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
-            )
-            Spacer(modifier = Modifier.padding(4.dp))
-
-            /** Login Password 입력 받는 섹션*/
-            CommonTextInput(
-                value = uiState.password,
-//                labelMainText = stringResource(R.string.password),
-//                labelAppendText = "*",
-//                labelAppendTextColor = colorResource(R.color.secondary_B),
-                placeholder = stringResource(R.string.enterPassword),
-                validationError = uiState.validationErrors["password"],
-                modifier = Modifier.fillMaxWidth(),
-                onChange = {
-//                    companyLoginViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserPassword(it))
-                }
-            )
-            Spacer(modifier = Modifier.padding(4.dp))
-
-//            Spacer(modifier = Modifier.padding(5.dp))
-//
-//            OutlinedTextField(
-//                value = loginIdOrPhone,
-//                onValueChange = {
-//                    loginIdOrPhone = it
-//                },
-//                placeholder = {
-//                    Text(text = stringResource(R.string.loginIdOrPhone))
-//                },
-//                keyboardOptions = KeyboardOptions(
-//                    keyboardType = KeyboardType.Text,
-//                    imeAction = ImeAction.Next
-//                ),
-//                maxLines = 1,
-//                modifier = Modifier
-//                    .width((screenWidth * .90).dp)
-//                    .align(Alignment.CenterHorizontally)
-//                    .focusRequester(focusRequester)
-//            )
-//
-//            Spacer(modifier = Modifier.padding(4.dp))
-//
-//            OutlinedTextField(
-//                value = password,
-//                onValueChange = {
-//                    password = it
-//                },
-//                placeholder = {
-//                    Text(text = stringResource(R.string.password))
-//                },
-//                visualTransformation = PasswordVisualTransformation(),
-//                maxLines = 1,
-//                keyboardOptions = KeyboardOptions(
-//                    keyboardType = KeyboardType.Password,
-//                    imeAction = ImeAction.Done
-//                ),
-//                keyboardActions = KeyboardActions(onDone = {
-//                    keyboardController?.hide()
-//                    focusManager.clearFocus()
-//                }),
-//                modifier = Modifier
-//                    .width((screenWidth * .90).dp)
-//                    .align(Alignment.CenterHorizontally)
-//            )
-//
-//            Spacer(modifier = Modifier.padding(10.dp))
-            /** 로그인 버튼 */
-            CommonButton(
-                text = stringResource(R.string.login),
-                onClick = {
-//                    companyLoginViewModel.onEvent(CompanyJoinSharedEvent.NextPage)
-                },
-                enabled = uiState.isPage1Complete,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(WindowInsets.navigationBars.asPaddingValues())
-//                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-//            // 로그인 버튼
-//            TextButton(
-//                onClick = {
-//                    if (loginIdOrPhone.isNotBlank() && password.isNotBlank()) {
-//                        val deviceToken = "test_device_token"
-//                        viewModel.doLogin(loginIdOrPhone, password, deviceToken)
-//                    } else {
-//                        MaterialDialog(context).show {
-//                            icon(R.drawable.ic_jikgong_white)
-//                            message(R.string.errorLoginBlank)
-//                            positiveButton(R.string.OK) { it.dismiss() }
-//                        }
-//                    }
-//                },
-//                modifier = Modifier
-//                    .width((screenWidth * .90).dp)
-//                    .align(Alignment.CenterHorizontally)
-//                    .padding(WindowInsets.navigationBars.asPaddingValues())
-//                    .background(appColorScheme.primary)
-//            ) {
-//                Text(
-//                    text = stringResource(R.string.login),
-//                    color = appColorScheme.onPrimary,
-//                    lineHeight = 1.25.em,
-//                    style = AppTypography.labelMedium,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .wrapContentWidth(Alignment.CenterHorizontally)
-//                )
-//            }
+            } else if (projects.isEmpty()) {
+                // 빈 상태
+                EmptyProjectState(
+                    onCreateProjectClick = {
+                        // TODO: 프로젝트 생성 화면으로 이동
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                // 프로젝트 목록 표시
+                ProjectListContent(
+                    projects = filteredProjects,
+                    selectedStatus = selectedStatus,
+                    onStatusSelected = { status ->
+                        selectedStatus = status
+                    },
+                    onProjectClick = { project ->
+                        // TODO: 프로젝트 상세 화면으로 이동
+                    },
+                    onProjectAction = { project, action ->
+                        when (action) {
+                            "edit" -> {
+                                // TODO: 프로젝트 편집 화면으로 이동
+                            }
+                            "delete" -> {
+                                // TODO: 프로젝트 삭제 처리
+                            }
+                            "recruit" -> {
+                                // TODO: 인력 모집 화면으로 이동
+                            }
+                        }
+                    },
+                    showBottomBar = showBottomBar,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CompanyLoginScreenPreview() {
+private fun ProjectListTopBar(
+    onSearchClick: () -> Unit,
+    onFilterClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = "프로젝트 목록",
+                style = AppTypography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = appColorScheme.onSurface
+            )
+        },
+        actions = {
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "검색",
+                    tint = appColorScheme.onSurfaceVariant
+                )
+            }
+            IconButton(onClick = onFilterClick) {
+                Icon(
+                    imageVector = Icons.Default.FilterList,
+                    contentDescription = "필터",
+                    tint = appColorScheme.onSurfaceVariant
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = appColorScheme.surface,
+            titleContentColor = appColorScheme.onSurface
+        ),
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun ProjectCreateFAB(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = modifier,
+        containerColor = appColorScheme.primary,
+        contentColor = appColorScheme.onPrimary,
+        shape = CircleShape
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = "프로젝트 등록",
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun ProjectListContent(
+    projects: List<ProjectData>,
+    selectedStatus: ProjectStatus?,
+    onStatusSelected: (ProjectStatus?) -> Unit,
+    onProjectClick: (ProjectData) -> Unit,
+    onProjectAction: (ProjectData, String) -> Unit,
+    showBottomBar: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val scrollState = rememberLazyListState()
+
+    // 스크롤 진행률 계산
+    val scrollProgress by remember {
+        derivedStateOf {
+            if (scrollState.layoutInfo.totalItemsCount <= 1) return@derivedStateOf 0f
+
+            val firstVisibleItemIndex = scrollState.firstVisibleItemIndex
+            val firstVisibleItemScrollOffset = scrollState.firstVisibleItemScrollOffset
+            val itemHeight = scrollState.layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
+
+            val totalScrollableHeight = (scrollState.layoutInfo.totalItemsCount - 1) * itemHeight
+            val currentScrollOffset = firstVisibleItemIndex * itemHeight + firstVisibleItemScrollOffset
+
+            if (totalScrollableHeight > 0) {
+                (currentScrollOffset.toFloat() / totalScrollableHeight.toFloat()).coerceIn(0f, 1f)
+            } else {
+                0f
+            }
+        }
+    }
+
+    val canScroll by remember {
+        derivedStateOf {
+            scrollState.layoutInfo.totalItemsCount > 0 &&
+                    (scrollState.canScrollForward || scrollState.canScrollBackward || scrollState.firstVisibleItemScrollOffset > 0)
+        }
+    }
+
+    Box(modifier = modifier) {
+        LazyColumn(
+            state = scrollState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = 16.dp,
+                    end = if (canScroll) 28.dp else 16.dp,
+                    top = 8.dp
+                ),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(
+                bottom = if (showBottomBar) 100.dp else 20.dp
+            )
+        ) {
+            // 필터 탭
+            item {
+                ProjectFilterTabs(
+                    selectedStatus = selectedStatus,
+                    onStatusSelected = onStatusSelected,
+                    projectCounts = projects.groupingBy { it.status }.eachCount()
+                )
+            }
+
+            // 헤더 정보
+            item {
+                ProjectListHeader(
+                    totalCount = projects.size,
+                    selectedStatus = selectedStatus
+                )
+            }
+
+            // 프로젝트 카드 목록
+            items(
+                items = projects,
+                key = { it.id }
+            ) { project ->
+                ProjectCard(
+                    project = project,
+                    onProjectClick = onProjectClick,
+                    onProjectAction = onProjectAction
+                )
+            }
+
+            // 하단 여백
+            item {
+                Spacer(modifier = Modifier.height(40.dp))
+            }
+        }
+
+        // 스크롤바
+        if (canScroll) {
+            ScrollBar(
+                scrollProgress = scrollProgress,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .width(8.dp)
+                    .padding(
+                        end = 4.dp,
+                        top = 20.dp,
+                        bottom = if (showBottomBar) 120.dp else 40.dp
+                    )
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProjectListHeader(
+    totalCount: Int,
+    selectedStatus: ProjectStatus?,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = when (selectedStatus) {
+                null -> "전체 프로젝트"
+                ProjectStatus.RECRUITING -> "모집중인 프로젝트"
+                ProjectStatus.IN_PROGRESS -> "진행중인 프로젝트"
+                ProjectStatus.COMPLETED -> "완료된 프로젝트"
+                ProjectStatus.CANCELLED -> "취소된 프로젝트"
+            },
+            style = AppTypography.titleMedium.copy(
+                fontWeight = FontWeight.Bold
+            ),
+            color = appColorScheme.onSurface
+        )
+
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = appColorScheme.primaryContainer.copy(alpha = 0.7f)
+        ) {
+            Text(
+                text = "총 ${totalCount}건",
+                style = AppTypography.labelMedium.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                color = appColorScheme.primary,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScrollBar(
+    scrollProgress: Float,
+    modifier: Modifier = Modifier,
+    isVisible: Boolean = true
+) {
+    if (isVisible) {
+        Box(
+            modifier = modifier
+                .background(
+                    color = appColorScheme.outline.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(4.dp)
+                )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.2f)
+                    .offset(y = (scrollProgress * 80).dp)
+                    .background(
+                        color = appColorScheme.primary.copy(alpha = 0.8f),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+            )
+        }
+    }
+}
+
+@Preview(name = "프로젝트 목록 화면", showBackground = true, heightDp = 800)
+@Composable
+fun CompanyProjectListScreenPreview() {
     val navController = rememberNavController()
     val navigator = navController.toDestinationsNavigator()
 
-    val emptyRepository = object : LoginRepository {
-        override suspend fun requestLogin(loginIdOrPhone: String, password: String, deviceToken: String): ApiResult<LoginResponse> =
-            ApiResult.Error(Exception("Preview mode"))
-
-    }
     Jikgong1111Theme {
-        CompanyLoginScreen(
-            companyLoginViewModel = CompanyLoginSharedViewModel(emptyRepository),
-            navigator, modifier = Modifier.padding(3.dp))
+        CompanyProjectListScreen(
+            navigator = navigator,
+            showBottomBar = true
+        )
+    }
+}
+
+@Preview(name = "바텀바 없음", showBackground = true, heightDp = 800)
+@Composable
+fun CompanyProjectListScreenNoBottomBarPreview() {
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme {
+        CompanyProjectListScreen(
+            navigator = navigator,
+            showBottomBar = false
+        )
+    }
+}
+
+@Preview(name = "다크 테마", showBackground = true, heightDp = 800)
+@Composable
+fun CompanyProjectListScreenDarkPreview() {
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme(darkTheme = true) {
+        CompanyProjectListScreen(
+            navigator = navigator,
+            showBottomBar = true
+        )
     }
 }
