@@ -1,20 +1,17 @@
 package com.billcorea.jikgong.presentation
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -29,24 +26,20 @@ fun PageIndicator(
     selectedLength: Dp = 24.dp,
     space: Dp = 8.dp,
     animationDurationInMillis: Int = 300,
-    modifier: Modifier = Modifier,
-    selectedColor: Color = appColorScheme.primary,
-    defaultColor: Color = appColorScheme.onSurface.copy(alpha = 0.2f)
+    modifier: Modifier = Modifier
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(space),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space),
         modifier = modifier
     ) {
-        repeat(numberOfPages) { index ->
-            val isSelected = index == selectedPage
+        for (i in 0 until numberOfPages) {
+            val isSelected = i == selectedPage
             PageIndicatorView(
                 isSelected = isSelected,
-                selectedColor = selectedColor,
-                defaultColor = defaultColor,
                 defaultRadius = defaultRadius,
                 selectedLength = selectedLength,
-                animationDurationInMillis = animationDurationInMillis,
+                animationDurationInMillis = animationDurationInMillis
             )
         }
     }
@@ -55,58 +48,23 @@ fun PageIndicator(
 @Composable
 private fun PageIndicatorView(
     isSelected: Boolean,
-    selectedColor: Color,
-    defaultColor: Color,
     defaultRadius: Dp,
     selectedLength: Dp,
     animationDurationInMillis: Int,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
-    val color: Color by animateColorAsState(
-        targetValue = if (isSelected) selectedColor else defaultColor,
-        animationSpec = tween(
-            durationMillis = animationDurationInMillis,
-        ),
-        label = "PageIndicatorColor"
-    )
-    val width: Float by animateFloatAsState(
-        targetValue = if (isSelected) selectedLength.value else defaultRadius.value,
-        animationSpec = tween(
-            durationMillis = animationDurationInMillis,
-        ),
-        label = "PageIndicatorWidth"
+    val color = if (isSelected) appColorScheme.primary else appColorScheme.outline.copy(alpha = 0.5f)
+    val width by animateDpAsState(
+        targetValue = if (isSelected) selectedLength else defaultRadius,
+        animationSpec = tween(durationMillis = animationDurationInMillis),
+        label = "width"
     )
 
-    Canvas(
-        modifier = modifier.size(
-            width = selectedLength,
-            height = defaultRadius,
-        ),
-    ) {
-        drawIndicator(
-            color = color,
-            radius = defaultRadius.toPx(),
-            width = width.dp.toPx(),
-        )
-    }
-}
-
-private fun DrawScope.drawIndicator(
-    color: Color,
-    radius: Float,
-    width: Float,
-) {
-    val rect = RoundRect(
-        left = 0f,
-        top = 0f,
-        right = width,
-        bottom = radius * 2,
-        cornerRadius = CornerRadius(radius, radius)
-    )
-    drawRoundRect(
-        color = color,
-        cornerRadius = CornerRadius(radius, radius),
-        //size = rect.size(200.dp, 50.dp)
+    Box(
+        modifier = modifier
+            .size(width = width, height = defaultRadius)
+            .clip(RoundedCornerShape(defaultRadius))
+            .background(color = color)
     )
 }
 
@@ -114,34 +72,27 @@ private fun DrawScope.drawIndicator(
 @Composable
 fun PageIndicatorPreview() {
     Jikgong1111Theme {
-        PageIndicator(
-            numberOfPages = 5,
-            selectedPage = 2,
-            modifier = Modifier.size(200.dp, 50.dp)
-        )
-    }
-}
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // 첫 번째 페이지 선택
+            PageIndicator(
+                numberOfPages = 3,
+                selectedPage = 0
+            )
 
-@Preview(showBackground = true)
-@Composable
-fun PageIndicatorFirstPagePreview() {
-    Jikgong1111Theme {
-        PageIndicator(
-            numberOfPages = 3,
-            selectedPage = 0,
-            modifier = Modifier.size(150.dp, 40.dp)
-        )
-    }
-}
+            // 두 번째 페이지 선택
+            PageIndicator(
+                numberOfPages = 3,
+                selectedPage = 1
+            )
 
-@Preview(showBackground = true)
-@Composable
-fun PageIndicatorLastPagePreview() {
-    Jikgong1111Theme {
-        PageIndicator(
-            numberOfPages = 4,
-            selectedPage = 3,
-            modifier = Modifier.size(180.dp, 40.dp)
-        )
+            // 세 번째 페이지 선택
+            PageIndicator(
+                numberOfPages = 3,
+                selectedPage = 2
+            )
+        }
     }
 }
