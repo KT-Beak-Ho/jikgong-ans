@@ -14,18 +14,18 @@ import com.billcorea.jikgong.presentation.company.main.projectlist.components.Pr
 import com.billcorea.jikgong.presentation.company.main.projectlist.shared.ProjectRegistrationSharedEvent
 import com.billcorea.jikgong.presentation.company.main.projectlist.shared.ProjectRegistrationSharedViewModel
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
-import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import org.koin.androidx.compose.koinViewModel
 
+// @Destination 어노테이션 제거 - 바텀 네비게이션에서 composable()로 직접 호출됨
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination(route = "company_project_list")
 @Composable
 fun ProjectRegistrationScreen(
     navigator: DestinationsNavigator,
     projectRegistrationViewModel: ProjectRegistrationSharedViewModel = koinViewModel(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showBottomBar: Boolean = true
 ) {
     val uiState by projectRegistrationViewModel.uiState.collectAsStateWithLifecycle()
 

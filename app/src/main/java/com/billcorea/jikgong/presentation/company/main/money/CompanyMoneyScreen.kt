@@ -24,12 +24,11 @@ import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPayment
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 
+// @Destination 어노테이션 제거 - 바텀 네비게이션에서 composable()로 직접 호출됨
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination(route = "company_money")
 @Composable
 fun CompanyMoneyScreen(
     navigator: DestinationsNavigator,

@@ -14,7 +14,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.info.CompanyInfoScreen
 import com.billcorea.jikgong.presentation.company.main.money.CompanyMoneyScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.ProjectRegistrationScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.ProjectListScreen
 import com.billcorea.jikgong.presentation.company.main.scout.CompanyScoutScreen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -22,7 +22,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 /**
  * 기업용 바텀 네비게이션 컨테이너 - 메인 진입점
  */
-@Destination(route = "company_main") // 이것만 @Destination!
+@Destination(route = "company_main")
 @Composable
 fun CompanyBottomNavContainer(
     navigator: DestinationsNavigator,
@@ -85,15 +85,15 @@ private fun CompanyBottomNavHost(
         startDestination = CompanyBottomNavTabs.PROJECT_LIST.route,
         modifier = modifier
     ) {
-        // 프로젝트 목록 화면 - @Destination 제거됨
+        // 프로젝트 목록 화면 - 새로운 ProjectListScreen 사용
         composable(CompanyBottomNavTabs.PROJECT_LIST.route) {
-            ProjectRegistrationScreen(
+            ProjectListScreen(
                 navigator = navigator,
                 showBottomBar = true
             )
         }
 
-        // 인력 스카웃 화면 - @Destination 제거됨
+        // 인력 스카웃 화면
         composable(CompanyBottomNavTabs.SCOUT.route) {
             CompanyScoutScreen(
                 navigator = navigator,
@@ -101,7 +101,7 @@ private fun CompanyBottomNavHost(
             )
         }
 
-        // 임금 관리 화면 - @Destination 제거됨
+        // 임금 관리 화면
         composable(CompanyBottomNavTabs.MONEY.route) {
             CompanyMoneyScreen(
                 navigator = navigator,
@@ -109,7 +109,7 @@ private fun CompanyBottomNavHost(
             )
         }
 
-        // 사업자 정보 화면 - @Destination 제거됨
+        // 사업자 정보 화면
         composable(CompanyBottomNavTabs.INFO.route) {
             CompanyInfoScreen(
                 navigator = navigator,
