@@ -5,7 +5,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.Hotel
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -58,14 +57,14 @@ fun ReviewPage(
             )
         }
 
-        // 급여 금액
-        if (projectData.moneyInfo.paymentType != null) {
+        // 급여 금액 - if 표현식 오류 수정
+        projectData.moneyInfo.paymentType?.let { paymentType ->
             FormSection(
                 title = "급여 금액",
                 isRequired = true,
                 icon = Icons.Default.AttachMoney
             ) {
-                when (projectData.moneyInfo.paymentType) {
+                when (paymentType) {
                     PaymentType.DAILY -> {
                         WageInput(
                             label = "일당",
@@ -285,7 +284,9 @@ private fun WageInput(
                 val cleanValue = newValue.replace(",", "").replace(" ", "")
                 cleanValue.toLongOrNull()?.let { longValue ->
                     if (longValue >= 0) onValueChange(longValue)
-                } ?: if (cleanValue.isEmpty()) onValueChange(0L)
+                } ?: run {
+                    if (cleanValue.isEmpty()) onValueChange(0L)
+                }
             },
             placeholder = { Text("0") },
             suffix = { Text(suffix) },
@@ -330,7 +331,9 @@ private fun ProjectSummaryCard(
             val dateRange = if (projectData.requiredInfo.startDate != null && projectData.requiredInfo.endDate != null) {
                 "${projectData.requiredInfo.startDate!!.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))} ~ " +
                         "${projectData.requiredInfo.endDate!!.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}"
-            } else "미입력"
+            } else {
+                "미입력"
+            }
 
             SummaryItem(
                 label = "근무 기간",

@@ -14,7 +14,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.info.CompanyInfoScreen
 import com.billcorea.jikgong.presentation.company.main.money.CompanyMoneyScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.CompanyProjectListScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.ProjectRegistrationScreen
 import com.billcorea.jikgong.presentation.company.main.scout.CompanyScoutScreen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -87,7 +87,7 @@ private fun CompanyBottomNavHost(
     ) {
         // 프로젝트 목록 화면 - @Destination 제거됨
         composable(CompanyBottomNavTabs.PROJECT_LIST.route) {
-            CompanyProjectListScreen(
+            ProjectRegistrationScreen(
                 navigator = navigator,
                 showBottomBar = true
             )
