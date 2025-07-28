@@ -1,10 +1,12 @@
 package com.billcorea.jikgong.presentation.company.auth.login.shared
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.billcorea.jikgong.api.repository.login.LoginRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class CompanyLoginSharedViewModel(
   private val loginRepository: LoginRepository
@@ -14,18 +16,39 @@ class CompanyLoginSharedViewModel(
   val uiState: StateFlow<CompanyLoginSharedUiState> = _uiState.asStateFlow()
 
   /**
-   * 네비게이션 이벤트
-   */
-  private val _shouldNavigateBack = MutableStateFlow(false)
-  val shouldNavigateBack: StateFlow<Boolean> = _shouldNavigateBack.asStateFlow()
-
-  /**
    * 네비게이션 이벤트 클리어
    */
   fun clearNavigationEvents() {
-//    _shouldNavigateToNextPage.value = false
-    _shouldNavigateBack.value = false
-//    _shouldNavigateHome.value = false
+    _uiState.value = _uiState.value.copy(
+      shouldNavigateBack = false,
+      shouldNavigateToMain = false
+    )
+  }
+
+  /**
+   * 로그인 처리
+   */
+  private fun performLogin() {
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isLoggingIn = true)
+
+      try {
+        val currentState = _uiState.value
+        // 실제로는 API 호출
+        // val result = loginRepository.login(currentState.id, currentState.password)
+
+        // 임시로 성공 처리
+        _uiState.value = _uiState.value.copy(
+          isLoggingIn = false,
+          shouldNavigateToMain = true
+        )
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(
+          isLoggingIn = false,
+          errorMessage = "로그인에 실패했습니다: ${e.message}"
+        )
+      }
+    }
   }
 
   /**
@@ -34,53 +57,50 @@ class CompanyLoginSharedViewModel(
   fun onEvent(event: CompanyLoginSharedEvent) {
     when (event) {
       /**
-       * 공통 이벤트
-       */
-      /**
        * 페이지 뒤로 가기
        */
       is CompanyLoginSharedEvent.PreviousPage -> {
-        val currentPage = _uiState.value.currentPage
-        //  현재 page가 1 page 이상인 경우에만 뒤로가기 가능
-        _uiState.value = _uiState.value.copy(
-          currentPage = currentPage - 1
-        )
-        _shouldNavigateBack.value = currentPage > 0
+        _uiState.value = _uiState.value.copy(shouldNavigateBack = true)
       }
+
       /**
-       * 페이지 다음 으로 가기
+       * ID 입력
        */
-//      is CompanyLoginSharedEvent.NextPage -> {
-//        if (canNavigateToNextPage()) {
-//          val currentPage = _uiState.value.currentPage
-//          _uiState.value = _uiState.value.copy(
-//            currentPage = currentPage + 1
-//          )
-//          _shouldNavigateToNextPage.value = true
-//        }
-//      }
+      is CompanyLoginSharedEvent.UpdateId -> {
+        _uiState.value = _uiState.value.copy(id = event.id)
+      }
+
       /**
-       * main 페이지로 돌아가기
+       * 비밀번호 입력
        */
-//      is CompanyLoginSharedEvent.HomePage -> {
-//        val currentPage = _uiState.value.currentPage
-//        _shouldNavigateHome.value = currentPage == TOTAL_PAGES
-//      }
+      is CompanyLoginSharedEvent.UpdatePassword -> {
+        _uiState.value = _uiState.value.copy(password = event.password)
+      }
+
+      /**
+       * 로그인 시도
+       */
+      is CompanyLoginSharedEvent.Login -> {
+        performLogin()
+      }
+
       /**
        * 1 Page 입력값 초기화
        */
       is CompanyLoginSharedEvent.ResetJoin1Flow -> {
-        _uiState.value = _uiState.value.copy()
+        _uiState.value = _uiState.value.copy(
+          id = "",
+          password = "",
+          currentPage = 1
+        )
       }
-      /**
-       * 공통
-       */
+
       /**
        * 에러 초기화
        */
       CompanyLoginSharedEvent.ClearError -> {
         _uiState.value = _uiState.value.copy(
-          validationErrors = emptyMap(), //  현재 페이지의 모든 에러 제거
+          validationErrors = emptyMap(),
           errorMessage = null
         )
       }

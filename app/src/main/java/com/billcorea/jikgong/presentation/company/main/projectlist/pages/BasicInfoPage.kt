@@ -1,7 +1,7 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.pages
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarToday
@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
@@ -219,7 +218,6 @@ private fun JobTypeSelector(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DatePickerField(
     label: String,
@@ -228,7 +226,6 @@ private fun DatePickerField(
     modifier: Modifier = Modifier
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
 
     Column(modifier = modifier) {
         OutlinedTextField(
@@ -245,7 +242,9 @@ private fun DatePickerField(
         if (showDatePicker) {
             DatePickerDialog(
                 onDateSelected = { date ->
-                    date?.let { onDateSelected(LocalDate.ofEpochDay(it / 86400000)) }
+                    date?.let {
+                        onDateSelected(LocalDate.ofEpochDay(it / 86400000))
+                    }
                     showDatePicker = false
                 },
                 onDismiss = { showDatePicker = false }
@@ -254,7 +253,6 @@ private fun DatePickerField(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TimePickerField(
     label: String,

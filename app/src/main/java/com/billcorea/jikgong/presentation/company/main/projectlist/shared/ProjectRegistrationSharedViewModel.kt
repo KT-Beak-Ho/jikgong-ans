@@ -97,7 +97,8 @@ class ProjectRegistrationSharedViewModel : ViewModel() {
                     isSaving = false,
                     hasDraft = true,
                     lastSavedTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
-                    isFormDirty = false
+                    isFormDirty = false,
+                    showSaveDialog = true
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -247,6 +248,20 @@ class ProjectRegistrationSharedViewModel : ViewModel() {
                 val updatedRequiredInfo = currentData.requiredInfo.copy(projectTitle = event.title)
                 val validationError = validateField("projectTitle", event.title)
 
+                _uiState.value = _uiState.value.copy(
+                    projectData = currentData.copy(requiredInfo = updatedRequiredInfo),
+                    validationErrors = if (validationError != null) {
+                        _uiState.value.validationErrors + ("projectTitle" to validationError)
+                    } else {
+                        _uiState.value.validationErrors - "projectTitle"
+                    }
+                )
+                checkFormDirty()
+            }
+
+            is ProjectRegistrationSharedEvent.UpdateWorkType -> {
+                val currentData = _uiState.value.projectData
+                val updatedRequiredInfo = currentData.requiredInfo.copy(workType = event.workType)
                 _uiState.value = _uiState.value.copy(
                     projectData = currentData.copy(requiredInfo = updatedRequiredInfo)
                 )
@@ -550,18 +565,4 @@ class ProjectRegistrationSharedViewModel : ViewModel() {
             }
         }
     }
-},
-validationErrors = if (validationError != null) {
-    _uiState.value.validationErrors + ("projectTitle" to validationError)
-} else {
-    _uiState.value.validationErrors - "projectTitle"
 }
-)
-checkFormDirty()
-}
-
-is ProjectRegistrationSharedEvent.UpdateWorkType -> {
-    val currentData = _uiState.value.projectData
-    val updatedRequiredInfo = currentData.requiredInfo.copy(workType = event.workType)
-    _uiState.value = _uiState.value.copy(
-        projectData = currentData.copy(requiredInfo = updatedRequiredInfo)
