@@ -19,7 +19,8 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import org.koin.androidx.compose.koinViewModel
 
-@Destination
+@OptIn(ExperimentalMaterial3Api::class)
+@Destination(route = "company_project_list")
 @Composable
 fun ProjectRegistrationScreen(
     navigator: DestinationsNavigator,
