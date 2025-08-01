@@ -1,7 +1,10 @@
+// app/src/main/java/com/billcorea/jikgong/presentation/company/main/scout/CompanyScoutScreen.kt
 package com.billcorea.jikgong.presentation.company.main.scout
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -9,25 +12,67 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.presentation.company.main.scout.components.WorkerCard
+import com.billcorea.jikgong.presentation.company.main.scout.components.EmptyScoutState
+import com.billcorea.jikgong.presentation.company.main.scout.components.SearchFilterCard
+import com.billcorea.jikgong.presentation.company.main.scout.components.ScoutScrollBar
+import com.billcorea.jikgong.presentation.company.main.scout.shared.CompanyScoutSharedEvent
+import com.billcorea.jikgong.presentation.company.main.scout.shared.CompanyScoutSharedViewModel
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompanyScoutScreen(
     navigator: DestinationsNavigator,
-    showBottomBar: Boolean = false,
-    modifier: Modifier = Modifier
+    viewModel: CompanyScoutSharedViewModel = koinViewModel(),
+    modifier: Modifier = Modifier,
+    showBottomBar: Boolean = true
 ) {
-    var searchRadius by remember { mutableStateOf(10) }
-    var selectedJobType by remember { mutableStateOf("전체") }
-    var experienceFilter by remember { mutableStateOf("상관없음") }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // 에러 다이얼로그
+    uiState.errorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = {
+                viewModel.onEvent(CompanyScoutSharedEvent.ClearError)
+            },
+            title = { Text("오류") },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.onEvent(CompanyScoutSharedEvent.ClearError)
+                    }
+                ) {
+                    Text("확인")
+                }
+            }
+        )
+    }
+
+    // 제안서 전송 다이얼로그
+    if (uiState.showProposalDialog) {
+        ProposalSendDialog(
+            workerName = uiState.selectedWorkerName ?: "",
+            onConfirm = { message ->
+                viewModel.onEvent(CompanyScoutSharedEvent.ConfirmSendProposal(message))
+            },
+            onDismiss = {
+                viewModel.onEvent(CompanyScoutSharedEvent.DismissProposalDialog)
+            }
+        )
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -38,417 +83,361 @@ fun CompanyScoutScreen(
                         text = "인력 스카웃",
                         style = AppTypography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold
-                        ),
-                        color = appColorScheme.onSurface
+                        )
                     )
                 },
                 actions = {
-                    IconButton(onClick = { /* 알림 */ }) {
+                    // 검색 버튼
+                    IconButton(
+                        onClick = {
+                            viewModel.onEvent(CompanyScoutSharedEvent.ToggleSearchMode)
+                        }
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = "알림",
-                            tint = appColorScheme.onSurface
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "검색"
                         )
+                    }
+
+                    // 새로고침 버튼
+                    IconButton(
+                        onClick = {
+                            viewModel.onEvent(CompanyScoutSharedEvent.RefreshData)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "새로고침"
+                        )
+                    }
+
+                    // 알림 버튼
+                    IconButton(
+                        onClick = {
+                            // 알림 화면으로 이동
+                        }
+                    ) {
+                        BadgedBox(
+                            badge = {
+                                if (uiState.pendingProposalsCount > 0) {
+                                    Badge {
+                                        Text(
+                                            text = uiState.pendingProposalsCount.toString(),
+                                            style = AppTypography.labelSmall
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "알림"
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = appColorScheme.surface
+                    containerColor = appColorScheme.surface,
+                    titleContentColor = appColorScheme.onSurface
                 )
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    // 스카웃 제안서 작성 화면으로 이동
-                },
-                containerColor = appColorScheme.primary,
-                contentColor = appColorScheme.onPrimary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PersonAdd,
-                    contentDescription = "스카웃 제안"
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("스카웃 제안")
+            if (uiState.hasWorkers) {
+                FloatingActionButton(
+                    onClick = {
+                        viewModel.onEvent(CompanyScoutSharedEvent.CreateBulkProposal)
+                    },
+                    containerColor = appColorScheme.primary,
+                    contentColor = appColorScheme.onPrimary
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "일괄 제안"
+                    )
+                }
             }
         }
     ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (!uiState.hasWorkers && !uiState.isLoading) {
+                EmptyScoutState(
+                    onSearchClick = {
+                        viewModel.onEvent(CompanyScoutSharedEvent.StartSearch)
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                )
+            } else {
+                ScoutContentWithScrollbar(
+                    uiState = uiState,
+                    onEvent = viewModel::onEvent,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    showBottomBar = showBottomBar
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScoutContentWithScrollbar(
+    uiState: com.billcorea.jikgong.presentation.company.main.scout.shared.CompanyScoutSharedUiState,
+    onEvent: (CompanyScoutSharedEvent) -> Unit,
+    modifier: Modifier = Modifier,
+    showBottomBar: Boolean = true
+) {
+    val scrollState = rememberLazyListState()
+
+    // 스크롤 진행률 계산
+    val scrollProgress by remember {
+        derivedStateOf {
+            if (scrollState.layoutInfo.totalItemsCount <= 1) return@derivedStateOf 0f
+
+            val firstVisibleItemIndex = scrollState.firstVisibleItemIndex
+            val firstVisibleItemScrollOffset = scrollState.firstVisibleItemScrollOffset
+            val itemHeight = scrollState.layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
+
+            val totalScrollableHeight = (scrollState.layoutInfo.totalItemsCount - 1) * itemHeight
+            val currentScrollOffset = firstVisibleItemIndex * itemHeight + firstVisibleItemScrollOffset
+
+            if (totalScrollableHeight > 0) {
+                (currentScrollOffset.toFloat() / totalScrollableHeight.toFloat()).coerceIn(0f, 1f)
+            } else {
+                0f
+            }
+        }
+    }
+
+    // 스크롤 가능 여부 확인
+    val canScroll by remember {
+        derivedStateOf {
+            scrollState.layoutInfo.totalItemsCount > 0 &&
+                    (scrollState.canScrollForward || scrollState.canScrollBackward || scrollState.firstVisibleItemScrollOffset > 0)
+        }
+    }
+
+    Box(modifier = modifier) {
         LazyColumn(
+            state = scrollState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(
+                    start = 16.dp,
+                    end = if (canScroll) 28.dp else 16.dp,
+                    top = 8.dp,
+                    bottom = 8.dp
+                ),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(
+                bottom = if (showBottomBar) 120.dp else 40.dp
+            )
         ) {
-            // 검색 필터 섹션
+            // 검색 필터
             item {
-                SearchFilterSection(
-                    searchRadius = searchRadius,
-                    onSearchRadiusChange = { searchRadius = it },
-                    selectedJobType = selectedJobType,
-                    onJobTypeChange = { selectedJobType = it },
-                    experienceFilter = experienceFilter,
-                    onExperienceFilterChange = { experienceFilter = it }
+                SearchFilterCard(
+                    searchFilters = uiState.searchFilters,
+                    onFilterChange = { filters ->
+                        onEvent(CompanyScoutSharedEvent.UpdateSearchFilters(filters))
+                    }
                 )
             }
 
-            // 추천 인력 섹션
+            // 결과 헤더
             item {
+                ScoutResultHeader(
+                    totalCount = uiState.filteredWorkers.size,
+                    searchFilters = uiState.searchFilters
+                )
+            }
+
+            // 인력 목록
+            items(
+                items = uiState.filteredWorkers,
+                key = { it.id }
+            ) { worker ->
+                WorkerCard(
+                    worker = worker,
+                    onScoutClick = { clickedWorker ->
+                        onEvent(CompanyScoutSharedEvent.SendProposal(clickedWorker.id))
+                    },
+                    onFavoriteClick = { clickedWorker ->
+                        onEvent(CompanyScoutSharedEvent.ToggleFavorite(clickedWorker.id))
+                    },
+                    onProfileClick = { clickedWorker ->
+                        onEvent(CompanyScoutSharedEvent.ViewWorkerProfile(clickedWorker.id))
+                    }
+                )
+            }
+
+            // 하단 여백
+            item {
+                Spacer(modifier = Modifier.height(40.dp))
+            }
+        }
+
+        // 스크롤바
+        if (canScroll) {
+            ScoutScrollBar(
+                scrollProgress = scrollProgress,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .width(8.dp)
+                    .padding(
+                        end = 4.dp,
+                        top = 16.dp,
+                        bottom = if (showBottomBar) 120.dp else 40.dp
+                    )
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScoutResultHeader(
+    totalCount: Int,
+    searchFilters: com.billcorea.jikgong.presentation.company.main.scout.data.SearchFilters,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = appColorScheme.primaryContainer.copy(alpha = 0.1f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
                 Text(
-                    text = "추천 인력",
-                    style = AppTypography.titleLarge.copy(
+                    text = "검색 결과",
+                    style = AppTypography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
                     color = appColorScheme.onSurface
                 )
-            }
-
-            // 인력 카드들 (샘플 데이터)
-            items(5) { index ->
-                WorkerCard(
-                    workerName = "김철수 ${index + 1}",
-                    experience = "${(index + 1) * 2}년",
-                    location = "서울 강남구",
-                    distance = "${(index + 1) * 2.5}km",
-                    rating = 4.5f + (index * 0.1f),
-                    skills = listOf("보통인부", "철근공", "콘크리트공").take(index + 1),
-                    isOnline = index % 2 == 0,
-                    onScoutClick = {
-                        // 스카웃 제안 보내기
-                    },
-                    onProfileClick = {
-                        // 프로필 상세보기
-                    }
-                )
-            }
-
-            // 더보기 버튼
-            item {
-                OutlinedButton(
-                    onClick = { /* 더 많은 인력 보기 */ },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("더 많은 인력 보기")
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(80.dp)) // FAB 공간 확보
-            }
-        }
-    }
-}
-
-@Composable
-private fun SearchFilterSection(
-    searchRadius: Int,
-    onSearchRadiusChange: (Int) -> Unit,
-    selectedJobType: String,
-    onJobTypeChange: (String) -> Unit,
-    experienceFilter: String,
-    onExperienceFilterChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = appColorScheme.surfaceVariant.copy(alpha = 0.3f)
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = "검색 조건",
-                style = AppTypography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = appColorScheme.onSurface
-            )
-
-            // 반경 설정
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
                 Text(
-                    text = "검색 반경: ${searchRadius}km",
-                    style = AppTypography.bodyMedium.copy(
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-
-                Slider(
-                    value = searchRadius.toFloat(),
-                    onValueChange = { onSearchRadiusChange(it.toInt()) },
-                    valueRange = 1f..50f,
-                    steps = 48,
-                    colors = SliderDefaults.colors(
-                        thumbColor = appColorScheme.primary,
-                        activeTrackColor = appColorScheme.primary
-                    )
-                )
-            }
-
-            // 직종 필터
-            FilterChipGroup(
-                title = "직종",
-                options = listOf("전체", "보통인부", "철근공", "콘크리트공", "용접공", "전기공"),
-                selectedOption = selectedJobType,
-                onOptionSelected = onJobTypeChange
-            )
-
-            // 경력 필터
-            FilterChipGroup(
-                title = "경력",
-                options = listOf("상관없음", "신입", "1년 이상", "3년 이상", "5년 이상"),
-                selectedOption = experienceFilter,
-                onOptionSelected = onExperienceFilterChange
-            )
-        }
-    }
-}
-
-@Composable
-private fun FilterChipGroup(
-    title: String,
-    options: List<String>,
-    selectedOption: String,
-    onOptionSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = title,
-            style = AppTypography.bodyMedium.copy(
-                fontWeight = FontWeight.Medium
-            )
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            options.take(3).forEach { option ->
-                FilterChip(
-                    selected = selectedOption == option,
-                    onClick = { onOptionSelected(option) },
-                    label = { Text(option) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = appColorScheme.primary,
-                        selectedLabelColor = appColorScheme.onPrimary
-                    )
-                )
-            }
-        }
-
-        if (options.size > 3) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                options.drop(3).forEach { option ->
-                    FilterChip(
-                        selected = selectedOption == option,
-                        onClick = { onOptionSelected(option) },
-                        label = { Text(option) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = appColorScheme.primary,
-                            selectedLabelColor = appColorScheme.onPrimary
-                        )
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun WorkerCard(
-    workerName: String,
-    experience: String,
-    location: String,
-    distance: String,
-    rating: Float,
-    skills: List<String>,
-    isOnline: Boolean,
-    onScoutClick: () -> Unit,
-    onProfileClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        onClick = onProfileClick,
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = appColorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 3.dp
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            // 헤더
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = workerName,
-                            style = AppTypography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = appColorScheme.onSurface
-                        )
-
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = if (isOnline) Color(0xFF4CAF50) else Color(0xFF9E9E9E)
-                        ) {
-                            Text(
-                                text = if (isOnline) "온라인" else "오프라인",
-                                style = AppTypography.labelSmall.copy(
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = Color.White,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Work,
-                            contentDescription = null,
-                            tint = appColorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = experience,
-                            style = AppTypography.bodyMedium,
-                            color = appColorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                // 평점
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "평점",
-                        tint = Color(0xFFFFB300),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = String.format("%.1f", rating),
-                        style = AppTypography.bodyMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = appColorScheme.onSurface
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // 위치 정보
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = "위치",
-                    tint = appColorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    text = "$location • $distance",
+                    text = "총 ${totalCount}명의 인력",
                     style = AppTypography.bodyMedium,
                     color = appColorScheme.onSurfaceVariant
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // 스킬 태그들
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                skills.forEach { skill ->
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = appColorScheme.primaryContainer.copy(alpha = 0.3f)
-                    ) {
-                        Text(
-                            text = skill,
-                            style = AppTypography.labelMedium,
-                            color = appColorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 액션 버튼
-            Button(
-                onClick = onScoutClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = appColorScheme.primary,
-                    contentColor = appColorScheme.onPrimary
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PersonAdd,
-                    contentDescription = "스카웃",
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "스카웃 제안",
-                    style = AppTypography.labelLarge.copy(
-                        fontWeight = FontWeight.Bold
+            if (searchFilters.hasActiveFilters) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = appColorScheme.primary.copy(alpha = 0.1f)
+                ) {
+                    Text(
+                        text = "필터 적용됨",
+                        style = AppTypography.labelMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = appColorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     )
-                )
+                }
             }
         }
     }
 }
 
-@Preview(showBackground = true)
+@Composable
+private fun ProposalSendDialog(
+    workerName: String,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var message by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("스카웃 제안")
+        },
+        text = {
+            Column {
+                Text("${workerName}님에게 스카웃 제안을 보내시겠습니까?")
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = message,
+                    onValueChange = { message = it },
+                    label = { Text("메시지 (선택사항)") },
+                    placeholder = { Text("함께 일하고 싶습니다.") },
+                    maxLines = 3,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(message) }
+            ) {
+                Text("전송")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("취소")
+            }
+        }
+    )
+}
+
+@Preview(name = "기본 화면", showBackground = true, heightDp = 800)
 @Composable
 fun CompanyScoutScreenPreview() {
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
     Jikgong1111Theme {
-        // Preview는 navigator 없이 간단하게
-        Box(modifier = Modifier.fillMaxSize()) {
-            Text(
-                "Scout Screen Preview",
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
+        CompanyScoutScreen(
+            navigator = navigator,
+            showBottomBar = false
+        )
+    }
+}
+
+@Preview(name = "바텀바 포함", showBackground = true, heightDp = 800)
+@Composable
+fun CompanyScoutScreenWithBottomBarPreview() {
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme {
+        CompanyScoutScreen(
+            navigator = navigator,
+            showBottomBar = true
+        )
+    }
+}
+
+@Preview(name = "다크 테마", showBackground = true, heightDp = 800)
+@Composable
+fun CompanyScoutScreenDarkPreview() {
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme(darkTheme = true) {
+        CompanyScoutScreen(
+            navigator = navigator,
+            showBottomBar = false
+        )
     }
 }
