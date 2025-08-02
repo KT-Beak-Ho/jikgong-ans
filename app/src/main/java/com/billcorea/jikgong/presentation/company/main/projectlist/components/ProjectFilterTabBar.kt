@@ -1,3 +1,6 @@
+// ========================================
+// 📄 components/ProjectFilterTabBar.kt
+// ========================================
 package com.billcorea.jikgong.presentation.company.main.projectlist.components
 
 import androidx.compose.foundation.layout.*
@@ -12,6 +15,9 @@ import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectS
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.appColorScheme
 
+/**
+ * 프로젝트 필터 탭바 - 이미지 UI 스타일
+ */
 @Composable
 fun ProjectFilterTabBar(
   selectedStatus: ProjectStatus?,
@@ -19,73 +25,83 @@ fun ProjectFilterTabBar(
   onStatusSelected: (ProjectStatus?) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  LazyRow(
-    modifier = modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.spacedBy(8.dp),
-    contentPadding = PaddingValues(horizontal = 4.dp)
-  ) {
-    // 전체 탭
-    item {
-      FilterChip(
-        selected = selectedStatus == null,
-        onClick = { onStatusSelected(null) },
-        label = {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-          ) {
-            Text(
-              text = "전체",
-              style = AppTypography.labelMedium.copy(
-                fontWeight = if (selectedStatus == null) FontWeight.Bold else FontWeight.Normal
-              )
-            )
-            Text(
-              text = "(${projectCounts.values.sum()})",
-              style = AppTypography.labelSmall,
-              color = appColorScheme.primary
-            )
-          }
-        },
-        colors = FilterChipDefaults.filterChipColors(
-          selectedContainerColor = appColorScheme.primary,
-          selectedLabelColor = appColorScheme.onPrimary,
-          containerColor = appColorScheme.surface,
-          labelColor = appColorScheme.onSurfaceVariant
-        )
-      )
-    }
+  val tabs = listOf(
+    FilterTab("전체", null, projectCounts.values.sum()),
+    FilterTab("모집중", ProjectStatus.RECRUITING, projectCounts[ProjectStatus.RECRUITING] ?: 0),
+    FilterTab("진행중", ProjectStatus.IN_PROGRESS, projectCounts[ProjectStatus.IN_PROGRESS] ?: 0),
+    FilterTab("완료", ProjectStatus.COMPLETED, projectCounts[ProjectStatus.COMPLETED] ?: 0)
+  )
 
-    // 상태별 탭
-    items(ProjectStatus.values()) { status ->
-      FilterChip(
-        selected = selectedStatus == status,
-        onClick = { onStatusSelected(status) },
-        label = {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-          ) {
-            Text(
-              text = status.displayName,
-              style = AppTypography.labelMedium.copy(
-                fontWeight = if (selectedStatus == status) FontWeight.Bold else FontWeight.Normal
-              )
-            )
-            Text(
-              text = "(${projectCounts[status] ?: 0})",
-              style = AppTypography.labelSmall,
-              color = if (selectedStatus == status) appColorScheme.onPrimary else status.color
-            )
-          }
-        },
-        colors = FilterChipDefaults.filterChipColors(
-          selectedContainerColor = status.color,
-          selectedLabelColor = appColorScheme.onPrimary,
-          containerColor = appColorScheme.surface,
-          labelColor = appColorScheme.onSurfaceVariant
+  Card(
+    modifier = modifier.fillMaxWidth(),
+    shape = RoundedCornerShape(12.dp),
+    colors = CardDefaults.cardColors(
+      containerColor = appColorScheme.surface
+    ),
+    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp),
+      horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+      tabs.forEach { tab ->
+        FilterTabItem(
+          tab = tab,
+          isSelected = selectedStatus == tab.status,
+          onClick = { onStatusSelected(tab.status) },
+          modifier = Modifier.weight(1f)
         )
-      )
+      }
     }
   }
 }
+
+@Composable
+private fun FilterTabItem(
+  tab: FilterTab,
+  isSelected: Boolean,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  FilledTonalButton(
+    onClick = onClick,
+    modifier = modifier.height(40.dp),
+    colors = ButtonDefaults.filledTonalButtonColors(
+      containerColor = if (isSelected) {
+        appColorScheme.primary
+      } else {
+        appColorScheme.surface
+      },
+      contentColor = if (isSelected) {
+        appColorScheme.onPrimary
+      } else {
+        appColorScheme.onSurface
+      }
+    )
+  ) {
+    Column(
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      Text(
+        text = tab.name,
+        style = AppTypography.labelMedium.copy(
+          fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+        )
+      )
+      if (tab.count > 0) {
+        Text(
+          text = "(${tab.count})",
+          style = AppTypography.labelSmall
+        )
+      }
+    }
+  }
+}
+
+private data class FilterTab(
+  val name: String,
+  val status: ProjectStatus?,
+  val count: Int
+)

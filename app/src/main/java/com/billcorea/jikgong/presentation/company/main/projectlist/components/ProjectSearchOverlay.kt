@@ -1,3 +1,6 @@
+// ========================================
+// 📄 components/ProjectSearchOverlay.kt
+// ========================================
 package com.billcorea.jikgong.presentation.company.main.projectlist.components
 
 import androidx.compose.foundation.background
@@ -6,6 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -15,13 +20,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.appColorScheme
 
+/**
+ * 프로젝트 검색 오버레이
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectSearchOverlay(
@@ -33,155 +42,94 @@ fun ProjectSearchOverlay(
   modifier: Modifier = Modifier
 ) {
   val focusRequester = remember { FocusRequester() }
-  val keyboardController = LocalSoftwareKeyboardController.current
+  val focusManager = LocalFocusManager.current
 
   LaunchedEffect(Unit) {
     focusRequester.requestFocus()
   }
 
-  Column(
-    modifier = modifier
-      .fillMaxWidth()
-      .background(
-        color = appColorScheme.surface,
-        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
-      )
-      .padding(16.dp)
-  ) {
-    // 검색 바
-    OutlinedTextField(
-      value = searchQuery,
-      onValueChange = onSearchQueryChange,
-      modifier = Modifier
-        .fillMaxWidth()
-        .focusRequester(focusRequester),
-      placeholder = {
-        Text(
-          text = "프로젝트명, 지역, 업종으로 검색",
-          color = appColorScheme.onSurfaceVariant
-        )
-      },
-      leadingIcon = {
-        Icon(
-          imageVector = Icons.Default.Search,
-          contentDescription = "검색",
-          tint = appColorScheme.primary
-        )
-      },
-      trailingIcon = {
-        Row {
-          if (searchQuery.isNotEmpty()) {
-            IconButton(
-              onClick = { onSearchQueryChange("") }
-            ) {
-              Icon(
-                imageVector = Icons.Default.Clear,
-                contentDescription = "지우기",
-                tint = appColorScheme.onSurfaceVariant
-              )
-            }
-          }
-          IconButton(
-            onClick = {
-              keyboardController?.hide()
-              onCloseSearch()
-            }
-          ) {
-            Icon(
-              imageVector = Icons.Default.Close,
-              contentDescription = "닫기",
-              tint = appColorScheme.onSurfaceVariant
-            )
-          }
-        }
-      },
-      colors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = appColorScheme.primary,
-        unfocusedBorderColor = appColorScheme.outline
-      ),
-      shape = RoundedCornerShape(12.dp),
-      singleLine = true
+  Dialog(
+    onDismissRequest = onCloseSearch,
+    properties = DialogProperties(
+      usePlatformDefaultWidth = false,
+      decorFitsSystemWindows = false
     )
-
-    // 검색 제안 목록
-    if (suggestions.isNotEmpty() && searchQuery.isNotEmpty()) {
-      Spacer(modifier = Modifier.height(12.dp))
-
-      Text(
-        text = "추천 검색어",
-        style = AppTypography.labelMedium.copy(
-          fontWeight = FontWeight.Bold
-        ),
-        color = appColorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 4.dp)
-      )
-
-      Spacer(modifier = Modifier.height(8.dp))
-
-      LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.heightIn(max = 200.dp)
+  ) {
+    Column(
+      modifier = modifier
+        .fillMaxSize()
+        .background(appColorScheme.surface)
+        .padding(16.dp)
+    ) {
+      // 검색 입력창
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
       ) {
-        items(suggestions) { suggestion ->
-          SuggestionItem(
-            suggestion = suggestion,
-            searchQuery = searchQuery,
-            onClick = { onSuggestionClick(suggestion) }
+        IconButton(
+          onClick = onCloseSearch
+        ) {
+          Icon(
+            imageVector = Icons.Default.ArrowBack,
+            contentDescription = "닫기",
+            tint = appColorScheme.onSurface
           )
         }
-      }
-    }
 
-    // 인기 검색어 (검색어가 없을 때)
-    if (searchQuery.isEmpty()) {
+        OutlinedTextField(
+          value = searchQuery,
+          onValueChange = onSearchQueryChange,
+          modifier = Modifier
+            .weight(1f)
+            .focusRequester(focusRequester),
+          placeholder = { Text("프로젝트 검색...") },
+          leadingIcon = {
+            Icon(
+              imageVector = Icons.Default.Search,
+              contentDescription = "검색"
+            )
+          },
+          trailingIcon = {
+            if (searchQuery.isNotEmpty()) {
+              IconButton(
+                onClick = { onSearchQueryChange("") }
+              ) {
+                Icon(
+                  imageVector = Icons.Default.Clear,
+                  contentDescription = "지우기"
+                )
+              }
+            }
+          },
+          keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Search
+          ),
+          keyboardActions = KeyboardActions(
+            onSearch = { focusManager.clearFocus() }
+          ),
+          singleLine = true
+        )
+      }
+
       Spacer(modifier = Modifier.height(16.dp))
 
-      Text(
-        text = "인기 검색어",
-        style = AppTypography.labelMedium.copy(
-          fontWeight = FontWeight.Bold
-        ),
-        color = appColorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 4.dp)
-      )
+      // 검색 제안어
+      if (suggestions.isNotEmpty() && searchQuery.isEmpty()) {
+        Text(
+          text = "추천 검색어",
+          style = AppTypography.titleMedium,
+          color = appColorScheme.onSurface,
+          modifier = Modifier.padding(bottom = 8.dp)
+        )
 
-      Spacer(modifier = Modifier.height(8.dp))
-
-      val popularSearches = listOf(
-        "아파트 건설", "도로 공사", "인테리어", "전기 공사",
-        "부산", "서울", "인천", "대구"
-      )
-
-      LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.heightIn(max = 200.dp)
-      ) {
-        items(popularSearches.chunked(2)) { rowItems ->
-          Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            rowItems.forEach { item ->
-              AssistChip(
-                onClick = { onSuggestionClick(item) },
-                label = { Text(item) },
-                leadingIcon = {
-                  Icon(
-                    imageVector = Icons.Default.TrendingUp,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                  )
-                },
-                colors = AssistChipDefaults.assistChipColors(
-                  containerColor = appColorScheme.primaryContainer,
-                  labelColor = appColorScheme.onPrimaryContainer
-                ),
-                modifier = Modifier.weight(1f)
-              )
-            }
-            // 홀수 개수일 때 남는 공간 채우기
-            if (rowItems.size == 1) {
-              Spacer(modifier = Modifier.weight(1f))
-            }
+        LazyColumn(
+          verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+          items(suggestions) { suggestion ->
+            SearchSuggestionItem(
+              suggestion = suggestion,
+              onClick = { onSuggestionClick(suggestion) }
+            )
           }
         }
       }
@@ -190,39 +138,29 @@ fun ProjectSearchOverlay(
 }
 
 @Composable
-private fun SuggestionItem(
+private fun SearchSuggestionItem(
   suggestion: String,
-  searchQuery: String,
   onClick: () -> Unit
 ) {
   Row(
     modifier = Modifier
       .fillMaxWidth()
-      .clickable { onClick() }
       .clip(RoundedCornerShape(8.dp))
-      .padding(horizontal = 12.dp, vertical = 8.dp),
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(12.dp)
+      .clickable { onClick() }
+      .padding(12.dp),
+    verticalAlignment = Alignment.CenterVertically
   ) {
     Icon(
-      imageVector = Icons.Default.History,
+      imageVector = Icons.Default.Search,
       contentDescription = null,
-      modifier = Modifier.size(16.dp),
-      tint = appColorScheme.onSurfaceVariant
+      tint = appColorScheme.onSurfaceVariant,
+      modifier = Modifier.size(20.dp)
     )
-
+    Spacer(modifier = Modifier.width(12.dp))
     Text(
       text = suggestion,
       style = AppTypography.bodyMedium,
-      color = appColorScheme.onSurface,
-      modifier = Modifier.weight(1f)
-    )
-
-    Icon(
-      imageVector = Icons.Default.NorthWest,
-      contentDescription = "적용",
-      modifier = Modifier.size(14.dp),
-      tint = appColorScheme.onSurfaceVariant
+      color = appColorScheme.onSurface
     )
   }
 }

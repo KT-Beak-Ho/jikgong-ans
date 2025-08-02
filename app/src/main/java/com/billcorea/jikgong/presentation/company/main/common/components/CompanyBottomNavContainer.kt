@@ -1,4 +1,6 @@
-// app/src/main/java/com/billcorea/jikgong/presentation/company/main/common/components/CompanyBottomNavContainer.kt
+// ========================================
+// 📄 수정된 CompanyBottomNavContainer.kt
+// ========================================
 package com.billcorea.jikgong.presentation.company.main.common.components
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +26,16 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 
 /**
+ * 기업용 바텀 네비게이션 탭 정의
+ */
+object CompanyBottomNavTabs {
+    const val PROJECT_LIST = "project_list"
+    const val MONEY = "money"
+    const val SCOUT = "scout"
+    const val INFO = "info"
+}
+
+/**
  * 기업용 바텀 네비게이션 컨테이너 - 메인 진입점
  */
 @Destination(route = "company_main")
@@ -34,7 +46,7 @@ fun CompanyBottomNavContainer(
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route ?: CompanyBottomNavTabs.PROJECT_LIST.route
+    val currentRoute = navBackStackEntry?.destination?.route ?: CompanyBottomNavTabs.PROJECT_LIST
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -86,35 +98,35 @@ private fun CompanyBottomNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = CompanyBottomNavTabs.PROJECT_LIST.route,
+        startDestination = CompanyBottomNavTabs.PROJECT_LIST,
         modifier = modifier
     ) {
         // 프로젝트 목록 화면
-        composable(CompanyBottomNavTabs.PROJECT_LIST.route) {
+        composable(CompanyBottomNavTabs.PROJECT_LIST) {
             ProjectListScreen(
                 navigator = navigator,
                 showBottomBar = false // 이미 컨테이너에서 표시하므로 false
             )
         }
 
-        // 인력 스카웃 화면
-        composable(CompanyBottomNavTabs.SCOUT.route) {
-            CompanyScoutScreen(
-                navigator = navigator,
-                showBottomBar = false
-            )
-        }
-
         // 임금 관리 화면
-        composable(CompanyBottomNavTabs.MONEY.route) {
+        composable(CompanyBottomNavTabs.MONEY) {
             CompanyMoneyScreen(
                 navigator = navigator,
                 showBottomBar = false
             )
         }
 
+        // 인력 스카웃 화면
+        composable(CompanyBottomNavTabs.SCOUT) {
+            CompanyScoutScreen(
+                navigator = navigator,
+                showBottomBar = false
+            )
+        }
+
         // 사업자 정보 화면
-        composable(CompanyBottomNavTabs.INFO.route) {
+        composable(CompanyBottomNavTabs.INFO) {
             CompanyInfoScreen(
                 navigator = navigator,
                 showBottomBar = false

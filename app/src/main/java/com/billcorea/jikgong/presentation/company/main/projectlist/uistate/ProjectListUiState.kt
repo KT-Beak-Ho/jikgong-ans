@@ -19,6 +19,7 @@ data class ProjectListUiState(
   // 로딩 상태
   val isLoading: Boolean = false,
   val isRefreshing: Boolean = false,
+  val isLoadingMore: Boolean = false,
 
   // 선택 상태
   val selectedProjectId: String? = null,
@@ -36,7 +37,6 @@ data class ProjectListUiState(
   // 페이징 상태
   val currentPage: Int = 1,
   val hasNextPage: Boolean = false,
-  val isLoadingMore: Boolean = false,
 
   // 정렬 상태
   val sortBy: ProjectSortBy = ProjectSortBy.CREATED_DATE_DESC,
@@ -44,7 +44,12 @@ data class ProjectListUiState(
   // UI 상태
   val showFilterDialog: Boolean = false,
   val showSortDialog: Boolean = false,
-  val fabVisible: Boolean = true
+  val fabVisible: Boolean = true,
+
+  // 권한 상태
+  val canCreateProject: Boolean = true,
+  val canEditProject: Boolean = true,
+  val canDeleteProject: Boolean = true
 ) {
   /**
    * 빈 상태 확인
@@ -75,24 +80,38 @@ data class ProjectListUiState(
    */
   val urgentProjectsCount: Int
     get() = projects.count { it.isUrgent && it.status == ProjectStatus.RECRUITING }
-}
 
-/**
- * 프로젝트 정렬 기준
- */
-enum class ProjectSortBy(
-  val displayName: String,
-  val description: String
-) {
-  CREATED_DATE_DESC("최신 등록순", "가장 최근에 등록된 프로젝트부터"),
-  CREATED_DATE_ASC("오래된 등록순", "가장 오래전에 등록된 프로젝트부터"),
-  START_DATE_ASC("시작일 빠른순", "시작일이 가장 빠른 프로젝트부터"),
-  START_DATE_DESC("시작일 늦은순", "시작일이 가장 늦은 프로젝트부터"),
-  DAILY_WAGE_DESC("높은 일당순", "일당이 높은 프로젝트부터"),
-  DAILY_WAGE_ASC("낮은 일당순", "일당이 낮은 프로젝트부터"),
-  LOCATION("지역순", "지역별로 정렬"),
-  RECRUIT_RATE("모집률순", "모집률이 낮은 프로젝트부터"),
-  URGENT_FIRST("긴급 우선", "긴급 프로젝트를 먼저 표시")
-}
+  /**
+   * 현재 필터의 프로젝트 개수
+   */
+  val currentFilterCount: Int
+    get() = if (selectedFilter == null) {
+      projects.size
+    } else {
+      projects.count { it.status == selectedFilter }
+    }
 
-// ========================================
+  /**
+   * 로딩 상태가 아니고 데이터가 있는지 확인
+   */
+  val hasData: Boolean
+    get() = !isLoading && projects.isNotEmpty()
+
+  /**
+   * 검색 결과가 있는지 확인
+   */
+  val hasSearchResults: Boolean
+    get() = isSearching && filteredProjects.isNotEmpty()
+
+  /**
+   * 새로고침 가능 여부
+   */
+  val canRefresh: Boolean
+    get() = !isLoading && !isRefreshing
+
+  /**
+   * 더 많은 데이터 로드 가능 여부
+   */
+  val canLoadMore: Boolean
+    get() = hasNextPage && !isLoadingMore && !isLoading
+}

@@ -1,220 +1,215 @@
+// ========================================
+// 📄 data/ProjectSampleData.kt
+// ========================================
 package com.billcorea.jikgong.presentation.company.main.projectlist.data
 
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
- * 프로젝트 샘플 데이터 - 직직직 플랫폼용
+ * 프로젝트 샘플 데이터 - 이미지 UI와 유사한 데이터
  */
 object ProjectSampleData {
 
+  /**
+   * 샘플 프로젝트 목록 생성
+   */
   fun getSampleProjects(): List<Project> {
-    val now = LocalDateTime.now()
-    val today = LocalDate.now()
-
     return listOf(
-      // 1. 사하구 낙동5블럭 낙동강 온도 측정 센터 신축공사 (이미지와 동일)
+      // 이미지의 "사하구 낙동5블럭 낙동강 온도 측정 센터 신축공사"
       Project(
-        id = "proj_001",
+        id = "project_001",
         title = "사하구 낙동5블럭 낙동강 온도 측정 센터 신축공사",
-        description = "부산 사하구에 위치한 낙동강 온도 측정을 위한 센터 건물 신축 공사입니다. 최신 IoT 기술을 적용한 스마트 측정 시설로 건설됩니다.",
-        location = "부산 사하구",
-        detailAddress = "부산 사하구 낙동남로 1234",
-        workType = WorkType.BUILDING_CONSTRUCTION,
-        status = ProjectStatus.RECRUITING,
-        startDate = "01/05",
-        endDate = "02/04",
-        fullStartDate = today.plusDays(2),
-        fullEndDate = today.plusDays(32),
-        dailyWage = 510_000L,
+        description = "낙동강 인근 온도 측정 센터 신축 프로젝트입니다. 콘크리트 타설 및 철근 작업이 주요 업무입니다.",
+        location = ProjectLocation(
+          city = "부산",
+          district = "사하구",
+          detail = "낙동대로 550번길"
+        ),
+        dailyWage = 510000,
         requiredWorkers = 15,
-        currentWorkers = 3,
-        workingHours = WorkingHours("08:00", "18:00", 60),
-        companyName = "대한건설 주식회사",
-        companyId = "company_001",
-        contactPerson = "김현장",
-        contactNumber = "010-1234-5678",
-        requirements = listOf("건설업 경력 1년 이상", "안전교육 이수", "건강상태 양호"),
-        benefits = listOf("4대보험 완비", "중식 제공", "교통비 지원", "안전장비 지급"),
-        isUrgent = true,
-        isBookmarked = false,
-        createdAt = now.minusDays(1),
-        updatedAt = now.minusHours(2),
-        views = 127,
-        applicationCount = 8,
-        safetyLevel = SafetyLevel.HIGH,
-        settlementType = SettlementType.DAILY
-      ),
-
-      // 2. 인천 물류센터 건설
-      Project(
-        id = "proj_002",
-        title = "인천 물류센터 건설",
-        description = "대규모 물류센터 건설 프로젝트로, 자동화 시설이 포함된 최신 물류 허브를 구축합니다.",
-        location = "인천 연수구",
-        detailAddress = "인천 연수구 송도국제대로 123",
-        workType = WorkType.BUILDING_CONSTRUCTION,
-        status = ProjectStatus.IN_PROGRESS,
-        startDate = "12/30",
-        endDate = "02/13",
-        fullStartDate = today.minusDays(4),
-        fullEndDate = today.plusDays(41),
-        dailyWage = 480_000L,
-        requiredWorkers = 25,
-        currentWorkers = 22,
-        workingHours = WorkingHours("07:30", "17:30", 60),
-        companyName = "현대건설산업 주식회사",
-        companyId = "company_002",
-        contactPerson = "이팀장",
-        contactNumber = "010-2345-6789",
-        requirements = listOf("중장비 운전 가능", "고소작업 가능", "팀워크 중시"),
-        benefits = listOf("숙박 제공", "조식/중식 제공", "주말 특근수당", "성과급"),
-        isUrgent = false,
-        isBookmarked = true,
-        createdAt = now.minusDays(5),
-        updatedAt = now.minusHours(6),
-        views = 234,
-        applicationCount = 31,
-        safetyLevel = SafetyLevel.HIGH,
-        settlementType = SettlementType.WEEKLY
-      ),
-
-      // 3. 서울 아파트 리모델링
-      Project(
-        id = "proj_003",
-        title = "강남구 대치동 아파트 리모델링",
-        description = "30년된 아파트 단지의 전면 리모델링 작업입니다. 외벽, 내부 시설 교체가 포함됩니다.",
-        location = "서울 강남구",
-        detailAddress = "서울 강남구 대치동 123-45",
-        workType = WorkType.HOUSE_RENOVATION,
+        appliedWorkers = 3,
+        workType = WorkType.GENERAL_CONSTRUCTION,
         status = ProjectStatus.RECRUITING,
-        startDate = "01/10",
-        endDate = "03/15",
-        fullStartDate = today.plusDays(7),
-        fullEndDate = today.plusDays(72),
-        dailyWage = 420_000L,
-        requiredWorkers = 12,
-        currentWorkers = 5,
-        workingHours = WorkingHours("09:00", "18:00", 60),
-        companyName = "서울인테리어",
-        companyId = "company_003",
-        contactPerson = "박소장",
-        contactNumber = "010-3456-7890",
-        requirements = listOf("인테리어 경력", "도구 사용 가능", "꼼꼼한 성격"),
-        benefits = listOf("기술교육 제공", "중식비 지원", "교통비 지원"),
-        isUrgent = false,
-        isBookmarked = false,
-        createdAt = now.minusDays(2),
-        updatedAt = now.minusHours(1),
-        views = 89,
-        applicationCount = 12,
-        safetyLevel = SafetyLevel.STANDARD,
-        settlementType = SettlementType.DAILY
+        startDate = LocalDate.of(2025, 1, 5),
+        endDate = LocalDate.of(2025, 2, 4),
+        workHours = WorkHours("08:00", "18:00"),
+        requirements = listOf("건설업 경험 1년 이상", "기초 안전교육 이수"),
+        benefits = listOf("중식 제공", "안전장비 지급", "교통비 지원"),
+        isUrgent = true,
+        companyName = "대한건설(주)",
+        companyRating = 4.5f,
+        createdAt = LocalDateTime.now().minusDays(2),
+        updatedAt = LocalDateTime.now().minusHours(3),
+        tags = listOf("부산", "사하구", "신축", "콘크리트", "철근"),
+        paymentMethod = PaymentMethod.WEEKLY,
+        hasAccommodation = false,
+        hasMeals = true,
+        contactInfo = ContactInfo(
+          managerName = "김현장",
+          phoneNumber = "010-1234-5678"
+        )
       ),
 
-      // 4. 대구 도로 확장 공사
+      // 인천 물류센터 건설 (진행중 프로젝트)
       Project(
-        id = "proj_004",
-        title = "대구 순환도로 확장 공사",
-        description = "기존 2차선 도로를 4차선으로 확장하는 대규모 도로 공사입니다.",
-        location = "대구 달서구",
-        detailAddress = "대구 달서구 월성동 일원",
+        id = "project_002",
+        title = "인천 물류센터 건설",
+        description = "대형 물류센터 건설 프로젝트입니다. 현재 내부 인테리어 작업 진행 중입니다.",
+        location = ProjectLocation(
+          city = "인천",
+          district = "연수구",
+          detail = "송도국제도시"
+        ),
+        dailyWage = 480000,
+        requiredWorkers = 20,
+        appliedWorkers = 18,
+        workType = WorkType.INTERIOR,
+        status = ProjectStatus.IN_PROGRESS,
+        startDate = LocalDate.of(2024, 12, 30),
+        endDate = LocalDate.of(2025, 2, 13),
+        workHours = WorkHours("09:00", "18:00"),
+        requirements = listOf("인테리어 경험 필수", "목공 작업 가능"),
+        benefits = listOf("중식 제공", "주차 지원", "성과급"),
+        isUrgent = false,
+        companyName = "송도건설산업",
+        companyRating = 4.2f,
+        createdAt = LocalDateTime.now().minusDays(45),
+        updatedAt = LocalDateTime.now().minusHours(1),
+        tags = listOf("인천", "물류센터", "인테리어", "목공"),
+        paymentMethod = PaymentMethod.DIRECT,
+        hasAccommodation = true,
+        hasMeals = true
+      ),
+
+      // 도로 공사 (모집중)
+      Project(
+        id = "project_003",
+        title = "강남구 테헤란로 도로 보수공사",
+        description = "테헤란로 일대 도로 보수 및 포장 작업입니다. 야간 작업이 포함됩니다.",
+        location = ProjectLocation(
+          city = "서울",
+          district = "강남구",
+          detail = "테헤란로 일대"
+        ),
+        dailyWage = 550000,
+        requiredWorkers = 8,
+        appliedWorkers = 2,
         workType = WorkType.ROAD_CONSTRUCTION,
         status = ProjectStatus.RECRUITING,
-        startDate = "01/15",
-        endDate = "04/30",
-        fullStartDate = today.plusDays(12),
-        fullEndDate = today.plusDays(117),
-        dailyWage = 450_000L,
-        requiredWorkers = 20,
-        currentWorkers = 8,
-        workingHours = WorkingHours("06:00", "15:00", 60),
-        companyName = "대구도로공사",
-        companyId = "company_004",
-        contactPerson = "최과장",
-        contactNumber = "010-4567-8901",
-        requirements = listOf("토목 경력 2년 이상", "중장비 자격증", "체력 우수"),
-        benefits = listOf("위험수당", "야간수당", "중식 제공", "안전보험"),
+        startDate = LocalDate.of(2025, 1, 15),
+        endDate = LocalDate.of(2025, 1, 25),
+        workHours = WorkHours("22:00", "06:00"),
+        requirements = listOf("도로공사 경험", "야간작업 가능"),
+        benefits = listOf("야간수당 별도", "교통비 지원", "안전장비 지급"),
         isUrgent = true,
-        isBookmarked = false,
-        createdAt = now.minusDays(3),
-        updatedAt = now.minusHours(4),
-        views = 156,
-        applicationCount = 19,
-        safetyLevel = SafetyLevel.STANDARD,
-        settlementType = SettlementType.WEEKLY
+        companyName = "서울도로공사",
+        companyRating = 4.7f,
+        createdAt = LocalDateTime.now().minusDays(1),
+        updatedAt = LocalDateTime.now().minusMinutes(30),
+        tags = listOf("서울", "강남구", "도로", "야간작업", "보수"),
+        paymentMethod = PaymentMethod.WEEKLY,
+        hasAccommodation = false,
+        hasMeals = false
       ),
 
-      // 5. 부산 전기 공사
+      // 아파트 리모델링 (완료)
       Project(
-        id = "proj_005",
-        title = "해운대 마린시티 전기설비 공사",
-        description = "신축 상업건물의 전기설비 설치 및 배선 작업입니다.",
-        location = "부산 해운대구",
-        detailAddress = "부산 해운대구 마린시티2로 33",
-        workType = WorkType.ELECTRICAL_WORK,
-        status = ProjectStatus.RECRUITING,
-        startDate = "01/08",
-        endDate = "02/28",
-        fullStartDate = today.plusDays(5),
-        fullEndDate = today.plusDays(56),
-        dailyWage = 380_000L,
-        requiredWorkers = 8,
-        currentWorkers = 8,
-        workingHours = WorkingHours("08:30", "17:30", 60),
-        companyName = "부산전기공사",
-        companyId = "company_005",
-        contactPerson = "정기사",
-        contactNumber = "010-5678-9012",
-        requirements = listOf("전기기사 자격증", "전기공사 경력", "정밀작업 가능"),
-        benefits = listOf("자격수당", "기술교육", "중식 제공"),
-        isUrgent = false,
-        isBookmarked = true,
-        createdAt = now.minusDays(4),
-        updatedAt = now.minusHours(8),
-        views = 67,
-        applicationCount = 15,
-        safetyLevel = SafetyLevel.HIGH,
-        settlementType = SettlementType.DAILY
-      ),
-
-      // 6. 완료된 프로젝트 예시
-      Project(
-        id = "proj_006",
-        title = "울산 공장 증축 공사",
-        description = "기존 공장 건물의 증축 및 설비 확장 공사가 성공적으로 완료되었습니다.",
-        location = "울산 남구",
-        detailAddress = "울산 남구 여천동 산업단지",
-        workType = WorkType.BUILDING_CONSTRUCTION,
+        id = "project_004",
+        title = "잠실 아파트 단지 리모델링",
+        description = "잠실 주공아파트 외벽 및 내부 리모델링이 완료되었습니다.",
+        location = ProjectLocation(
+          city = "서울",
+          district = "송파구",
+          detail = "잠실동"
+        ),
+        dailyWage = 450000,
+        requiredWorkers = 25,
+        appliedWorkers = 25,
+        workType = WorkType.INTERIOR,
         status = ProjectStatus.COMPLETED,
-        startDate = "11/15",
-        endDate = "12/30",
-        fullStartDate = today.minusDays(50),
-        fullEndDate = today.minusDays(4),
-        dailyWage = 460_000L,
-        requiredWorkers = 18,
-        currentWorkers = 18,
-        workingHours = WorkingHours("08:00", "17:00", 60),
-        companyName = "울산건설",
-        companyId = "company_006",
-        contactPerson = "송현장",
-        contactNumber = "010-6789-0123",
-        requirements = listOf("건설업 경력", "안전교육 이수"),
-        benefits = listOf("완료보너스", "4대보험", "중식 제공"),
+        startDate = LocalDate.of(2024, 11, 1),
+        endDate = LocalDate.of(2024, 12, 20),
+        workHours = WorkHours("08:30", "17:30"),
+        requirements = listOf("리모델링 경험", "도색 작업 가능"),
+        benefits = listOf("중식 제공", "완료 보너스"),
         isUrgent = false,
-        isBookmarked = false,
-        createdAt = now.minusDays(55),
-        updatedAt = now.minusDays(4),
-        views = 312,
-        applicationCount = 28,
-        safetyLevel = SafetyLevel.STANDARD,
-        settlementType = SettlementType.PROJECT_END
+        companyName = "동서건설",
+        companyRating = 4.3f,
+        createdAt = LocalDateTime.now().minusDays(90),
+        updatedAt = LocalDateTime.now().minusDays(15),
+        tags = listOf("서울", "송파구", "아파트", "리모델링", "완료"),
+        paymentMethod = PaymentMethod.MONTHLY,
+        hasAccommodation = false,
+        hasMeals = true
+      ),
+
+      // 공장 건설 (모집중, 긴급)
+      Project(
+        id = "project_005",
+        title = "화성 반도체 공장 건설",
+        description = "반도체 공장 신축 프로젝트입니다. 클린룸 시설 설치 작업도 포함됩니다.",
+        location = ProjectLocation(
+          city = "경기도",
+          district = "화성시",
+          detail = "동탄2신도시"
+        ),
+        dailyWage = 580000,
+        requiredWorkers = 50,
+        appliedWorkers = 12,
+        workType = WorkType.GENERAL_CONSTRUCTION,
+        status = ProjectStatus.RECRUITING,
+        startDate = LocalDate.of(2025, 1, 8),
+        endDate = LocalDate.of(2025, 4, 30),
+        workHours = WorkHours("07:00", "19:00"),
+        requirements = listOf("대형 건설현장 경험", "클린룸 작업 경험 우대"),
+        benefits = listOf("3식 제공", "기숙사 제공", "교통버스 운행", "성과급"),
+        isUrgent = true,
+        companyName = "삼성물산",
+        companyRating = 4.8f,
+        createdAt = LocalDateTime.now().minusHours(6),
+        updatedAt = LocalDateTime.now().minusMinutes(15),
+        tags = listOf("경기도", "화성", "공장", "반도체", "신축", "클린룸"),
+        paymentMethod = PaymentMethod.DIRECT,
+        hasAccommodation = true,
+        hasMeals = true
+      ),
+
+      // 다리 보수 (모집중)
+      Project(
+        id = "project_006",
+        title = "한강대교 보수공사",
+        description = "한강대교 교량 보수 및 도색 작업입니다. 고소작업이 포함됩니다.",
+        location = ProjectLocation(
+          city = "서울",
+          district = "용산구",
+          detail = "한강대교"
+        ),
+        dailyWage = 520000,
+        requiredWorkers = 12,
+        appliedWorkers = 8,
+        workType = WorkType.PAINTING,
+        status = ProjectStatus.RECRUITING,
+        startDate = LocalDate.of(2025, 2, 1),
+        endDate = LocalDate.of(2025, 3, 15),
+        workHours = WorkHours("08:00", "17:00"),
+        requirements = listOf("고소작업 가능", "도색 경험 필수", "교량공사 경험 우대"),
+        benefits = listOf("위험수당", "중식 제공", "안전장비 지급"),
+        isUrgent = false,
+        companyName = "한국교량공사",
+        companyRating = 4.4f,
+        createdAt = LocalDateTime.now().minusDays(3),
+        updatedAt = LocalDateTime.now().minusHours(2),
+        tags = listOf("서울", "용산구", "교량", "도색", "고소작업"),
+        paymentMethod = PaymentMethod.WEEKLY,
+        hasAccommodation = false,
+        hasMeals = true
       )
     )
   }
 
   /**
-   * 프로젝트 요약 정보 생성
+   * 프로젝트 요약 통계 생성
    */
   fun getSampleProjectSummary(): ProjectSummary {
     val projects = getSampleProjects()
@@ -224,13 +219,22 @@ object ProjectSampleData {
       recruitingProjects = projects.count { it.status == ProjectStatus.RECRUITING },
       inProgressProjects = projects.count { it.status == ProjectStatus.IN_PROGRESS },
       completedProjects = projects.count { it.status == ProjectStatus.COMPLETED },
-      urgentProjects = projects.count { it.isUrgent && it.status == ProjectStatus.RECRUITING },
-      totalWorkers = projects.sumOf { it.requiredWorkers },
-      averageDailyWage = if (projects.isNotEmpty()) {
-        projects.map { it.dailyWage }.average().toLong()
-      } else 0L,
-      totalApplications = projects.sumOf { it.applicationCount }
+      cancelledProjects = projects.count { it.status == ProjectStatus.CANCELLED },
+      urgentProjects = projects.count { it.isUrgent },
+      totalRequiredWorkers = projects.sumOf { it.requiredWorkers },
+      totalAppliedWorkers = projects.sumOf { it.appliedWorkers },
+      averageDailyWage = projects.map { it.dailyWage }.average().toInt(),
+      thisMonthProjects = projects.count {
+        it.startDate.monthValue == LocalDate.now().monthValue
+      }
     )
+  }
+
+  /**
+   * 빈 상태 요약 통계
+   */
+  fun getEmptyProjectSummary(): ProjectSummary {
+    return ProjectSummary()
   }
 
   /**
@@ -238,10 +242,23 @@ object ProjectSampleData {
    */
   fun getSearchSuggestions(): List<String> {
     return listOf(
-      "아파트 건설", "도로 공사", "인테리어", "전기 공사",
-      "부산", "서울", "인천", "대구", "울산",
-      "건축", "토목", "전문공사", "설비",
-      "일급 50만원", "긴급 모집", "신축", "리모델링"
+      "부산 사하구",
+      "인테리어",
+      "도로공사",
+      "신축",
+      "리모델링",
+      "긴급모집",
+      "고임금",
+      "숙소제공",
+      "일반건설",
+      "도색작업"
     )
+  }
+
+  /**
+   * 북마크된 프로젝트 ID 목록 (샘플)
+   */
+  fun getBookmarkedProjectIds(): Set<String> {
+    return setOf("project_001", "project_003", "project_005")
   }
 }
