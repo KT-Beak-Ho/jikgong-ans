@@ -1,316 +1,253 @@
+// app/src/main/java/com/billcorea/jikgong/presentation/company/main/projectlist/ProjectListScreen.kt
 package com.billcorea.jikgong.presentation.company.main.projectlist
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.billcorea.jikgong.presentation.company.main.projectlist.components.EmptyProjectRegistrationState
-import com.billcorea.jikgong.presentation.company.main.projectlist.components.ProjectCard
-import com.billcorea.jikgong.presentation.company.main.projectlist.components.ProjectData
-import com.billcorea.jikgong.presentation.company.main.projectlist.components.ProjectStatus
-import com.billcorea.jikgong.presentation.company.main.projectlist.shared.ProjectRegistrationSharedViewModel
-import com.billcorea.jikgong.ui.theme.AppTypography
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectItem
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectListEvent
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectStatus
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
-import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import org.koin.androidx.compose.koinViewModel
-import java.time.LocalDate
-import java.time.LocalDateTime
+import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectListScreen(
     navigator: DestinationsNavigator,
-    showBottomBar: Boolean = false,
-    projectRegistrationViewModel: ProjectRegistrationSharedViewModel = koinViewModel(),
-    modifier: Modifier = Modifier
+    viewModel: ProjectListViewModel = viewModel(),
+    modifier: Modifier = Modifier,
+    showBottomBar: Boolean = true
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf(ProjectFilter.ALL) }
-    var showFilterSheet by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // 샘플 데이터
-    val sampleProjects = remember { getSampleProjectList() }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        TossStyleHeader()
 
-    // 필터링된 프로젝트 목록
-    val filteredProjects = remember(sampleProjects, selectedFilter, searchQuery) {
-        sampleProjects.filter { project ->
-            val matchesFilter = when (selectedFilter) {
-                ProjectFilter.ALL -> true
-                ProjectFilter.RECRUITING -> project.status == ProjectStatus.RECRUITING
-                ProjectFilter.IN_PROGRESS -> project.status == ProjectStatus.IN_PROGRESS
-                ProjectFilter.COMPLETED -> project.status == ProjectStatus.COMPLETED
-            }
-            val matchesSearch = if (searchQuery.isBlank()) {
-                true
-            } else {
-                project.title.contains(searchQuery, ignoreCase = true) ||
-                        project.location.contains(searchQuery, ignoreCase = true)
-            }
-            matchesFilter && matchesSearch
-        }
-    }
+        ProjectSummaryCard(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+        )
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            ProjectListTopBar(
-                searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it },
-                onFilterClick = { showFilterSheet = true }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    // 프로젝트 등록 화면으로 이동
-                    // navigator.navigate("project_registration")
-                },
-                containerColor = appColorScheme.primary,
-                contentColor = appColorScheme.onPrimary,
-                shape = CircleShape
+        FilterChipSection(
+            selectedStatus = uiState.selectedFilter,
+            onStatusSelected = { status ->
+                viewModel.onEvent(ProjectListEvent.FilterByStatus(status))
+            },
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
+
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "프로젝트 등록",
-                    modifier = Modifier.size(24.dp)
-                )
+                CircularProgressIndicator()
             }
-        },
-        containerColor = appColorScheme.surface
-    ) { paddingValues ->
-        if (filteredProjects.isEmpty() && searchQuery.isBlank() && selectedFilter == ProjectFilter.ALL) {
-            // 빈 상태 - 처음 사용자
-            EmptyProjectRegistrationState(
-                onCreateProjectClick = {
-                    // 프로젝트 등록 화면으로 이동
-                    // navigator.navigate("project_registration")
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            )
         } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 필터 칩들
-                FilterChips(
-                    selectedFilter = selectedFilter,
-                    onFilterSelected = { selectedFilter = it },
-                    projectCounts = getProjectCounts(sampleProjects),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-
-                if (filteredProjects.isEmpty()) {
-                    // 필터링 결과가 없음
-                    EmptyFilterResultState(
-                        searchQuery = searchQuery,
-                        selectedFilter = selectedFilter,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
+                items(uiState.filteredProjects) { project ->
+                    TossStyleProjectCard(
+                        project = project,
+                        onClick = {
+                            viewModel.onEvent(ProjectListEvent.SelectProject(project.id))
+                        }
                     )
-                } else {
-                    // 프로젝트 목록
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        item {
-                            ProjectListHeader(
-                                totalCount = filteredProjects.size,
-                                selectedFilter = selectedFilter
-                            )
-                        }
-
-                        items(filteredProjects) { project ->
-                            ProjectCard(
-                                project = project,
-                                onProjectClick = { clickedProject ->
-                                    // 프로젝트 상세 화면으로 이동
-                                },
-                                onProjectAction = { actionProject, action ->
-                                    when (action) {
-                                        "edit" -> {
-                                            // 프로젝트 수정 화면으로 이동
-                                        }
-                                        "recruit" -> {
-                                            // 인력 모집 화면으로 이동
-                                        }
-                                    }
-                                }
-                            )
-                        }
-
-                        item {
-                            Spacer(modifier = Modifier.height(80.dp)) // FAB 공간 확보
-                        }
-                    }
                 }
             }
         }
     }
-
-    // 필터 바텀 시트
-    if (showFilterSheet) {
-        FilterBottomSheet(
-            selectedFilter = selectedFilter,
-            onFilterSelected = {
-                selectedFilter = it
-                showFilterSheet = false
-            },
-            onDismiss = { showFilterSheet = false }
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ProjectListTopBar(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onFilterClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    TopAppBar(
-        title = {
-            Text(
-                text = "프로젝트 목록",
-                style = AppTypography.headlineSmall.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = appColorScheme.onSurface
-            )
-        },
-        actions = {
-            // 검색 아이콘 버튼
-            IconButton(onClick = { /* 검색 기능 확장 */ }) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "검색",
-                    tint = appColorScheme.onSurface
-                )
-            }
-            // 필터 아이콘 버튼
-            IconButton(onClick = onFilterClick) {
-                Icon(
-                    imageVector = Icons.Default.FilterList,
-                    contentDescription = "필터",
-                    tint = appColorScheme.onSurface
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = appColorScheme.surface,
-            titleContentColor = appColorScheme.onSurface
-        ),
-        modifier = modifier
-    )
 }
 
 @Composable
-private fun FilterChips(
-    selectedFilter: ProjectFilter,
-    onFilterSelected: (ProjectFilter) -> Unit,
-    projectCounts: Map<ProjectFilter, Int>,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        ProjectFilter.values().forEach { filter ->
-            val isSelected = selectedFilter == filter
-            val count = projectCounts[filter] ?: 0
-
-            FilterChip(
-                selected = isSelected,
-                onClick = { onFilterSelected(filter) },
-                label = {
-                    Text(
-                        text = "${filter.displayName} ($count)",
-                        style = AppTypography.labelMedium.copy(
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                        )
-                    )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = appColorScheme.primary,
-                    selectedLabelColor = appColorScheme.onPrimary,
-                    containerColor = appColorScheme.surfaceVariant,
-                    labelColor = appColorScheme.onSurfaceVariant
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun ProjectListHeader(
-    totalCount: Int,
-    selectedFilter: ProjectFilter,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = appColorScheme.primaryContainer.copy(alpha = 0.1f)
-        ),
-        shape = RoundedCornerShape(12.dp)
+private fun TossStyleHeader() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
                 Text(
-                    text = "${selectedFilter.displayName} 프로젝트",
-                    style = AppTypography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = appColorScheme.onSurface
+                    text = "안녕하세요",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
                 Text(
-                    text = "총 ${totalCount}개",
-                    style = AppTypography.bodyMedium,
-                    color = appColorScheme.onSurfaceVariant
+                    text = "프로젝트를 관리해보세요",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            Surface(
-                shape = CircleShape,
-                color = appColorScheme.primary.copy(alpha = 0.1f)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = totalCount.toString(),
-                    style = AppTypography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = appColorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                IconButton(onClick = { }) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "알림"
+                    )
+                }
+
+                Surface(
+                    onClick = { },
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "새 프로젝트",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProjectSummaryCard(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        ),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column {
+                    Text(
+                        text = "진행중인 프로젝트",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "3개",
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.TrendingUp,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                SummaryItem(
+                    title = "모집중",
+                    count = "2개",
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                SummaryItem(
+                    title = "완료",
+                    count = "8개",
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                SummaryItem(
+                    title = "총 인부",
+                    count = "24명",
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
@@ -318,54 +255,62 @@ private fun ProjectListHeader(
 }
 
 @Composable
-private fun EmptyFilterResultState(
-    searchQuery: String,
-    selectedFilter: ProjectFilter,
+private fun SummaryItem(
+    title: String,
+    count: String,
+    color: Color
+) {
+    Column {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            color = color.copy(alpha = 0.8f)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = count,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+    }
+}
+
+@Composable
+private fun FilterChipSection(
+    selectedStatus: ProjectStatus?,
+    onStatusSelected: (ProjectStatus?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Surface(
-                modifier = Modifier.size(80.dp),
-                shape = CircleShape,
-                color = appColorScheme.surfaceVariant.copy(alpha = 0.5f)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .padding(20.dp),
-                    tint = appColorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = if (searchQuery.isNotBlank()) {
-                    "'$searchQuery'에 대한 검색 결과가 없습니다"
-                } else {
-                    "${selectedFilter.displayName} 프로젝트가 없습니다"
+        item {
+            FilterChip(
+                selected = selectedStatus == null,
+                onClick = { onStatusSelected(null) },
+                label = {
+                    Text(
+                        "전체",
+                        fontWeight = if (selectedStatus == null) FontWeight.SemiBold else FontWeight.Normal
+                    )
                 },
-                style = AppTypography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = appColorScheme.onSurface
+                shape = RoundedCornerShape(20.dp)
             )
+        }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "다른 조건으로 검색해보세요",
-                style = AppTypography.bodyMedium,
-                color = appColorScheme.onSurfaceVariant
+        items(ProjectStatus.values()) { status ->
+            FilterChip(
+                selected = selectedStatus == status,
+                onClick = { onStatusSelected(status) },
+                label = {
+                    Text(
+                        status.displayName,
+                        fontWeight = if (selectedStatus == status) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                },
+                shape = RoundedCornerShape(20.dp)
             )
         }
     }
@@ -373,224 +318,202 @@ private fun EmptyFilterResultState(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FilterBottomSheet(
-    selectedFilter: ProjectFilter,
-    onFilterSelected: (ProjectFilter) -> Unit,
-    onDismiss: () -> Unit
+private fun TossStyleProjectCard(
+    project: ProjectItem,
+    onClick: () -> Unit
 ) {
-    val bottomSheetState = rememberModalBottomSheetState()
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = bottomSheetState,
-        containerColor = appColorScheme.surface
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .animateContentSize(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        shape = RoundedCornerShape(20.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(24.dp)
         ) {
-            Text(
-                text = "필터 선택",
-                style = AppTypography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = project.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
 
-            ProjectFilter.values().forEach { filter ->
-                val isSelected = selectedFilter == filter
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                Card(
-                    onClick = { onFilterSelected(filter) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isSelected) {
-                            appColorScheme.primaryContainer
-                        } else {
-                            appColorScheme.surface
-                        }
-                    ),
-                    border = if (isSelected) {
-                        null
-                    } else {
-                        androidx.compose.foundation.BorderStroke(
-                            1.dp,
-                            appColorScheme.outline.copy(alpha = 0.3f)
-                        )
+                    Text(
+                        text = project.workType,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = when (project.status) {
+                        ProjectStatus.RECRUITING -> Color(0xFF00C73C).copy(alpha = 0.1f)
+                        ProjectStatus.IN_PROGRESS -> Color(0xFF0066FF).copy(alpha = 0.1f)
+                        ProjectStatus.COMPLETED -> Color(0xFF8E8E93).copy(alpha = 0.1f)
                     }
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = filter.displayName,
-                            style = AppTypography.bodyLarge.copy(
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                            ),
-                            color = if (isSelected) {
-                                appColorScheme.onPrimaryContainer
-                            } else {
-                                appColorScheme.onSurface
-                            }
-                        )
-
-                        if (isSelected) {
-                            Surface(
-                                shape = CircleShape,
-                                color = appColorScheme.primary
-                            ) {
-                                Box(
-                                    modifier = Modifier.size(20.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add, // 체크 아이콘 대신 사용
-                                        contentDescription = "선택됨",
-                                        tint = appColorScheme.onPrimary,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    Text(
+                        text = project.status.displayName,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = when (project.status) {
+                            ProjectStatus.RECRUITING -> Color(0xFF00C73C)
+                            ProjectStatus.IN_PROGRESS -> Color(0xFF0066FF)
+                            ProjectStatus.COMPLETED -> Color(0xFF8E8E93)
+                        },
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                InfoColumn(
+                    icon = Icons.Default.LocationOn,
+                    title = "위치",
+                    value = project.location
+                )
+                InfoColumn(
+                    icon = Icons.Default.AttachMoney,
+                    title = "일급",
+                    value = project.formattedWage
+                )
+                InfoColumn(
+                    icon = Icons.Default.People,
+                    title = "인원",
+                    value = "${project.recruitmentStatus}명"
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "작업 기간",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = project.formattedDateRange,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                OutlinedButton(
+                    onClick = onClick,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(
+                        text = "상세보기",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         }
     }
 }
 
-// 필터 열거형
-enum class ProjectFilter(val displayName: String) {
-    ALL("전체"),
-    RECRUITING("모집중"),
-    IN_PROGRESS("진행중"),
-    COMPLETED("완료")
-}
+@Composable
+private fun InfoColumn(
+    icon: ImageVector,
+    title: String,
+    value: String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+            modifier = Modifier.size(32.dp)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
 
-// 샘플 데이터 생성 함수
-private fun getSampleProjectList(): List<ProjectData> {
-    return listOf(
-        ProjectData(
-            id = "1",
-            title = "강남구 아파트 신축 공사",
-            description = "고급 아파트 신축을 위한 건설 프로젝트입니다.",
-            location = "서울 강남구",
-            detailAddress = "테헤란로 123",
-            distance = 2.5,
-            jobTypes = listOf("보통인부", "철근공"),
-            totalWorkers = 15,
-            completedWorkers = 3,
-            dailyWage = 150000L,
-            startDate = LocalDate.now().plusDays(3),
-            endDate = LocalDate.now().plusDays(30),
-            startTime = "08:00",
-            endTime = "17:00",
-            status = ProjectStatus.RECRUITING,
-            isUrgent = true,
-            requirements = listOf("안전화 필수"),
-            providedItems = listOf("중식 제공"),
-            notes = "깔끔한 작업 환경",
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
-        ),
-        ProjectData(
-            id = "2",
-            title = "부산 교량 보수 공사",
-            description = "교량 안전성 강화를 위한 보수 작업",
-            location = "부산 해운대구",
-            detailAddress = "해운대로 456",
-            distance = 15.2,
-            jobTypes = listOf("용접공"),
-            totalWorkers = 8,
-            completedWorkers = 8,
-            dailyWage = 180000L,
-            startDate = LocalDate.now().minusDays(20),
-            endDate = LocalDate.now().minusDays(1),
-            startTime = "08:00",
-            endTime = "17:00",
-            status = ProjectStatus.COMPLETED,
-            isUrgent = false,
-            requirements = listOf(),
-            providedItems = listOf(),
-            notes = "",
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
-        ),
-        ProjectData(
-            id = "3",
-            title = "인천 물류센터 건설",
-            description = "대형 물류센터 신축 공사",
-            location = "인천 연수구",
-            detailAddress = "컨벤시아대로 123",
-            distance = 25.0,
-            jobTypes = listOf("보통인부", "콘크리트공"),
-            totalWorkers = 30,
-            completedWorkers = 12,
-            dailyWage = 140000L,
-            startDate = LocalDate.now().minusDays(5),
-            endDate = LocalDate.now().plusDays(45),
-            startTime = "07:30",
-            endTime = "17:30",
-            status = ProjectStatus.IN_PROGRESS,
-            isUrgent = false,
-            requirements = listOf("경력 1년 이상"),
-            providedItems = listOf("중식 제공", "교통비 지급"),
-            notes = "장기 근무 가능자 우대",
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
-        ),
-        ProjectData(
-            id = "4",
-            title = "대전 공장 리모델링",
-            description = "기존 공장 시설 개보수 작업",
-            location = "대전 유성구",
-            detailAddress = "대덕대로 789",
-            distance = 120.0,
-            jobTypes = listOf("전기공", "배관공"),
-            totalWorkers = 12,
-            completedWorkers = 0,
-            dailyWage = 160000L,
-            startDate = LocalDate.now().plusDays(10),
-            endDate = LocalDate.now().plusDays(40),
-            startTime = "08:30",
-            endTime = "17:00",
-            status = ProjectStatus.RECRUITING,
-            isUrgent = false,
-            requirements = listOf("관련 자격증 필수"),
-            providedItems = listOf("중식 제공", "숙박 제공"),
-            notes = "지방 근무 가능자만",
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
-    )
+
+        Text(
+            text = value,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
 }
 
-// 프로젝트 개수 계산 함수
-private fun getProjectCounts(projects: List<ProjectData>): Map<ProjectFilter, Int> {
-    return mapOf(
-        ProjectFilter.ALL to projects.size,
-        ProjectFilter.RECRUITING to projects.count { it.status == ProjectStatus.RECRUITING },
-        ProjectFilter.IN_PROGRESS to projects.count { it.status == ProjectStatus.IN_PROGRESS },
-        ProjectFilter.COMPLETED to projects.count { it.status == ProjectStatus.COMPLETED }
-    )
-}
-
-@Preview(showBackground = true)
+@Preview(name = "기본 화면", showBackground = true, heightDp = 800)
 @Composable
 fun ProjectListScreenPreview() {
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
     Jikgong1111Theme {
-        // Preview는 navigator 없이 간단하게
-        Box(modifier = Modifier.fillMaxSize()) {
-            Text("Project List Screen Preview")
-        }
+        ProjectListScreen(
+            navigator = navigator,
+            showBottomBar = false
+        )
+    }
+}
+
+@Preview(name = "다크 테마", showBackground = true, heightDp = 800)
+@Composable
+fun ProjectListScreenDarkPreview() {
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme(darkTheme = true) {
+        ProjectListScreen(
+            navigator = navigator,
+            showBottomBar = false
+        )
     }
 }

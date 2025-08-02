@@ -1,3 +1,4 @@
+// app/src/main/java/com/billcorea/jikgong/presentation/company/main/common/components/CompanyBottomNavContainer.kt
 package com.billcorea.jikgong.presentation.company.main.common.components
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -6,6 +7,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -16,8 +18,10 @@ import com.billcorea.jikgong.presentation.company.main.info.CompanyInfoScreen
 import com.billcorea.jikgong.presentation.company.main.money.CompanyMoneyScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.ProjectListScreen
 import com.billcorea.jikgong.presentation.company.main.scout.CompanyScoutScreen
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 
 /**
  * 기업용 바텀 네비게이션 컨테이너 - 메인 진입점
@@ -85,11 +89,11 @@ private fun CompanyBottomNavHost(
         startDestination = CompanyBottomNavTabs.PROJECT_LIST.route,
         modifier = modifier
     ) {
-        // 프로젝트 목록 화면 - 새로운 ProjectListScreen 사용
+        // 프로젝트 목록 화면
         composable(CompanyBottomNavTabs.PROJECT_LIST.route) {
             ProjectListScreen(
                 navigator = navigator,
-                showBottomBar = true
+                showBottomBar = false // 이미 컨테이너에서 표시하므로 false
             )
         }
 
@@ -97,7 +101,7 @@ private fun CompanyBottomNavHost(
         composable(CompanyBottomNavTabs.SCOUT.route) {
             CompanyScoutScreen(
                 navigator = navigator,
-                showBottomBar = true
+                showBottomBar = false
             )
         }
 
@@ -105,7 +109,7 @@ private fun CompanyBottomNavHost(
         composable(CompanyBottomNavTabs.MONEY.route) {
             CompanyMoneyScreen(
                 navigator = navigator,
-                showBottomBar = true
+                showBottomBar = false
             )
         }
 
@@ -113,8 +117,21 @@ private fun CompanyBottomNavHost(
         composable(CompanyBottomNavTabs.INFO.route) {
             CompanyInfoScreen(
                 navigator = navigator,
-                showBottomBar = true
+                showBottomBar = false
             )
         }
+    }
+}
+
+@Preview(name = "기본 화면", showBackground = true, heightDp = 800)
+@Composable
+fun CompanyBottomNavContainerPreview() {
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme {
+        CompanyBottomNavContainer(
+            navigator = navigator
+        )
     }
 }

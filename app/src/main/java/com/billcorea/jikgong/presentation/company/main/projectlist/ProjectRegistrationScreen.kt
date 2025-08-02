@@ -1,177 +1,211 @@
+// app/src/main/java/com/billcorea/jikgong/presentation/company/main/projectlist/ProjectListViewModel.kt
 package com.billcorea.jikgong.presentation.company.main.projectlist
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.rememberNavController
-import com.billcorea.jikgong.presentation.company.main.projectlist.components.ProjectRegistrationBottomBar
-import com.billcorea.jikgong.presentation.company.main.projectlist.components.ProjectRegistrationForm
-import com.billcorea.jikgong.presentation.company.main.projectlist.components.ProjectRegistrationTopBar
-import com.billcorea.jikgong.presentation.company.main.projectlist.shared.ProjectRegistrationSharedEvent
-import com.billcorea.jikgong.presentation.company.main.projectlist.shared.ProjectRegistrationSharedViewModel
-import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-import org.koin.androidx.compose.koinViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
-// @Destination 어노테이션 제거 - 바텀 네비게이션에서 composable()로 직접 호출됨
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ProjectRegistrationScreen(
-    navigator: DestinationsNavigator,
-    projectRegistrationViewModel: ProjectRegistrationSharedViewModel = koinViewModel(),
-    modifier: Modifier = Modifier,
-    showBottomBar: Boolean = true
-) {
-    val uiState by projectRegistrationViewModel.uiState.collectAsStateWithLifecycle()
+/**
+ * 프로젝트 목록 화면의 ViewModel
+ */
+class ProjectListViewModel : ViewModel() {
 
-    // 네비게이션 이벤트 처리 - 뒤로가기
-    LaunchedEffect(uiState.shouldNavigateBack) {
-        if (uiState.shouldNavigateBack) {
-            navigator.navigateUp()
-            projectRegistrationViewModel.clearNavigationEvents()
+    private val _uiState = MutableStateFlow(ProjectListUiState())
+    val uiState: StateFlow<ProjectListUiState> = _uiState.asStateFlow()
+
+    init {
+        loadProjects()
+    }
+
+    fun onEvent(event: ProjectListEvent) {
+        when (event) {
+            is ProjectListEvent.RefreshProjects -> {
+                refreshProjects()
+            }
+            is ProjectListEvent.FilterByStatus -> {
+                filterProjectsByStatus(event.status)
+            }
+            is ProjectListEvent.SelectProject -> {
+                selectProject(event.projectId)
+            }
+            is ProjectListEvent.CreateNewProject -> {
+                createNewProject()
+            }
+            is ProjectListEvent.SearchProjects -> {
+                searchProjects(event.query)
+            }
         }
     }
 
-    // 네비게이션 이벤트 처리 - 목록으로 이동
-    LaunchedEffect(uiState.shouldNavigateToList) {
-        if (uiState.shouldNavigateToList) {
-            navigator.navigateUp()
-            projectRegistrationViewModel.clearNavigationEvents()
+    private fun loadProjects() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            try {
+                // 실제로는 Repository에서 데이터를 가져옴
+                val projects = getSampleProjects()
+
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    projects = projects,
+                    filteredProjects = projects
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.message
+                )
+            }
         }
     }
 
-    // 에러 다이얼로그
-    uiState.errorMessage?.let { message ->
-        AlertDialog(
-            onDismissRequest = {
-                projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.ClearError)
-            },
-            title = { Text("오류") },
-            text = { Text(message) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.ClearError)
-                    }
-                ) {
-                    Text("확인")
-                }
-            }
+    private fun refreshProjects() {
+        loadProjects()
+    }
+
+    private fun filterProjectsByStatus(status: ProjectStatus?) {
+        val filteredProjects = if (status == null) {
+            _uiState.value.projects
+        } else {
+            _uiState.value.projects.filter { it.status == status }
+        }
+
+        _uiState.value = _uiState.value.copy(
+            filteredProjects = filteredProjects,
+            selectedFilter = status
         )
     }
 
-    // 종료 확인 다이얼로그
-    if (uiState.showExitDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.DismissExitDialog)
-            },
-            title = { Text("등록 취소") },
-            text = { Text("작성 중인 내용이 사라집니다. 정말 나가시겠습니까?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.ConfirmExit)
-                    }
-                ) {
-                    Text("확인")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.DismissExitDialog)
-                    }
-                ) {
-                    Text("취소")
-                }
+    private fun selectProject(projectId: String) {
+        _uiState.value = _uiState.value.copy(selectedProjectId = projectId)
+    }
+
+    private fun createNewProject() {
+        // 새 프로젝트 생성 로직
+    }
+
+    private fun searchProjects(query: String) {
+        val filteredProjects = if (query.isEmpty()) {
+            _uiState.value.projects
+        } else {
+            _uiState.value.projects.filter { project ->
+                project.title.contains(query, ignoreCase = true) ||
+                  project.location.contains(query, ignoreCase = true) ||
+                  project.workType.contains(query, ignoreCase = true)
             }
+        }
+
+        _uiState.value = _uiState.value.copy(
+            filteredProjects = filteredProjects,
+            searchQuery = query
         )
     }
 
-    // 임시저장 확인 다이얼로그
-    if (uiState.showSaveDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.DismissSaveDialog)
-            },
-            title = { Text("임시저장 완료") },
-            text = { Text("프로젝트가 임시저장되었습니다.") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.DismissSaveDialog)
-                    }
-                ) {
-                    Text("확인")
-                }
-            }
-        )
-    }
-
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            ProjectRegistrationTopBar(
-                currentPage = uiState.currentPage,
-                totalPages = uiState.totalPages,
-                hasDraft = uiState.hasDraft,
-                lastSavedTime = uiState.lastSavedTime,
-                isSaving = uiState.isSaving,
-                onBackClick = {
-                    projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.BackPressed)
-                },
-                onSaveClick = {
-                    projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.SaveDraft)
-                }
+    private fun getSampleProjects(): List<Project> {
+        return listOf(
+            Project(
+                id = "1",
+                title = "강남 아파트 신축공사 A동",
+                location = "서울특별시 강남구",
+                workType = "철근공",
+                dailyWage = 250000,
+                status = ProjectStatus.RECRUITING,
+                recruitCount = 5,
+                currentCount = 2,
+                startDate = LocalDateTime.now().plusDays(3),
+                endDate = LocalDateTime.now().plusDays(30),
+                description = "아파트 신축공사 철근 작업",
+                requiredSkills = listOf("철근공 경력 3년 이상", "안전교육 이수자"),
+                contactPhone = "010-1234-5678"
+            ),
+            Project(
+                id = "2",
+                title = "서초 오피스텔 리모델링",
+                location = "서울특별시 서초구",
+                workType = "타일공",
+                dailyWage = 200000,
+                status = ProjectStatus.IN_PROGRESS,
+                recruitCount = 3,
+                currentCount = 3,
+                startDate = LocalDateTime.now().minusDays(5),
+                endDate = LocalDateTime.now().plusDays(20),
+                description = "오피스텔 화장실 타일 작업",
+                requiredSkills = listOf("타일공 경력 2년 이상"),
+                contactPhone = "010-2345-6789"
+            ),
+            Project(
+                id = "3",
+                title = "성남 단독주택 인테리어",
+                location = "경기도 성남시",
+                workType = "도배공",
+                dailyWage = 180000,
+                status = ProjectStatus.RECRUITING,
+                recruitCount = 2,
+                currentCount = 0,
+                startDate = LocalDateTime.now().plusDays(7),
+                endDate = LocalDateTime.now().plusDays(14),
+                description = "단독주택 도배 작업",
+                requiredSkills = listOf("도배공 경력 1년 이상"),
+                contactPhone = "010-3456-7890"
+            ),
+            Project(
+                id = "4",
+                title = "판교 상가 전기공사",
+                location = "경기도 성남시 분당구",
+                workType = "전기공",
+                dailyWage = 280000,
+                status = ProjectStatus.COMPLETED,
+                recruitCount = 4,
+                currentCount = 4,
+                startDate = LocalDateTime.now().minusDays(20),
+                endDate = LocalDateTime.now().minusDays(5),
+                description = "상가 전기 배선 작업",
+                requiredSkills = listOf("전기기능사", "고압전기 경험"),
+                contactPhone = "010-4567-8901"
+            ),
+            Project(
+                id = "5",
+                title = "잠실 아파트 배관공사",
+                location = "서울특별시 송파구",
+                workType = "배관공",
+                dailyWage = 220000,
+                status = ProjectStatus.IN_PROGRESS,
+                recruitCount = 3,
+                currentCount = 2,
+                startDate = LocalDateTime.now().minusDays(2),
+                endDate = LocalDateTime.now().plusDays(18),
+                description = "아파트 급수관 교체 작업",
+                requiredSkills = listOf("배관공 경력 3년 이상"),
+                contactPhone = "010-5678-9012"
             )
-        },
-        bottomBar = {
-            ProjectRegistrationBottomBar(
-                currentPage = uiState.currentPage,
-                totalPages = uiState.totalPages,
-                isNextEnabled = uiState.isCurrentPageComplete,
-                isLoading = uiState.isSubmitting,
-                nextButtonText = uiState.nextButtonText,
-                onPreviousClick = {
-                    projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.PreviousPage)
-                },
-                onNextClick = {
-                    projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.NextPage)
-                },
-                onPageClick = { page ->
-                    projectRegistrationViewModel.onEvent(ProjectRegistrationSharedEvent.GoToPage(page))
-                }
-            )
-        }
-    ) { innerPadding ->
-        ProjectRegistrationForm(
-            projectData = uiState.projectData,
-            currentPage = uiState.currentPage,
-            validationErrors = uiState.validationErrors,
-            onEvent = projectRegistrationViewModel::onEvent,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
         )
     }
 }
 
-@Preview(showBackground = true, heightDp = 800)
-@Composable
-fun ProjectRegistrationScreenPreview() {
-    val navController = rememberNavController()
-    val navigator = navController.toDestinationsNavigator()
+/**
+ * 프로젝트 목록 UI 상태
+ */
+data class ProjectListUiState(
+    val isLoading: Boolean = false,
+    val projects: List<Project> = emptyList(),
+    val filteredProjects: List<Project> = emptyList(),
+    val selectedProjectId: String? = null,
+    val selectedFilter: ProjectStatus? = null,
+    val searchQuery: String = "",
+    val error: String? = null
+)
 
-    Jikgong1111Theme {
-        ProjectRegistrationScreen(
-            navigator = navigator,
-            projectRegistrationViewModel = ProjectRegistrationSharedViewModel()
-        )
-    }
+/**
+ * 프로젝트 목록 이벤트
+ */
+sealed class ProjectListEvent {
+    object RefreshProjects : ProjectListEvent()
+    data class FilterByStatus(val status: ProjectStatus?) : ProjectListEvent()
+    data class SelectProject(val projectId: String) : ProjectListEvent()
+    object CreateNewProject : ProjectListEvent()
+    data class SearchProjects(val query: String) : ProjectListEvent()
 }
