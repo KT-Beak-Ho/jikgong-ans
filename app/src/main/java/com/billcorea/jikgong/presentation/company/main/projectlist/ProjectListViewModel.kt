@@ -1,17 +1,15 @@
-// app/src/main/java/com/billcorea/jikgong/presentation/company/main/projectlist/ProjectListViewModel.kt
+// ========================================
+// 📄 수정된 ProjectListViewModel.kt
+// ========================================
 package com.billcorea.jikgong.presentation.company.main.projectlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectItem
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectListEvent
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectListUiState
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectStatus
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectSampleData
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectStatus
+import com.billcorea.jikgong.presentation.company.main.projectlist.uistate.*
 
 class ProjectListViewModel : ViewModel() {
 
@@ -24,151 +22,234 @@ class ProjectListViewModel : ViewModel() {
 
   fun onEvent(event: ProjectListEvent) {
     when (event) {
-      is ProjectListEvent.RefreshProjects -> refreshProjects()
-      is ProjectListEvent.FilterByStatus -> filterProjectsByStatus(event.status)
+      is ProjectListEvent.RefreshProjects -> loadProjects()
+      is ProjectListEvent.FilterByStatus -> filterByStatus(event.status)
       is ProjectListEvent.SelectProject -> selectProject(event.projectId)
-      is ProjectListEvent.CreateNewProject -> createNewProject()
+      is ProjectListEvent.CreateNewProject -> navigateToCreate()
       is ProjectListEvent.SearchProjects -> searchProjects(event.query)
+      is ProjectListEvent.ToggleSearch -> toggleSearch()
+      is ProjectListEvent.ClearSearch -> clearSearch()
+      is ProjectListEvent.QuickApply -> quickApply(event.projectId)
+      is ProjectListEvent.LoadMoreProjects -> loadMoreProjects()
+      is ProjectListEvent.SortProjects -> sortProjects(event.sortBy)
+      is ProjectListEvent.ClearFilters -> clearFilters()
+      is ProjectListEvent.SelectSearchSuggestion -> selectSearchSuggestion(event.suggestion)
+      is ProjectListEvent.NavigateToProjectDetail -> navigateToProjectDetail(event.projectId)
+      is ProjectListEvent.NavigateToProjectEdit -> navigateToProjectEdit(event.projectId)
+      is ProjectListEvent.ToggleBookmark -> toggleBookmark(event.projectId)
+      is ProjectListEvent.ShareProject -> shareProject(event.projectId)
+      is ProjectListEvent.DeleteProject -> deleteProject(event.projectId)
+      is ProjectListEvent.DuplicateProject -> duplicateProject(event.projectId)
+      is ProjectListEvent.ShowFilterDialog -> showFilterDialog()
+      is ProjectListEvent.HideFilterDialog -> hideFilterDialog()
+      is ProjectListEvent.ShowSortDialog -> showSortDialog()
+      is ProjectListEvent.HideSortDialog -> hideSortDialog()
+      is ProjectListEvent.UpdateFabVisibility -> updateFabVisibility(event.visible)
+      is ProjectListEvent.DismissError -> dismissError()
+      is ProjectListEvent.RetryLastAction -> retryLastAction()
+      is ProjectListEvent.UpdateNotificationSettings -> updateNotificationSettings(event.enabled)
+      is ProjectListEvent.UpdateAutoRefresh -> updateAutoRefresh(event.enabled)
     }
   }
 
   private fun loadProjects() {
     viewModelScope.launch {
-      _uiState.value = _uiState.value.copy(isLoading = true)
+      _uiState.update { it.copy(isLoading = true) }
 
       try {
-        val projects = getSampleProjects()
-        _uiState.value = _uiState.value.copy(
-          isLoading = false,
-          projects = projects,
-          filteredProjects = projects
-        )
+        // 실제로는 Repository에서 데이터를 가져옴
+        val projects = ProjectSampleData.getSampleProjects()
+        val summary = ProjectSampleData.calculateSummary(projects)
+
+        _uiState.update {
+          it.copy(
+            isLoading = false,
+            projects = projects,
+            filteredProjects = projects,
+            summary = summary,
+            errorMessage = null
+          )
+        }
       } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(
-          isLoading = false,
-          error = e.message
-        )
+        _uiState.update {
+          it.copy(
+            isLoading = false,
+            errorMessage = e.message
+          )
+        }
       }
     }
   }
 
-  private fun refreshProjects() = loadProjects()
-
-  private fun filterProjectsByStatus(status: ProjectStatus?) {
+  private fun filterByStatus(status: ProjectStatus?) {
     val filteredProjects = if (status == null) {
-      _uiState.value.projects
+      uiState.value.projects
     } else {
-      _uiState.value.projects.filter { it.status == status }
+      uiState.value.projects.filter { it.status == status }
     }
 
-    _uiState.value = _uiState.value.copy(
-      filteredProjects = filteredProjects,
-      selectedFilter = status
-    )
-  }
-
-  private fun selectProject(projectId: String) {
-    _uiState.value = _uiState.value.copy(selectedProjectId = projectId)
-  }
-
-  private fun createNewProject() {
-    // 새 프로젝트 생성 로직
+    _uiState.update {
+      it.copy(
+        selectedFilter = status,
+        filteredProjects = filteredProjects
+      )
+    }
   }
 
   private fun searchProjects(query: String) {
     val filteredProjects = if (query.isEmpty()) {
-      _uiState.value.projects
+      if (uiState.value.selectedFilter == null) {
+        uiState.value.projects
+      } else {
+        uiState.value.projects.filter { it.status == uiState.value.selectedFilter }
+      }
     } else {
-      _uiState.value.projects.filter { project ->
+      uiState.value.projects.filter { project ->
         project.title.contains(query, ignoreCase = true) ||
           project.location.contains(query, ignoreCase = true) ||
           project.workType.contains(query, ignoreCase = true)
       }
     }
 
-    _uiState.value = _uiState.value.copy(
-      filteredProjects = filteredProjects,
-      searchQuery = query
-    )
+    _uiState.update {
+      it.copy(
+        searchQuery = query,
+        filteredProjects = filteredProjects
+      )
+    }
   }
 
-  private fun getSampleProjects(): List<ProjectItem> {
-    return listOf(
-      ProjectItem(
-        id = "1",
-        title = "강남 아파트 신축공사 A동",
-        location = "서울특별시 강남구",
-        workType = "철근공",
-        dailyWage = 250000,
-        status = ProjectStatus.RECRUITING,
-        recruitCount = 5,
-        currentCount = 2,
-        startDate = LocalDateTime.now().plusDays(3),
-        endDate = LocalDateTime.now().plusDays(30),
-        description = "아파트 신축공사 철근 작업",
-        requiredSkills = listOf("철근공 경력 3년 이상", "안전교육 이수자"),
-        contactPhone = "010-1234-5678"
-      ),
-      ProjectItem(
-        id = "2",
-        title = "서초 오피스텔 리모델링",
-        location = "서울특별시 서초구",
-        workType = "타일공",
-        dailyWage = 200000,
-        status = ProjectStatus.IN_PROGRESS,
-        recruitCount = 3,
-        currentCount = 3,
-        startDate = LocalDateTime.now().minusDays(5),
-        endDate = LocalDateTime.now().plusDays(20),
-        description = "오피스텔 화장실 타일 작업",
-        requiredSkills = listOf("타일공 경력 2년 이상"),
-        contactPhone = "010-2345-6789"
-      ),
-      ProjectItem(
-        id = "3",
-        title = "성남 단독주택 인테리어",
-        location = "경기도 성남시",
-        workType = "도배공",
-        dailyWage = 180000,
-        status = ProjectStatus.RECRUITING,
-        recruitCount = 2,
-        currentCount = 0,
-        startDate = LocalDateTime.now().plusDays(7),
-        endDate = LocalDateTime.now().plusDays(14),
-        description = "단독주택 도배 작업",
-        requiredSkills = listOf("도배공 경력 1년 이상"),
-        contactPhone = "010-3456-7890"
-      ),
-      ProjectItem(
-        id = "4",
-        title = "판교 상가 전기공사",
-        location = "경기도 성남시 분당구",
-        workType = "전기공",
-        dailyWage = 280000,
-        status = ProjectStatus.COMPLETED,
-        recruitCount = 4,
-        currentCount = 4,
-        startDate = LocalDateTime.now().minusDays(20),
-        endDate = LocalDateTime.now().minusDays(5),
-        description = "상가 전기 배선 작업",
-        requiredSkills = listOf("전기기능사", "고압전기 경험"),
-        contactPhone = "010-4567-8901"
-      ),
-      ProjectItem(
-        id = "5",
-        title = "잠실 아파트 배관공사",
-        location = "서울특별시 송파구",
-        workType = "배관공",
-        dailyWage = 220000,
-        status = ProjectStatus.IN_PROGRESS,
-        recruitCount = 3,
-        currentCount = 2,
-        startDate = LocalDateTime.now().minusDays(2),
-        endDate = LocalDateTime.now().plusDays(18),
-        description = "아파트 급수관 교체 작업",
-        requiredSkills = listOf("배관공 경력 3년 이상"),
-        contactPhone = "010-5678-9012"
+  private fun toggleSearch() {
+    _uiState.update {
+      it.copy(isSearchVisible = !it.isSearchVisible)
+    }
+  }
+
+  private fun clearSearch() {
+    _uiState.update {
+      it.copy(
+        searchQuery = "",
+        isSearchVisible = false,
+        filteredProjects = if (it.selectedFilter == null) it.projects
+        else it.projects.filter { project -> project.status == it.selectedFilter }
       )
-    )
+    }
+  }
+
+  private fun selectProject(projectId: String) {
+    _uiState.update { it.copy(selectedProjectId = projectId) }
+    // TODO: 프로젝트 상세 화면으로 이동
+  }
+
+  private fun navigateToCreate() {
+    // TODO: 프로젝트 생성 화면으로 이동
+  }
+
+  private fun quickApply(projectId: String) {
+    // TODO: 빠른 지원 처리
+  }
+
+  private fun loadMoreProjects() {
+    // TODO: 페이징 처리
+  }
+
+  private fun sortProjects(sortBy: ProjectSortBy) {
+    val sortedProjects = when (sortBy) {
+      ProjectSortBy.CREATED_DATE_DESC -> uiState.value.filteredProjects.sortedByDescending { it.createdAt }
+      ProjectSortBy.CREATED_DATE_ASC -> uiState.value.filteredProjects.sortedBy { it.createdAt }
+      ProjectSortBy.START_DATE_ASC -> uiState.value.filteredProjects.sortedBy { it.startDate }
+      ProjectSortBy.START_DATE_DESC -> uiState.value.filteredProjects.sortedByDescending { it.startDate }
+      ProjectSortBy.DAILY_WAGE_DESC -> uiState.value.filteredProjects.sortedByDescending { it.dailyWage }
+      ProjectSortBy.DAILY_WAGE_ASC -> uiState.value.filteredProjects.sortedBy { it.dailyWage }
+      ProjectSortBy.LOCATION -> uiState.value.filteredProjects.sortedBy { it.location }
+      ProjectSortBy.RECRUIT_RATE -> uiState.value.filteredProjects.sortedBy { it.progressPercentage }
+      ProjectSortBy.URGENT_FIRST -> uiState.value.filteredProjects.sortedWith(
+        compareByDescending<com.billcorea.jikgong.presentation.company.main.projectlist.data.Project> { it.isUrgent }
+          .thenByDescending { it.createdAt }
+      )
+    }
+
+    _uiState.update {
+      it.copy(
+        sortBy = sortBy,
+        filteredProjects = sortedProjects
+      )
+    }
+  }
+
+  private fun clearFilters() {
+    _uiState.update {
+      it.copy(
+        selectedFilter = null,
+        searchQuery = "",
+        filteredProjects = it.projects,
+        sortBy = ProjectSortBy.CREATED_DATE_DESC
+      )
+    }
+  }
+
+  private fun selectSearchSuggestion(suggestion: String) {
+    searchProjects(suggestion)
+  }
+
+  private fun navigateToProjectDetail(projectId: String) {
+    // TODO: 프로젝트 상세 화면으로 이동
+  }
+
+  private fun navigateToProjectEdit(projectId: String) {
+    // TODO: 프로젝트 편집 화면으로 이동
+  }
+
+  private fun toggleBookmark(projectId: String) {
+    // TODO: 북마크 토글 처리
+  }
+
+  private fun shareProject(projectId: String) {
+    // TODO: 프로젝트 공유 처리
+  }
+
+  private fun deleteProject(projectId: String) {
+    // TODO: 프로젝트 삭제 처리
+  }
+
+  private fun duplicateProject(projectId: String) {
+    // TODO: 프로젝트 복제 처리
+  }
+
+  private fun showFilterDialog() {
+    _uiState.update { it.copy(showFilterDialog = true) }
+  }
+
+  private fun hideFilterDialog() {
+    _uiState.update { it.copy(showFilterDialog = false) }
+  }
+
+  private fun showSortDialog() {
+    _uiState.update { it.copy(showSortDialog = true) }
+  }
+
+  private fun hideSortDialog() {
+    _uiState.update { it.copy(showSortDialog = false) }
+  }
+
+  private fun updateFabVisibility(visible: Boolean) {
+    _uiState.update { it.copy(fabVisible = visible) }
+  }
+
+  private fun dismissError() {
+    _uiState.update { it.copy(errorMessage = null) }
+  }
+
+  private fun retryLastAction() {
+    // TODO: 마지막 액션 재시도
+    loadProjects()
+  }
+
+  private fun updateNotificationSettings(enabled: Boolean) {
+    // TODO: 알림 설정 업데이트
+  }
+
+  private fun updateAutoRefresh(enabled: Boolean) {
+    // TODO: 자동 새로고침 설정 업데이트
   }
 }

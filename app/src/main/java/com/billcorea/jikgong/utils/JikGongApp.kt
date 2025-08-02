@@ -1,32 +1,29 @@
 package com.billcorea.jikgong.utils
 
-import android.app.Application
-import com.billcorea.jikgong.BuildConfig
-import com.billcorea.jikgong.di.networkModule
-import com.billcorea.jikgong.di.repositoryModule
-import com.billcorea.jikgong.di.viewModelModule
-import com.kakao.sdk.common.KakaoSdk
-import com.kakao.vectormap.KakaoMapSdk
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.startKoin
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.presentation.company.main.common.components.CompanyBottomNavContainer
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
+import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 
-class JikGongApp : Application() {
+@Composable
+fun JikGongApp() {
+    Jikgong1111Theme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            val navController = rememberNavController()
+            val navigator = navController.toDestinationsNavigator()
 
-    override fun onCreate() {
-        super.onCreate()
-
-        startKoin {
-            androidContext(this@JikGongApp)
-            modules(
-                appModule,
-                //  추가
-                networkModule,
-                repositoryModule,
-                viewModelModule
+            // 기업용 메인 화면으로 직접 이동
+            CompanyBottomNavContainer(
+                navigator = navigator
             )
         }
-        KakaoMapSdk.init(this, BuildConfig.KAKAO_API)
-        KakaoSdk.init(this, BuildConfig.KAKAO_API)
-
     }
 }
