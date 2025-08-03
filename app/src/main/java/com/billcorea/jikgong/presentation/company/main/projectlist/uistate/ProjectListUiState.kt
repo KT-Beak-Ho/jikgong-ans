@@ -1,11 +1,8 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.uistate
 
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.Project
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectStatus
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectSummary
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.*
 
 data class ProjectListUiState(
-  // 데이터 상태
   val projects: List<Project> = emptyList(),
   val filteredProjects: List<Project> = emptyList(),
   val summary: ProjectSummary = ProjectSummary(),
@@ -37,4 +34,7 @@ data class ProjectListUiState(
 ) {
   val isEmpty: Boolean
     get() = filteredProjects.isEmpty() && !isLoading
+
+  val hasResults: Boolean
+    get() = filteredProjects.isNotEmpty()
 }

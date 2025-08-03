@@ -1,6 +1,6 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.uistate
 
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectStatus
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.*
 
 sealed class ProjectListEvent {
   // 프로젝트 관련 이벤트
@@ -33,7 +33,7 @@ sealed class ProjectListEvent {
   object LoadMoreProjects : ProjectListEvent()
   object RetryLoading : ProjectListEvent()
 
-  // 프로젝트 생성 관련 이벤트
+  // 프로젝트 생성
   object CreateNewProject : ProjectListEvent()
 
   // UI 상태 이벤트

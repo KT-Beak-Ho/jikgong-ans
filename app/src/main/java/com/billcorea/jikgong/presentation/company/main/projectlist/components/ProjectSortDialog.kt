@@ -1,77 +1,109 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.billcorea.jikgong.presentation.company.main.projectlist.uistate.ProjectSortBy
-import com.billcorea.jikgong.ui.theme.AppTypography
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectSortBy
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
-import com.billcorea.jikgong.ui.theme.appColorScheme
 
 @Composable
 fun ProjectSortDialog(
   currentSortBy: ProjectSortBy,
   onSortSelected: (ProjectSortBy) -> Unit,
-  onDismiss: () -> Unit,
-  modifier: Modifier = Modifier
+  onDismiss: () -> Unit
 ) {
   Dialog(onDismissRequest = onDismiss) {
-    Card(
-      modifier = modifier.fillMaxWidth(),
-      shape = RoundedCornerShape(20.dp),
-      colors = CardDefaults.cardColors(
-        containerColor = appColorScheme.surface
-      )
+    Surface(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp),
+      shape = RoundedCornerShape(16.dp),
+      color = Color.White
     ) {
       Column(
-        modifier = Modifier.padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier.padding(20.dp)
       ) {
+        // 제목
+        Text(
+          text = "정렬 방식",
+          style = MaterialTheme.typography.titleMedium.copy(
+            fontWeight = FontWeight.Bold
+          ),
+          color = Color(0xFF1A1A1A),
+          fontSize = 18.sp
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 정렬 옵션들
+        ProjectSortBy.values().forEach { sortBy ->
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .selectable(
+                selected = currentSortBy == sortBy,
+                onClick = {
+                  onSortSelected(sortBy)
+                  onDismiss()
+                }
+              )
+              .padding(vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            RadioButton(
+              selected = currentSortBy == sortBy,
+              onClick = null,
+              colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.primary
+              )
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Text(
+              text = sortBy.displayName,
+              style = MaterialTheme.typography.bodyMedium,
+              color = if (currentSortBy == sortBy) {
+                MaterialTheme.colorScheme.primary
+              } else {
+                Color(0xFF333333)
+              },
+              fontWeight = if (currentSortBy == sortBy) {
+                FontWeight.Medium
+              } else {
+                FontWeight.Normal
+              },
+              fontSize = 14.sp
+            )
+          }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 취소 버튼
         Row(
           modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
+          horizontalArrangement = Arrangement.End
         ) {
-          Text(
-            text = "정렬 방식",
-            style = AppTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            color = appColorScheme.onSurface
-          )
-
-          IconButton(onClick = onDismiss) {
-            Icon(
-              imageVector = Icons.Default.Close,
-              contentDescription = "닫기"
+          TextButton(
+            onClick = onDismiss,
+            colors = ButtonDefaults.textButtonColors(
+              contentColor = Color(0xFF666666)
             )
-          }
-        }
-
-        HorizontalDivider()
-
-        LazyColumn(
-          modifier = Modifier.heightIn(max = 400.dp),
-          verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-          items(ProjectSortBy.values()) { sortOption ->
-            SortOptionItem(
-              sortBy = sortOption,
-              isSelected = currentSortBy == sortOption,
-              onClick = {
-                onSortSelected(sortOption)
-                onDismiss()
-              }
+          ) {
+            Text(
+              text = "취소",
+              fontSize = 14.sp
             )
           }
         }
@@ -80,43 +112,33 @@ fun ProjectSortDialog(
   }
 }
 
+@Preview(showBackground = true)
 @Composable
-private fun SortOptionItem(
-  sortBy: ProjectSortBy,
-  isSelected: Boolean,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  Surface(
-    onClick = onClick,
-    modifier = modifier.fillMaxWidth(),
-    shape = RoundedCornerShape(12.dp),
-    color = if (isSelected) appColorScheme.primaryContainer else Color.Transparent
-  ) {
-    Row(
-      modifier = Modifier.padding(16.dp),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      Text(
-        text = sortBy.displayName,
-        style = AppTypography.bodyLarge,
-        color = if (isSelected) appColorScheme.onPrimaryContainer else appColorScheme.onSurface
-      )
-
-      if (isSelected) {
-        Icon(
-          imageVector = Icons.Default.Check,
-          contentDescription = "선택됨",
-          tint = appColorScheme.primary,
-          modifier = Modifier.size(20.dp)
-        )
-      }
-    }
+fun ProjectSearchBarPreview() {
+  Jikgong1111Theme {
+    ProjectSearchBar(
+      query = "테스트 검색",
+      suggestions = listOf("삼성건설", "강남구", "철근공"),
+      onQueryChange = {},
+      onSuggestionClick = {},
+      onCloseSearch = {}
+    )
   }
 }
 
-@Preview
+@Preview(showBackground = true)
+@Composable
+fun ProjectFilterDialogPreview() {
+  Jikgong1111Theme {
+    ProjectFilterDialog(
+      selectedStatus = ProjectStatus.RECRUITING,
+      onStatusSelected = {},
+      onDismiss = {}
+    )
+  }
+}
+
+@Preview(showBackground = true)
 @Composable
 fun ProjectSortDialogPreview() {
   Jikgong1111Theme {

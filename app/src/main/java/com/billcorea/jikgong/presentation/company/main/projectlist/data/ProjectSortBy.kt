@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation.company.main.projectlist.uistate
+package com.billcorea.jikgong.presentation.company.main.projectlist.data
 
 enum class ProjectSortBy(val displayName: String) {
   CREATED_DATE_DESC("최신순"),

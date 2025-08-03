@@ -72,41 +72,41 @@ class ProjectRepositoryImpl : ProjectRepository {
       id = "4",
       title = "세종시 정부청사 내부 인테리어 공사",
       description = "세종시 정부청사 리모델링 프로젝트의 내부 인테리어 시공 전문가를 모집합니다.",
-      location = "세종특별자치시",
+      location = "세종시 정부청사로",
       category = ProjectCategory.INTERIOR,
-      status = ProjectStatus.PAUSED,
-      dailyWage = 130000,
-      startDate = LocalDateTime.now().plusDays(30),
-      endDate = LocalDateTime.now().plusDays(80),
+      status = ProjectStatus.RECRUITING,
+      dailyWage = 160000,
+      startDate = LocalDateTime.now().plusDays(5),
+      endDate = LocalDateTime.now().plusDays(45),
       requiredWorkers = 6,
       appliedWorkers = 3,
-      companyName = "롯데건설",
+      companyName = "인테리어전문",
       contactNumber = "010-4567-8901",
-      requirements = listOf("인테리어 시공 경험", "목공 기술", "도면 해독 가능"),
-      benefits = listOf("정부 프로젝트", "안정적 근무환경", "기술발전 기회"),
-      isBookmarked = true,
-      createdAt = LocalDateTime.now().minusDays(5),
-      updatedAt = LocalDateTime.now().minusDays(1)
-    ),
-    Project(
-      id = "5",
-      title = "제주도 풍력발전단지 조경공사",
-      description = "제주도 신재생에너지 풍력발전단지 주변 조경 및 녹지조성 작업에 참여할 조경기능사를 모집합니다.",
-      location = "제주특별자치도 서귀포시",
-      category = ProjectCategory.LANDSCAPING,
-      status = ProjectStatus.RECRUITING,
-      dailyWage = 120000,
-      startDate = LocalDateTime.now().plusDays(14),
-      endDate = LocalDateTime.now().plusDays(44),
-      requiredWorkers = 4,
-      appliedWorkers = 1,
-      companyName = "GS건설",
-      contactNumber = "010-5678-9012",
-      requirements = listOf("조경기능사 자격증", "식물 관리 경험", "차량 운전 가능"),
-      benefits = listOf("제주도 근무", "숙박비 지원", "관광 기회", "자연친화적 작업"),
+      requirements = listOf("인테리어 경험 2년 이상", "마감재 시공 가능"),
+      benefits = listOf("정부 프로젝트", "안정적 급여", "기술교육"),
       isBookmarked = false,
       createdAt = LocalDateTime.now().minusDays(2),
       updatedAt = LocalDateTime.now()
+    ),
+    Project(
+      id = "5",
+      title = "대구 산업단지 도로포장 공사",
+      description = "대구 달성군 산업단지 내 도로포장 및 배수시설 공사에 참여할 인력을 모집합니다.",
+      location = "대구시 달성군",
+      category = ProjectCategory.ROAD,
+      status = ProjectStatus.RECRUITING,
+      dailyWage = 135000,
+      startDate = LocalDateTime.now().plusDays(10),
+      endDate = LocalDateTime.now().plusDays(60),
+      requiredWorkers = 12,
+      appliedWorkers = 4,
+      companyName = "도로공사",
+      contactNumber = "010-5678-9012",
+      requirements = listOf("도로공사 경험", "중장비 면허 보유"),
+      benefits = listOf("장기 프로젝트", "보너스 지급", "숙박 지원"),
+      isBookmarked = false,
+      createdAt = LocalDateTime.now().minusDays(4),
+      updatedAt = LocalDateTime.now().minusDays(1)
     )
   )
 
@@ -115,16 +115,18 @@ class ProjectRepositoryImpl : ProjectRepository {
     return dummyProjects.toList()
   }
 
-  override suspend fun getMoreProjects(offset: Int): List<Project> {
-    delay(1000)
+  override suspend fun getMoreProjects(currentSize: Int): List<Project> {
+    delay(800)
 
-    // 추가 더미 데이터 생성
+    // 더미 데이터 추가 생성
     val moreProjects = (1..3).map { index ->
+      val projectIndex = currentSize + index
       Project(
-        id = "more_${offset + index}",
-        title = "추가 프로젝트 ${offset + index}번",
-        description = "추가로 로드된 프로젝트 설명입니다.",
-        location = "서울시 강남구",
+        id = "project_$projectIndex",
+        title = "추가 프로젝트 $projectIndex - ${listOf("아파트", "상가", "공장", "도로", "교량").random()} 공사",
+        description = "더미 프로젝트 설명입니다. 경험있는 작업자를 모집합니다.",
+        location = listOf("서울시", "경기도", "인천시", "부산시", "대구시").random() + " " +
+          listOf("강남구", "송파구", "중구", "남구", "북구").random(),
         category = ProjectCategory.values().random(),
         status = ProjectStatus.values().random(),
         dailyWage = (100000..200000).random(),
@@ -132,8 +134,8 @@ class ProjectRepositoryImpl : ProjectRepository {
         endDate = LocalDateTime.now().plusDays((31..90).random().toLong()),
         requiredWorkers = (3..10).random(),
         appliedWorkers = (0..5).random(),
-        companyName = "건설회사${index}",
-        contactNumber = "010-0000-000${index}",
+        companyName = "건설회사${projectIndex}",
+        contactNumber = "010-0000-000${projectIndex % 10}",
         requirements = listOf("경험 ${(1..5).random()}년 이상"),
         benefits = listOf("4대보험", "식사제공"),
         isBookmarked = false,

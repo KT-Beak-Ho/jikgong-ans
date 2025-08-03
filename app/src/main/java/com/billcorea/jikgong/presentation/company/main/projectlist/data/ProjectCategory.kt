@@ -1,12 +1,14 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.data
 
-enum class ProjectCategory(val displayName: String) {
-  CIVIL_ENGINEERING("토목공사"),
-  BUILDING("건축공사"),
-  ELECTRICAL("전기공사"),
-  PLUMBING("배관공사"),
-  INTERIOR("실내건축"),
-  LANDSCAPING("조경공사"),
-  ROAD_CONSTRUCTION("도로공사"),
-  OTHER("기타")
+enum class ProjectCategory(val displayName: String, val icon: String) {
+  BUILDING("건축", "🏗️"),
+  CIVIL_ENGINEERING("토목", "🚧"),
+  ELECTRICAL("전기", "⚡"),
+  PLUMBING("배관", "🔧"),
+  INTERIOR("인테리어", "🎨"),
+  ROAD("도로", "🛣️"),
+  BRIDGE("교량", "🌉"),
+  DEMOLITION("철거", "🔨"),
+  LANDSCAPING("조경", "🌳"),
+  OTHER("기타", "📋")
 }

@@ -1,4 +1,5 @@
-package com.billcorea.jikgong.presentation.company.main.projectlist.data
+// File: uistate/ProjectSummary.kt
+package com.billcorea.jikgong.presentation.company.main.projectlist.uistate
 
 data class ProjectSummary(
   val totalProjects: Int = 0,

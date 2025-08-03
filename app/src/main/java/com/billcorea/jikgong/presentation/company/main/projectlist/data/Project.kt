@@ -16,9 +16,10 @@ data class Project(
   val appliedWorkers: Int,
   val companyName: String,
   val contactNumber: String,
-  val requirements: List<String> = emptyList(),
-  val benefits: List<String> = emptyList(),
-  val isBookmarked: Boolean = false,
+  val requirements: List<String>,
+  val benefits: List<String>,
+  val isBookmarked: Boolean,
   val createdAt: LocalDateTime,
   val updatedAt: LocalDateTime
 )
+

@@ -15,7 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.info.CompanyInfoScreen
 import com.billcorea.jikgong.presentation.company.main.money.CompanyMoneyScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.ProjectListScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.ui.ProjectListScreen
 import com.billcorea.jikgong.presentation.company.main.scout.CompanyScoutScreen
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
