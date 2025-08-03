@@ -1,5 +1,5 @@
 // ========================================
-// 📄 ProjectListScreen.kt - 최종 메인 화면
+// 📄 ProjectListScreen.kt - 모든 오류 수정
 // ========================================
 package com.billcorea.jikgong.presentation.company.main.projectlist
 
@@ -20,7 +20,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.projectlist.components.*
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.Project
 import com.billcorea.jikgong.presentation.company.main.projectlist.uistate.ProjectListEvent
+import com.billcorea.jikgong.presentation.company.main.projectlist.uistate.ProjectListUiState
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -187,9 +189,9 @@ fun ProjectListScreen(
 
 @Composable
 private fun ProjectListContent(
-    uiState: com.billcorea.jikgong.presentation.company.main.projectlist.uistate.ProjectListUiState,
+    uiState: ProjectListUiState,
     scrollState: androidx.compose.foundation.lazy.LazyListState,
-    onEvent: (com.billcorea.jikgong.presentation.company.main.projectlist.uistate.ProjectListEvent) -> Unit,
+    onEvent: (ProjectListEvent) -> Unit,
     showBottomBar: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -257,13 +259,19 @@ private fun ProjectListContent(
             // 프로젝트 카드 목록
             items(
                 items = uiState.filteredProjects,
-                key = { it.id }
+                key = { project: Project -> project.id }
             ) { project ->
                 ProjectCard(
                     project = project,
-                    onProjectClick = { onEvent(ProjectListEvent.SelectProject(it.id)) },
-                    onBookmarkClick = { onEvent(ProjectListEvent.ToggleBookmark(it.id)) },
-                    onApplyClick = { onEvent(ProjectListEvent.QuickApply(it.id)) },
+                    onProjectClick = { selectedProject ->
+                        onEvent(ProjectListEvent.SelectProject(selectedProject.id))
+                    },
+                    onBookmarkClick = { selectedProject ->
+                        onEvent(ProjectListEvent.ToggleBookmark(selectedProject.id))
+                    },
+                    onApplyClick = { selectedProject ->
+                        onEvent(ProjectListEvent.QuickApply(selectedProject.id))
+                    },
                     onMoreClick = { projectId ->
                         // TODO: 더보기 메뉴 표시
                     }
@@ -307,6 +315,39 @@ private fun ProjectListContent(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+            CircularProgressIndicator()
+        }
+    }
+}
+
+// ========================================
+// 📄 Preview 컴포저블들
+// ========================================
+@Preview(name = "데이터 있음", showBackground = true, heightDp = 800)
+@Composable
+fun ProjectListScreenWithDataPreview() {
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme {
+        ProjectListScreen(
+            navigator = navigator,
+            showBottomBar = false
+        )
+    }
+}
+
+@Preview(name = "로딩 상태", showBackground = true, heightDp = 800)
+@Composable
+fun ProjectListScreenLoadingPreview() {
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
             ProjectListLoadingState(
                 modifier = Modifier
                     .fillMaxSize()
@@ -323,7 +364,6 @@ fun ProjectListScreenEmptyPreview() {
     val navigator = navController.toDestinationsNavigator()
 
     Jikgong1111Theme {
-        // 빈 상태를 위한 별도 컴포저블
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -359,38 +399,4 @@ fun ProjectListScreenSearchEmptyPreview() {
             )
         }
     }
-}.Center
-) {
-    CircularProgressIndicator()
 }
-}
-}
-
-// ========================================
-// 📄 Preview 컴포저블들
-// ========================================
-@Preview(name = "데이터 있음", showBackground = true, heightDp = 800)
-@Composable
-fun ProjectListScreenWithDataPreview() {
-    val navController = rememberNavController()
-    val navigator = navController.toDestinationsNavigator()
-
-    Jikgong1111Theme {
-        ProjectListScreen(
-            navigator = navigator,
-            showBottomBar = false
-        )
-    }
-}
-
-@Preview(name = "로딩 상태", showBackground = true, heightDp = 800)
-@Composable
-fun ProjectListScreenLoadingPreview() {
-    val navController = rememberNavController()
-    val navigator = navController.toDestinationsNavigator()
-
-    Jikgong1111Theme {
-        // 로딩 상태를 위한 별도 컴포저블
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment

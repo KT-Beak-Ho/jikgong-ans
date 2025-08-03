@@ -1,8 +1,11 @@
+// ========================================
+// 📄 components/ProjectListHeader.kt
+// ========================================
 package com.billcorea.jikgong.presentation.company.main.projectlist.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,6 +15,9 @@ import androidx.compose.ui.unit.dp
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.appColorScheme
 
+/**
+ * 프로젝트 목록 헤더
+ */
 @Composable
 fun ProjectListHeader(
   totalCount: Int,
@@ -27,28 +33,27 @@ fun ProjectListHeader(
     Column {
       Text(
         text = if (isSearching) "검색 결과" else "프로젝트 목록",
-        style = AppTypography.headlineSmall.copy(
+        style = AppTypography.titleLarge.copy(
           fontWeight = FontWeight.Bold
         ),
         color = appColorScheme.onSurface
       )
-      Text(
-        text = "총 ${totalCount}개",
-        style = AppTypography.bodyMedium,
-        color = appColorScheme.onSurfaceVariant
-      )
+      if (totalCount > 0) {
+        Text(
+          text = "총 ${totalCount}건",
+          style = AppTypography.bodyMedium,
+          color = appColorScheme.onSurfaceVariant
+        )
+      }
     }
 
     IconButton(
-      onClick = onSearchClick,
-      colors = IconButtonDefaults.iconButtonColors(
-        containerColor = appColorScheme.primaryContainer,
-        contentColor = appColorScheme.onPrimaryContainer
-      )
+      onClick = onSearchClick
     ) {
       Icon(
         imageVector = Icons.Default.Search,
-        contentDescription = "검색"
+        contentDescription = "검색",
+        tint = appColorScheme.onSurface
       )
     }
   }

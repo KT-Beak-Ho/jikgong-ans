@@ -418,3 +418,4 @@ class ProjectListViewModel : ViewModel() {
   private fun onNetworkLost() {
     _uiState.update { it.copy(hasNetworkError = true) }
   }
+}
