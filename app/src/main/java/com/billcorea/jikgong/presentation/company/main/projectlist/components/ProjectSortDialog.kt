@@ -1,6 +1,5 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,11 +10,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.billcorea.jikgong.presentation.company.main.projectlist.uistate.ProjectSortBy
 import com.billcorea.jikgong.ui.theme.AppTypography
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 
 @Composable
@@ -37,7 +39,6 @@ fun ProjectSortDialog(
         modifier = Modifier.padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
       ) {
-        // 헤더
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceBetween,
@@ -59,7 +60,6 @@ fun ProjectSortDialog(
 
         HorizontalDivider()
 
-        // 정렬 옵션 목록
         LazyColumn(
           modifier = Modifier.heightIn(max = 400.dp),
           verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -91,38 +91,18 @@ private fun SortOptionItem(
     onClick = onClick,
     modifier = modifier.fillMaxWidth(),
     shape = RoundedCornerShape(12.dp),
-    color = if (isSelected)
-      appColorScheme.primaryContainer.copy(alpha = 0.5f)
-    else
-      appColorScheme.surface
+    color = if (isSelected) appColorScheme.primaryContainer else Color.Transparent
   ) {
     Row(
       modifier = Modifier.padding(16.dp),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(12.dp)
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
     ) {
-      RadioButton(
-        selected = isSelected,
-        onClick = onClick,
-        colors = RadioButtonDefaults.colors(
-          selectedColor = appColorScheme.primary
-        )
+      Text(
+        text = sortBy.displayName,
+        style = AppTypography.bodyLarge,
+        color = if (isSelected) appColorScheme.onPrimaryContainer else appColorScheme.onSurface
       )
-
-      Column(modifier = Modifier.weight(1f)) {
-        Text(
-          text = sortBy.displayName,
-          style = AppTypography.bodyLarge.copy(
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-          ),
-          color = appColorScheme.onSurface
-        )
-        Text(
-          text = sortBy.description,
-          style = AppTypography.bodyMedium,
-          color = appColorScheme.onSurfaceVariant
-        )
-      }
 
       if (isSelected) {
         Icon(
@@ -133,5 +113,17 @@ private fun SortOptionItem(
         )
       }
     }
+  }
+}
+
+@Preview
+@Composable
+fun ProjectSortDialogPreview() {
+  Jikgong1111Theme {
+    ProjectSortDialog(
+      currentSortBy = ProjectSortBy.CREATED_DATE_DESC,
+      onSortSelected = {},
+      onDismiss = {}
+    )
   }
 }

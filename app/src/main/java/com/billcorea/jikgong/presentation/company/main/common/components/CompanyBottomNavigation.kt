@@ -1,6 +1,3 @@
-// ========================================
-// 📄 수정된 CompanyBottomNavigation.kt
-// ========================================
 package com.billcorea.jikgong.presentation.company.main.common.components
 
 import androidx.compose.material.icons.Icons
@@ -11,9 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.billcorea.jikgong.ui.theme.appColorScheme
 
-/**
- * 바텀 네비게이션 아이템 데이터 클래스
- */
 data class BottomNavItem(
     val route: String,
     val title: String,
@@ -21,9 +15,6 @@ data class BottomNavItem(
     val badge: Int? = null
 )
 
-/**
- * 기업용 바텀 네비게이션 아이템들
- */
 object CompanyBottomNavItems {
     val items = listOf(
         BottomNavItem(
@@ -32,14 +23,14 @@ object CompanyBottomNavItems {
             icon = Icons.Default.Assignment
         ),
         BottomNavItem(
+            route = CompanyBottomNavTabs.SCOUT,
+            title = "스카웃",
+            icon = Icons.Default.Search // PersonSearch 대신 Search 사용
+        ),
+        BottomNavItem(
             route = CompanyBottomNavTabs.MONEY,
             title = "임금관리",
             icon = Icons.Default.AttachMoney
-        ),
-        BottomNavItem(
-            route = CompanyBottomNavTabs.SCOUT,
-            title = "스카웃",
-            icon = Icons.Default.PersonSearch
         ),
         BottomNavItem(
             route = CompanyBottomNavTabs.INFO,

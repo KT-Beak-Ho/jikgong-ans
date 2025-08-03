@@ -1,47 +1,63 @@
-// ========================================
-// 📄 components/ProjectCard.kt
-// ========================================
 package com.billcorea.jikgong.presentation.company.main.projectlist.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.Project
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.ProjectStatus
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.*
 import com.billcorea.jikgong.ui.theme.AppTypography
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import java.text.NumberFormat
-import java.util.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-/**
- * 프로젝트 카드 컴포넌트 - 이미지 UI 스타일 적용
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectCard(
     project: Project,
-    onProjectClick: (Project) -> Unit,
-    onBookmarkClick: (Project) -> Unit,
-    onApplyClick: (Project) -> Unit,
-    onMoreClick: (String) -> Unit,
+    onCardClick: () -> Unit,
+    onBookmarkClick: () -> Unit,
+    onApplyClick: () -> Unit,
+    onShareClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = tween(durationMillis = 150),
+        label = "card_scale"
+    )
+
+    val bookmarkColor by animateColorAsState(
+        targetValue = if (project.isBookmarked) Color(0xFFFF6B35) else appColorScheme.onSurfaceVariant,
+        animationSpec = tween(durationMillis = 200),
+        label = "bookmark_color"
+    )
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onProjectClick(project) },
-        shape = RoundedCornerShape(12.dp),
+            .scale(scale)
+            .clickable {
+                isPressed = true
+                onCardClick()
+            },
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = appColorScheme.surface
         ),
@@ -51,23 +67,43 @@ fun ProjectCard(
         )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 상단 헤더 (제목, 상태, 북마크)
-            ProjectCardHeader(
-                project = project,
-                onBookmarkClick = onBookmarkClick,
-                onMoreClick = onMoreClick
-            )
+            // 상단: 카테고리 배지 + 북마크
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ProjectCategoryBadge(category = project.category)
 
-            Spacer(modifier = Modifier.height(8.dp))
+                IconButton(
+                    onClick = onBookmarkClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = if (project.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                        contentDescription = "북마크",
+                        tint = bookmarkColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            // 프로젝트 제목
+            Text(
+                text = project.title,
+                style = AppTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = appColorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
 
             // 위치 정보
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.LocationOn,
@@ -75,261 +111,199 @@ fun ProjectCard(
                     tint = appColorScheme.onSurfaceVariant,
                     modifier = Modifier.size(16.dp)
                 )
-                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = project.location.shortAddress,
+                    text = project.location,
                     style = AppTypography.bodyMedium,
                     color = appColorScheme.onSurfaceVariant
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // 중간 정보 (기간, 인원, 임금)
-            ProjectCardMiddleInfo(project = project)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // 하단 액션 버튼들
-            ProjectCardActions(
-                project = project,
-                onApplyClick = onApplyClick
-            )
-        }
-    }
-}
-
-@Composable
-private fun ProjectCardHeader(
-    project: Project,
-    onBookmarkClick: (Project) -> Unit,
-    onMoreClick: (String) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
-    ) {
-        // 제목과 상태
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
+            // 기간 정보
             Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Schedule,
+                    contentDescription = "기간",
+                    tint = appColorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "${project.startDate.format(DateTimeFormatter.ofPattern("MM/dd"))} ~ ${project.endDate.format(DateTimeFormatter.ofPattern("MM/dd"))}",
+                    style = AppTypography.bodyMedium,
+                    color = appColorScheme.onSurfaceVariant
+                )
+            }
+
+            // 임금 및 상태
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = project.title,
-                    style = AppTypography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = appColorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
+                Column {
+                    Text(
+                        text = "일당",
+                        style = AppTypography.bodySmall,
+                        color = appColorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${String.format("%,d", project.dailyWage)}원",
+                        style = AppTypography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = appColorScheme.primary
+                    )
+                }
 
-                if (project.isUrgent) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    AssistChip(
-                        onClick = { },
-                        label = {
-                            Text(
-                                text = "긴급",
-                                style = AppTypography.labelSmall
-                            )
-                        },
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = Color(0xFFFFEBEE),
-                            labelColor = Color(0xFFD32F2F)
-                        ),
-                        modifier = Modifier.height(24.dp)
+                ProjectStatusBadge(status = project.status)
+            }
+
+            // 하단: 액션 버튼들
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onApplyClick,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = appColorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("지원하기")
+                }
+
+                OutlinedButton(
+                    onClick = onShareClick,
+                    modifier = Modifier.size(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "공유",
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            ProjectStatusChip(status = project.status)
-        }
-
-        // 북마크와 더보기 버튼
-        Row {
-            IconButton(
-                onClick = { onBookmarkClick(project) },
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    imageVector = if (project.isBookmarked) {
-                        Icons.Default.Bookmark
-                    } else {
-                        Icons.Outlined.BookmarkBorder
-                    },
-                    contentDescription = if (project.isBookmarked) "북마크 해제" else "북마크",
-                    tint = if (project.isBookmarked) {
-                        appColorScheme.primary
-                    } else {
-                        appColorScheme.onSurfaceVariant
-                    },
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            IconButton(
-                onClick = { onMoreClick(project.id) },
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "더보기",
-                    tint = appColorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
         }
     }
 }
 
 @Composable
-private fun ProjectCardMiddleInfo(project: Project) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        // 프로젝트 기간
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.CalendarToday,
-                    contentDescription = "기간",
-                    tint = appColorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(14.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "${project.startDate.monthValue}/${project.startDate.dayOfMonth} ~ ${project.endDate.monthValue}/${project.endDate.dayOfMonth}",
-                    style = AppTypography.bodySmall,
-                    color = appColorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        // 모집 인원
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Group,
-                    contentDescription = "인원",
-                    tint = appColorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(14.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "${project.appliedWorkers}/${project.requiredWorkers}명",
-                    style = AppTypography.bodySmall,
-                    color = appColorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    // 일당 정보 (강조)
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Default.AttachMoney,
-            contentDescription = "임금",
-            tint = appColorScheme.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(project.dailyWage)}원/일",
-            style = AppTypography.titleMedium.copy(
-                fontWeight = FontWeight.Bold
-            ),
-            color = appColorScheme.primary
-        )
-    }
-}
-
-@Composable
-private fun ProjectCardActions(
-    project: Project,
-    onApplyClick: (Project) -> Unit
+private fun ProjectCategoryBadge(
+    category: ProjectCategory,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // 회사 정보
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = project.companyName,
-                style = AppTypography.bodyMedium.copy(
-                    fontWeight = FontWeight.Medium
-                ),
-                color = appColorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = "평점",
-                    tint = Color(0xFFFFB300),
-                    modifier = Modifier.size(14.dp)
-                )
-                Spacer(modifier = Modifier.width(2.dp))
-                Text(
-                    text = project.companyRating.toString(),
-                    style = AppTypography.bodySmall,
-                    color = appColorScheme.onSurfaceVariant
-                )
-            }
-        }
+    val backgroundColor = when (category) {
+        ProjectCategory.CIVIL_ENGINEERING -> Color(0xFF4CAF50)
+        ProjectCategory.BUILDING -> Color(0xFF2196F3)
+        ProjectCategory.ELECTRICAL -> Color(0xFFFFC107)
+        ProjectCategory.PLUMBING -> Color(0xFF9C27B0)
+        ProjectCategory.INTERIOR -> Color(0xFFE91E63)
+        ProjectCategory.LANDSCAPING -> Color(0xFF8BC34A)
+        ProjectCategory.ROAD_CONSTRUCTION -> Color(0xFF607D8B)
+        ProjectCategory.OTHER -> Color(0xFF757575)
+    }
 
-        // 지원 버튼
-        if (project.canApply) {
-            Button(
-                onClick = { onApplyClick(project) },
-                modifier = Modifier.height(36.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = appColorScheme.primary
-                )
-            ) {
-                Text(
-                    text = "인력 모집",
-                    style = AppTypography.labelMedium
-                )
-            }
-        } else {
-            OutlinedButton(
-                onClick = { },
-                enabled = false,
-                modifier = Modifier.height(36.dp)
-            ) {
-                Text(
-                    text = when (project.status) {
-                        ProjectStatus.COMPLETED -> "완료"
-                        ProjectStatus.CANCELLED -> "취소"
-                        ProjectStatus.IN_PROGRESS -> "진행중"
-                        else -> "마감"
-                    },
-                    style = AppTypography.labelMedium
-                )
-            }
-        }
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(8.dp),
+        color = backgroundColor.copy(alpha = 0.1f)
+    ) {
+        Text(
+            text = category.displayName,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            style = AppTypography.labelSmall.copy(fontWeight = FontWeight.Medium),
+            color = backgroundColor
+        )
+    }
+}
+
+@Composable
+private fun ProjectStatusBadge(
+    status: ProjectStatus,
+    modifier: Modifier = Modifier
+) {
+    val (backgroundColor, textColor, text) = when (status) {
+        ProjectStatus.RECRUITING -> Triple(
+            Color(0xFF4CAF50).copy(alpha = 0.1f),
+            Color(0xFF4CAF50),
+            "모집중"
+        )
+        ProjectStatus.IN_PROGRESS -> Triple(
+            Color(0xFF2196F3).copy(alpha = 0.1f),
+            Color(0xFF2196F3),
+            "진행중"
+        )
+        ProjectStatus.COMPLETED -> Triple(
+            Color(0xFF757575).copy(alpha = 0.1f),
+            Color(0xFF757575),
+            "완료"
+        )
+        ProjectStatus.PAUSED -> Triple(
+            Color(0xFFFFC107).copy(alpha = 0.1f),
+            Color(0xFFF57C00),
+            "일시중단"
+        )
+        ProjectStatus.CANCELLED -> Triple(
+            Color(0xFFF44336).copy(alpha = 0.1f),
+            Color(0xFFF44336),
+            "취소"
+        )
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        color = backgroundColor
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            style = AppTypography.labelMedium.copy(fontWeight = FontWeight.Medium),
+            color = textColor
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ProjectCardPreview() {
+    Jikgong1111Theme {
+        ProjectCard(
+            project = Project(
+                id = "1",
+                title = "강남구 신축 아파트 건설 현장 철근공 모집",
+                description = "20층 규모의 신축 아파트 건설 현장",
+                location = "서울시 강남구 역삼동",
+                category = ProjectCategory.BUILDING,
+                status = ProjectStatus.RECRUITING,
+                dailyWage = 150000,
+                startDate = LocalDateTime.now(),
+                endDate = LocalDateTime.now().plusDays(30),
+                requiredWorkers = 5,
+                appliedWorkers = 2,
+                companyName = "삼성건설",
+                contactNumber = "010-1234-5678",
+                requirements = listOf("철근 작업 경험 3년 이상"),
+                benefits = listOf("식사 제공", "교통비 지급"),
+                isBookmarked = true,
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now()
+            ),
+            onCardClick = {},
+            onBookmarkClick = {},
+            onApplyClick = {},
+            onShareClick = {},
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }

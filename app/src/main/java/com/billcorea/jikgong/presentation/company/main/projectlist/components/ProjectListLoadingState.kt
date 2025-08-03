@@ -1,131 +1,144 @@
-// ========================================
-// 📄 components/ProjectListLoadingState.kt
-// ========================================
 package com.billcorea.jikgong.presentation.company.main.projectlist.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 
-/**
- * 프로젝트 목록 로딩 상태
- */
 @Composable
 fun ProjectListLoadingState(
   modifier: Modifier = Modifier
 ) {
   Column(
-    modifier = modifier.fillMaxWidth(),
-    verticalArrangement = Arrangement.spacedBy(12.dp)
+    modifier = modifier,
+    verticalArrangement = Arrangement.spacedBy(16.dp)
   ) {
-    repeat(3) {
+    // 요약 카드 스켈레톤
+    ShimmerCard(
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(120.dp)
+    )
+
+    // 프로젝트 카드 스켈레톤들
+    repeat(5) {
       ProjectCardSkeleton()
     }
   }
 }
 
 @Composable
-private fun ProjectCardSkeleton() {
+private fun ProjectCardSkeleton(
+  modifier: Modifier = Modifier
+) {
   Card(
-    modifier = Modifier.fillMaxWidth(),
-    shape = RoundedCornerShape(12.dp),
+    modifier = modifier.fillMaxWidth(),
+    shape = RoundedCornerShape(16.dp),
     colors = CardDefaults.cardColors(
       containerColor = appColorScheme.surface
-    )
+    ),
+    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
   ) {
     Column(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp),
-      verticalArrangement = Arrangement.spacedBy(8.dp)
+      modifier = Modifier.padding(20.dp),
+      verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-      // 제목 스켈레톤
-      Box(
-        modifier = Modifier
-          .fillMaxWidth(0.8f)
-          .height(20.dp)
-          .clip(RoundedCornerShape(4.dp))
-          .shimmerEffect()
-      )
-
-      // 위치 스켈레톤
-      Box(
-        modifier = Modifier
-          .fillMaxWidth(0.4f)
-          .height(16.dp)
-          .clip(RoundedCornerShape(4.dp))
-          .shimmerEffect()
-      )
-
-      Spacer(modifier = Modifier.height(8.dp))
-
-      // 정보 스켈레톤
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
       ) {
-        Box(
-          modifier = Modifier
-            .width(80.dp)
-            .height(16.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .shimmerEffect()
-        )
-        Box(
-          modifier = Modifier
-            .width(60.dp)
-            .height(16.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .shimmerEffect()
-        )
+        ShimmerBox(modifier = Modifier.width(80.dp).height(24.dp))
+        ShimmerBox(modifier = Modifier.size(24.dp))
       }
 
-      // 임금 스켈레톤
-      Box(
-        modifier = Modifier
-          .fillMaxWidth(0.6f)
-          .height(24.dp)
-          .clip(RoundedCornerShape(4.dp))
-          .shimmerEffect()
-      )
+      ShimmerBox(modifier = Modifier.fillMaxWidth(0.8f).height(20.dp))
+      ShimmerBox(modifier = Modifier.fillMaxWidth(0.6f).height(16.dp))
+      ShimmerBox(modifier = Modifier.fillMaxWidth(0.5f).height(16.dp))
+
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+      ) {
+        ShimmerBox(modifier = Modifier.width(80.dp).height(20.dp))
+        ShimmerBox(modifier = Modifier.width(60.dp).height(28.dp))
+      }
+
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        ShimmerBox(modifier = Modifier.weight(1f).height(40.dp))
+        ShimmerBox(modifier = Modifier.size(40.dp))
+      }
     }
   }
 }
 
 @Composable
-private fun Modifier.shimmerEffect(): Modifier {
-  val shimmerColors = listOf(
-    appColorScheme.surfaceVariant.copy(alpha = 0.3f),
-    appColorScheme.surface.copy(alpha = 0.5f),
-    appColorScheme.surfaceVariant.copy(alpha = 0.3f),
-  )
+private fun ShimmerCard(
+  modifier: Modifier = Modifier
+) {
+  Card(
+    modifier = modifier,
+    shape = RoundedCornerShape(16.dp),
+    colors = CardDefaults.cardColors(
+      containerColor = appColorScheme.surface
+    )
+  ) {
+    ShimmerBox(modifier = Modifier.fillMaxSize())
+  }
+}
 
-  val transition = rememberInfiniteTransition(label = "shimmer")
-  val translateAnim = transition.animateFloat(
-    initialValue = 0f,
-    targetValue = 1000f,
+@Composable
+private fun ShimmerBox(
+  modifier: Modifier = Modifier
+) {
+  val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
+  val alpha by infiniteTransition.animateFloat(
+    initialValue = 0.2f,
+    targetValue = 0.8f,
     animationSpec = infiniteRepeatable(
-      animation = tween(1200, easing = FastOutSlowInEasing),
-      repeatMode = RepeatMode.Restart
+      animation = tween(durationMillis = 1000, easing = FastOutSlowInEasing),
+      repeatMode = RepeatMode.Reverse
     ),
-    label = "shimmer"
+    label = "alpha"
   )
 
-  val brush = Brush.linearGradient(
-    colors = shimmerColors,
-    start = Offset.Zero,
-    end = Offset(x = translateAnim.value, y = translateAnim.value)
+  val shimmerColors = listOf(
+    appColorScheme.onSurface.copy(alpha = 0.1f),
+    appColorScheme.onSurface.copy(alpha = 0.3f),
+    appColorScheme.onSurface.copy(alpha = 0.1f)
   )
 
-  return background(brush)
+  Box(
+    modifier = modifier
+      .background(
+        brush = Brush.linearGradient(
+          colors = shimmerColors,
+          start = Offset.Zero,
+          end = Offset.Infinite
+        ),
+        shape = RoundedCornerShape(8.dp)
+      )
+      .alpha(alpha)
+  )
+}
+
+@Preview
+@Composable
+fun ProjectListLoadingStatePreview() {
+  Jikgong1111Theme {
+    ProjectListLoadingState(modifier = Modifier.padding(16.dp))
+  }
 }

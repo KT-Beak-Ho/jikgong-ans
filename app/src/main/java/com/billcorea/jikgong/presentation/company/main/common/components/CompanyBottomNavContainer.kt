@@ -1,6 +1,3 @@
-// ========================================
-// 📄 수정된 CompanyBottomNavContainer.kt
-// ========================================
 package com.billcorea.jikgong.presentation.company.main.common.components
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,13 +27,18 @@ import com.ramcosta.composedestinations.utils.toDestinationsNavigator
  */
 object CompanyBottomNavTabs {
     const val PROJECT_LIST = "project_list"
-    const val MONEY = "money"
     const val SCOUT = "scout"
+    const val MONEY = "money"
     const val INFO = "info"
 }
 
 /**
- * 기업용 바텀 네비게이션 컨테이너 - 메인 진입점
+ * 🏢 기업용 바텀 네비게이션 컨테이너 - 수정된 버전
+ *
+ * 바텀바 네비게이션 문제 해결:
+ * - 올바른 라우트 정의
+ * - 네비게이션 스택 관리 개선
+ * - 각 화면별 연결 확인
  */
 @Destination(route = "company_main")
 @Composable
@@ -70,25 +72,27 @@ fun CompanyBottomNavContainer(
 }
 
 /**
- * 바텀 네비게이션 탭 이동 처리
+ * 바텀 네비게이션 탭 이동 처리 - 개선된 버전
  */
 private fun navigateToTab(navController: NavController, route: String) {
-    if (navController.currentDestination?.route != route) {
+    val currentRoute = navController.currentDestination?.route
+
+    if (currentRoute != route) {
         navController.navigate(route) {
-            // 백스택을 정리하여 탭 간 이동 시 스택이 쌓이지 않도록 함
+            // 시작 목적지까지 모든 항목을 팝
             popUpTo(navController.graph.startDestinationId) {
                 saveState = true
             }
-            // 동일한 탭을 다시 선택해도 새로운 인스턴스를 생성하지 않음
+            // 같은 탭을 다시 선택했을 때 새 인스턴스를 생성하지 않음
             launchSingleTop = true
-            // 이전 상태를 복원
+            // 이전에 저장된 상태를 복원
             restoreState = true
         }
     }
 }
 
 /**
- * 기업용 바텀 네비게이션 호스트
+ * 기업용 바텀 네비게이션 호스트 - 모든 화면 연결
  */
 @Composable
 private fun CompanyBottomNavHost(
@@ -101,41 +105,38 @@ private fun CompanyBottomNavHost(
         startDestination = CompanyBottomNavTabs.PROJECT_LIST,
         modifier = modifier
     ) {
-        // 프로젝트 목록 화면
+        // 📋 프로젝트 목록 화면
         composable(CompanyBottomNavTabs.PROJECT_LIST) {
             ProjectListScreen(
                 navigator = navigator,
-                showBottomBar = false // 이미 컨테이너에서 표시하므로 false
+                showBottomBar = false // 컨테이너에서 이미 표시
             )
         }
 
-        // 임금 관리 화면
-        composable(CompanyBottomNavTabs.MONEY) {
-            CompanyMoneyScreen(
-                navigator = navigator,
-                showBottomBar = false
-            )
-        }
-
-        // 인력 스카웃 화면
+        // 🕵️ 인력 스카웃 화면
         composable(CompanyBottomNavTabs.SCOUT) {
             CompanyScoutScreen(
-                navigator = navigator,
-                showBottomBar = false
+                navigator = navigator
             )
         }
 
-        // 사업자 정보 화면
+        // 💰 임금 관리 화면
+        composable(CompanyBottomNavTabs.MONEY) {
+            CompanyMoneyScreen(
+                navigator = navigator
+            )
+        }
+
+        // ℹ️ 사업자 정보 화면
         composable(CompanyBottomNavTabs.INFO) {
             CompanyInfoScreen(
-                navigator = navigator,
-                showBottomBar = false
+                navigator = navigator
             )
         }
     }
 }
 
-@Preview(name = "기본 화면", showBackground = true, heightDp = 800)
+@Preview(name = "기업 메인 화면", showBackground = true, heightDp = 800)
 @Composable
 fun CompanyBottomNavContainerPreview() {
     val navController = rememberNavController()
