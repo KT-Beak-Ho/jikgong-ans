@@ -5,11 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.billcorea.jikgong.presentation.company.main.projectlist.model.*
 import com.billcorea.jikgong.presentation.company.main.projectlist.repository.ProjectRepository
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProjectListViewModel(
-  private val repository: ProjectRepository
+  private val projectRepository: ProjectRepository
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(ProjectListUiState())
@@ -30,7 +33,7 @@ class ProjectListViewModel(
       _uiState.update { it.copy(isLoading = true, error = null) }
 
       try {
-        val projects = repository.getProjects()
+        val projects = projectRepository.getProjects()
         _uiState.update { state ->
           state.copy(
             isLoading = false,
@@ -39,10 +42,10 @@ class ProjectListViewModel(
               projects,
               _selectedFilter.value,
               _searchQuery.value
-            )
+            ),
+            stats = calculateStats(projects)
           )
         }
-        updateStats(projects)
       } catch (e: Exception) {
         _uiState.update { state ->
           state.copy(
@@ -67,7 +70,7 @@ class ProjectListViewModel(
   fun toggleBookmark(projectId: String) {
     viewModelScope.launch {
       try {
-        val updated = repository.toggleBookmark(projectId)
+        val updated = projectRepository.toggleBookmark(projectId)
         if (updated) {
           _uiState.update { state ->
             state.copy(
@@ -127,8 +130,8 @@ class ProjectListViewModel(
     return filtered
   }
 
-  private fun updateStats(projects: List<Project>) {
-    val stats = ProjectStats(
+  private fun calculateStats(projects: List<Project>): ProjectStats {
+    return ProjectStats(
       totalProjects = projects.size,
       activeProjects = projects.count { it.status == "IN_PROGRESS" },
       recruitingProjects = projects.count { it.status == "RECRUITING" },
@@ -138,6 +141,5 @@ class ProjectListViewModel(
         projects.map { it.wage }.average().toInt()
       } else 0
     )
-    _uiState.update { it.copy(stats = stats) }
   }
 }

@@ -1,4 +1,3 @@
-// app/src/main/java/com/billcorea/jikgong/presentation/company/main/projectlist/model/ProjectStats.kt
 package com.billcorea.jikgong.presentation.company.main.projectlist.model
 
 data class ProjectStats(
@@ -9,4 +8,3 @@ data class ProjectStats(
   val totalApplicants: Int = 0,
   val averageWage: Int = 0
 )
-

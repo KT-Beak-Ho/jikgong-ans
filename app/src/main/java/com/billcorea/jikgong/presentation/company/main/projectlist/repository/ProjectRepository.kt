@@ -1,5 +1,3 @@
-
-// app/src/main/java/com/billcorea/jikgong/presentation/company/main/projectlist/repository/ProjectRepository.kt
 package com.billcorea.jikgong.presentation.company.main.projectlist.repository
 
 import com.billcorea.jikgong.presentation.company.main.projectlist.model.Project
@@ -12,4 +10,3 @@ interface ProjectRepository {
   suspend fun updateProject(project: Project): Boolean
   suspend fun deleteProject(projectId: String): Boolean
 }
-

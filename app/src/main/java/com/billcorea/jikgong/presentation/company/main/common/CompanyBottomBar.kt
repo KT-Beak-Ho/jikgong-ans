@@ -12,10 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.billcorea.jikgong.presentation.destinations.*
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.ui.theme.appColorScheme
 
 enum class CompanyBottomNavItem(
   val route: String,
@@ -25,25 +28,25 @@ enum class CompanyBottomNavItem(
 ) {
   PROJECTS(
     route = "company/projectlist",
-    title = "프로젝트",
+    title = "프로젝트 목록",
     selectedIcon = Icons.Filled.Work,
     unselectedIcon = Icons.Outlined.Work
   ),
   SCOUT(
     route = "company/scout",
-    title = "인재스카우트",
+    title = "인력 스카우트",
     selectedIcon = Icons.Filled.PersonSearch,
     unselectedIcon = Icons.Outlined.PersonSearch
   ),
   MONEY(
     route = "company/money",
-    title = "자금관리",
+    title = "자금 관리",
     selectedIcon = Icons.Filled.AccountBalance,
     unselectedIcon = Icons.Outlined.AccountBalance
   ),
   INFO(
     route = "company/info",
-    title = "마이페이지",
+    title = "사업자 정보",
     selectedIcon = Icons.Filled.Person,
     unselectedIcon = Icons.Outlined.Person
   )
@@ -51,72 +54,62 @@ enum class CompanyBottomNavItem(
 
 @Composable
 fun CompanyBottomBar(
-  navigator: DestinationsNavigator,
+  navController: NavController,
   currentRoute: String,
   modifier: Modifier = Modifier
 ) {
-  Surface(
-    modifier = modifier.fillMaxWidth(),
-    color = Color.White,
-    shadowElevation = 8.dp
+  NavigationBar(
+    modifier = modifier,
+    containerColor = Color.White,
+    tonalElevation = 8.dp
   ) {
-    NavigationBar(
-      modifier = Modifier.height(80.dp),
-      containerColor = Color.White,
-      tonalElevation = 0.dp
-    ) {
-      CompanyBottomNavItem.entries.forEach { item ->
-        val selected = currentRoute == item.route
+    CompanyBottomNavItem.entries.forEach { item ->
+      val selected = currentRoute.startsWith(item.route)
 
-        NavigationBarItem(
-          icon = {
-            Column(
-              horizontalAlignment = Alignment.CenterHorizontally,
-              verticalArrangement = Arrangement.Center
-            ) {
-              Icon(
-                imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                contentDescription = item.title,
-                modifier = Modifier.size(28.dp)
-              )
-              Spacer(modifier = Modifier.height(4.dp))
-              Text(
-                text = item.title,
-                fontSize = 11.sp,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                color = if (selected) Color(0xFF1976D2) else Color(0xFF757575)
-              )
-            }
-          },
-          selected = selected,
-          onClick = {
-            if (!selected) {
-              when (item) {
-                CompanyBottomNavItem.PROJECTS -> {
-                  navigator.navigate(CompanyProjectListScreenDestination) {
-                    popUpTo(0)
-                    launchSingleTop = true
-                  }
-                }
-                CompanyBottomNavItem.SCOUT -> {
-                  // TODO: navigator.navigate(CompanyScoutScreenDestination)
-                }
-                CompanyBottomNavItem.MONEY -> {
-                  // TODO: navigator.navigate(CompanyMoneyScreenDestination)
-                }
-                CompanyBottomNavItem.INFO -> {
-                  // TODO: navigator.navigate(CompanyInfoScreenDestination)
-                }
-              }
-            }
-          },
-          colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = Color(0xFF1976D2),
-            unselectedIconColor = Color(0xFF757575),
-            indicatorColor = Color.Transparent
+      NavigationBarItem(
+        icon = {
+          Icon(
+            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+            contentDescription = item.title,
+            modifier = Modifier.size(24.dp)
           )
+        },
+        label = {
+          Text(
+            text = item.title,
+            fontSize = 11.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            maxLines = 1
+          )
+        },
+        selected = selected,
+        onClick = {
+          if (!selected) {
+            navController.navigate(item.route) {
+              // 백스택 관리
+              launchSingleTop = true
+              restoreState = true
+            }
+          }
+        },
+        colors = NavigationBarItemDefaults.colors(
+          selectedIconColor = appColorScheme.primary,
+          selectedTextColor = appColorScheme.primary,
+          indicatorColor = appColorScheme.primaryContainer.copy(alpha = 0.3f),
+          unselectedIconColor = Color(0xFF757575),
+          unselectedTextColor = Color(0xFF757575)
         )
-      }
+      )
     }
   }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CompanyBottomBarPreview() {
+  val navController = rememberNavController()
+  CompanyBottomBar(
+    navController = navController,
+    currentRoute = "company/projectlist"
+  )
 }

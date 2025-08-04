@@ -7,11 +7,11 @@ data class Project(
   val title: String,
   val company: String,
   val location: String,
-  val category: String, // REBAR_WORKER, FORM_WORKER, etc.
+  val category: String,
   val status: String, // RECRUITING, IN_PROGRESS, COMPLETED
   val startDate: LocalDateTime,
   val endDate: LocalDateTime,
-  val wage: Int, // 일당
+  val wage: Int,
   val description: String,
   val requirements: List<String>,
   val benefits: List<String>,
@@ -22,4 +22,3 @@ data class Project(
   val createdAt: LocalDateTime = LocalDateTime.now(),
   val updatedAt: LocalDateTime = LocalDateTime.now()
 )
-
