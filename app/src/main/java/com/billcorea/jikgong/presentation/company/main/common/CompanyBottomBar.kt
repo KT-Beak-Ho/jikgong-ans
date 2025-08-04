@@ -107,9 +107,10 @@ fun CompanyBottomBar(
 @Preview(showBackground = true)
 @Composable
 private fun CompanyBottomBarPreview() {
-  val navController = rememberNavController()
-  CompanyBottomBar(
-    navController = navController,
-    currentRoute = "company/projectlist"
-  )
+  com.billcorea.jikgong.ui.theme.Jikgong1111Theme {
+    CompanyBottomBar(
+      navController = rememberNavController(),
+      currentRoute = "company/projectlist"
+    )
+  }
 }

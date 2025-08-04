@@ -409,10 +409,13 @@ private fun ProjectCard(
   }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun ProjectListScreenPreview() {
-  ProjectListScreen(
-    navController = rememberNavController()
-  )
+  com.billcorea.jikgong.ui.theme.Jikgong1111Theme {
+    // Preview에서는 실제 NavController 대신 mock 사용
+    ProjectListScreen(
+      navController = rememberNavController()
+    )
+  }
 }

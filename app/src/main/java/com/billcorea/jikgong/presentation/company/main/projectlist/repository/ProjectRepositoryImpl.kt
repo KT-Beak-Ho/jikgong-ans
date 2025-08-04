@@ -61,7 +61,7 @@ class ProjectRepositoryImpl : ProjectRepository {
         status = "RECRUITING",
         startDate = now.plusDays(3),
         endDate = now.plusDays(45),
-        wage = 510000,
+        wage = 130000,
         description = "낙동강 온도 측정 센터 신축 공사 진행",
         requirements = listOf("건설 경력 2년 이상", "안전교육 이수자"),
         benefits = listOf("4대보험", "중식 제공", "교통비 지원"),
