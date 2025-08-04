@@ -1,56 +1,52 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.repository
 
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.Project
+import com.billcorea.jikgong.presentation.company.main.projectlist.model.Project
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 
 class ProjectRepositoryImpl : ProjectRepository {
 
-  private val mockProjects = generateMockProjects()
+  private val mockProjects = generateMockProjects().toMutableList()
 
   override suspend fun getProjects(): List<Project> {
-    delay(800) // 네트워크 시뮬레이션
-    return mockProjects.take(5) // 처음 5개만
-  }
-
-  override suspend fun getMoreProjects(currentSize: Int): List<Project> {
-    delay(600)
-    val remainingProjects = mockProjects.drop(currentSize)
-    return remainingProjects.take(3) // 3개씩 추가
-  }
-
-  override suspend fun updateBookmark(projectId: String, isBookmarked: Boolean) {
-    delay(300)
-    // 실제 구현에서는 서버 API 호출
-  }
-
-  override suspend fun applyToProject(projectId: String) {
-    delay(500)
-    // 실제 구현에서는 지원 API 호출
-  }
-
-  override suspend fun deleteProject(projectId: String) {
-    delay(400)
-    // 실제 구현에서는 삭제 API 호출
-  }
-
-  override suspend fun createProject(project: Project): Project {
-    delay(600)
-    return project.copy(
-      id = "NEW_${System.currentTimeMillis()}",
-      createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now()
-    )
-  }
-
-  override suspend fun updateProject(project: Project): Project {
-    delay(500)
-    return project.copy(updatedAt = LocalDateTime.now())
+    delay(500) // 네트워크 지연 시뮬레이션
+    return mockProjects.toList()
   }
 
   override suspend fun getProjectById(projectId: String): Project? {
     delay(300)
     return mockProjects.find { it.id == projectId }
+  }
+
+  override suspend fun toggleBookmark(projectId: String): Boolean {
+    delay(200)
+    val index = mockProjects.indexOfFirst { it.id == projectId }
+    return if (index != -1) {
+      mockProjects[index] = mockProjects[index].copy(
+        isBookmarked = !mockProjects[index].isBookmarked
+      )
+      true
+    } else false
+  }
+
+  override suspend fun createProject(project: Project): Boolean {
+    delay(500)
+    mockProjects.add(0, project)
+    return true
+  }
+
+  override suspend fun updateProject(project: Project): Boolean {
+    delay(400)
+    val index = mockProjects.indexOfFirst { it.id == project.id }
+    return if (index != -1) {
+      mockProjects[index] = project
+      true
+    } else false
+  }
+
+  override suspend fun deleteProject(projectId: String): Boolean {
+    delay(300)
+    return mockProjects.removeIf { it.id == projectId }
   }
 
   private fun generateMockProjects(): List<Project> {

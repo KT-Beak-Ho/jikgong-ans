@@ -1,25 +1,12 @@
-// File: ProjectRepository.kt
 package com.billcorea.jikgong.presentation.company.main.projectlist.repository
 
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.*
+import com.billcorea.jikgong.presentation.company.main.projectlist.model.Project
 
 interface ProjectRepository {
-
   suspend fun getProjects(): List<Project>
-
-  suspend fun getMoreProjects(currentSize: Int): List<Project>
-
-  suspend fun updateBookmark(projectId: String, isBookmarked: Boolean)
-
-  suspend fun applyToProject(projectId: String)
-
-  suspend fun deleteProject(projectId: String)
-
-  suspend fun createProject(project: Project): Project
-
-  suspend fun updateProject(project: Project): Project
-
   suspend fun getProjectById(projectId: String): Project?
+  suspend fun toggleBookmark(projectId: String): Boolean
+  suspend fun createProject(project: Project): Boolean
+  suspend fun updateProject(project: Project): Boolean
+  suspend fun deleteProject(projectId: String): Boolean
 }
-
-// File: ProjectRepositoryImpl.kt
