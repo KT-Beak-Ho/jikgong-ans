@@ -1,25 +1,25 @@
+// app/src/main/java/com/billcorea/jikgong/presentation/company/main/projectlist/viewmodel/ProjectListViewModel.kt
 package com.billcorea.jikgong.presentation.company.main.projectlist.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.billcorea.jikgong.presentation.company.main.projectlist.model.*
 import com.billcorea.jikgong.presentation.company.main.projectlist.repository.ProjectRepository
-import com.billcorea.jikgong.presentation.company.main.projectlist.repository.ProjectRepositoryImpl
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class ProjectListViewModel : ViewModel() {
-
-  private val repository: ProjectRepository = ProjectRepositoryImpl()
+class ProjectListViewModel(
+  private val repository: ProjectRepository
+) : ViewModel() {
 
   private val _uiState = MutableStateFlow(ProjectListUiState())
   val uiState: StateFlow<ProjectListUiState> = _uiState.asStateFlow()
 
-  private val _selectedFilter = MutableStateFlow(ProjectFilter.ALL)
-  val selectedFilter: StateFlow<ProjectFilter> = _selectedFilter.asStateFlow()
-
   private val _searchQuery = MutableStateFlow("")
   val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+  private val _selectedFilter = MutableStateFlow(ProjectFilter.ALL)
+  val selectedFilter: StateFlow<ProjectFilter> = _selectedFilter.asStateFlow()
 
   init {
     loadProjects()
@@ -27,15 +27,19 @@ class ProjectListViewModel : ViewModel() {
 
   fun loadProjects() {
     viewModelScope.launch {
-      _uiState.update { it.copy(isLoading = true) }
+      _uiState.update { it.copy(isLoading = true, error = null) }
+
       try {
         val projects = repository.getProjects()
         _uiState.update { state ->
           state.copy(
-            projects = projects,
-            filteredProjects = filterProjects(projects, _selectedFilter.value, _searchQuery.value),
             isLoading = false,
-            error = null
+            projects = projects,
+            filteredProjects = filterProjects(
+              projects,
+              _selectedFilter.value,
+              _searchQuery.value
+            )
           )
         }
         updateStats(projects)

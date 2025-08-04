@@ -1,20 +1,24 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.screen
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,9 +32,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.projectlist.model.*
 import com.billcorea.jikgong.presentation.company.main.projectlist.viewmodel.ProjectListViewModel
+import com.billcorea.jikgong.ui.theme.AppTypography
+import com.billcorea.jikgong.ui.theme.appColorScheme
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun ProjectListScreen(
@@ -39,91 +45,90 @@ fun ProjectListScreen(
 ) {
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
-  val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
-  var showCreateDialog by remember { mutableStateOf(false) }
-
-  Scaffold(
-    topBar = {
-      ProjectListTopBar(
-        stats = uiState.stats,
-        onNotificationClick = { /* TODO */ },
-        onSettingsClick = { /* TODO */ }
-      )
+  ProjectListContent(
+    uiState = uiState,
+    selectedFilter = selectedFilter,
+    navController = navController,
+    onFilterSelected = viewModel::selectFilter,
+    onProjectClick = { projectId ->
+      navController.navigate("company/projectdetail/$projectId")
     },
-    floatingActionButton = {
-      ExtendedFloatingActionButton(
-        onClick = { showCreateDialog = true },
-        modifier = Modifier
-          .navigationBarsPadding()
-          .padding(bottom = 80.dp),
-        containerColor = Color(0xFF1E88E5),
-        contentColor = Color.White,
-        shape = RoundedCornerShape(16.dp),
-        elevation = FloatingActionButtonDefaults.elevation(8.dp)
-      ) {
-        Icon(
-          imageVector = Icons.Filled.Add,
-          contentDescription = "프로젝트 생성",
-          modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-          text = "프로젝트 생성",
-          fontSize = 16.sp,
-          fontWeight = FontWeight.Medium
-        )
-      }
-    }
-  ) { paddingValues ->
+    onEditClick = { projectId ->
+      navController.navigate("company/projectedit/$projectId")
+    },
+    onRecruitClick = { projectId ->
+      navController.navigate("company/recruit/$projectId")
+    },
+    onRefresh = viewModel::loadProjects,
+    onToggleBookmark = viewModel::toggleBookmark
+  )
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@Composable
+private fun ProjectListContent(
+  uiState: ProjectListUiState,
+  selectedFilter: ProjectFilter,
+  navController: NavController,
+  onFilterSelected: (ProjectFilter) -> Unit,
+  onProjectClick: (String) -> Unit,
+  onEditClick: (String) -> Unit,
+  onRecruitClick: (String) -> Unit,
+  onRefresh: () -> Unit,
+  onToggleBookmark: (String) -> Unit
+) {
+  val pullRefreshState = rememberPullRefreshState(
+    refreshing = uiState.isLoading,
+    onRefresh = onRefresh
+  )
+
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .pullRefresh(pullRefreshState)
+  ) {
     Column(
       modifier = Modifier
         .fillMaxSize()
         .background(Color(0xFFF5F5F5))
-        .padding(paddingValues)
     ) {
-      // 검색바 및 필터
-      SearchAndFilterSection(
-        searchQuery = searchQuery,
+      // 필터 탭
+      ProjectFilterTabs(
         selectedFilter = selectedFilter,
-        onSearchQueryChange = viewModel::updateSearchQuery,
-        onFilterSelect = viewModel::selectFilter
+        stats = uiState.stats,
+        onFilterSelected = onFilterSelected
       )
 
-      // 프로젝트 리스트
+      // 모집중 프로젝트 수 헤더
+      AnimatedVisibility(
+        visible = selectedFilter == ProjectFilter.ALL || selectedFilter == ProjectFilter.RECRUITING
+      ) {
+        RecruitingProjectsHeader(
+          count = uiState.stats.recruitingProjects,
+          modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+      }
+
+      // 프로젝트 목록
       when {
-        uiState.isLoading -> {
-          Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-          ) {
-            CircularProgressIndicator(
-              color = Color(0xFF1E88E5)
-            )
-          }
-        }
         uiState.error != null -> {
-          ErrorState(
+          ErrorMessage(
             message = uiState.error,
-            onRetry = viewModel::refreshProjects
+            onRetry = onRefresh,
+            modifier = Modifier.fillMaxSize()
           )
         }
-        uiState.filteredProjects.isEmpty() -> {
-          EmptyState(
-            message = if (searchQuery.isNotEmpty()) {
-              "검색 결과가 없습니다"
-            } else {
-              "등록된 프로젝트가 없습니다"
-            }
+        uiState.filteredProjects.isEmpty() && !uiState.isLoading -> {
+          EmptyProjectList(
+            filter = selectedFilter,
+            modifier = Modifier.fillMaxSize()
           )
         }
         else -> {
           LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-              horizontal = 16.dp,
-              vertical = 8.dp
-            ),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
           ) {
             items(
@@ -132,268 +137,166 @@ fun ProjectListScreen(
             ) { project ->
               ProjectCard(
                 project = project,
-                onClick = {
-                  navController.navigate("company/projectdetail/${project.id}")
-                },
-                onBookmarkClick = {
-                  viewModel.toggleBookmark(project.id)
-                }
+                onProjectClick = { onProjectClick(project.id) },
+                onEditClick = { onEditClick(project.id) },
+                onRecruitClick = { onRecruitClick(project.id) },
+                onToggleBookmark = { onToggleBookmark(project.id) }
               )
             }
           }
         }
       }
     }
-  }
 
-  if (showCreateDialog) {
-    CreateProjectDialog(
-      onDismiss = { showCreateDialog = false },
-      onCreate = { /* TODO */ }
+    // Pull to Refresh Indicator
+    PullRefreshIndicator(
+      refreshing = uiState.isLoading,
+      state = pullRefreshState,
+      modifier = Modifier.align(Alignment.TopCenter),
+      backgroundColor = Color.White,
+      contentColor = appColorScheme.primary
     )
-  }
-}
-
-@Composable
-private fun ProjectListTopBar(
-  stats: ProjectStats,
-  onNotificationClick: () -> Unit,
-  onSettingsClick: () -> Unit
-) {
-  Surface(
-    modifier = Modifier.fillMaxWidth(),
-    color = Color.White,
-    shadowElevation = 4.dp
-  ) {
-    Column(
-      modifier = Modifier
-        .fillMaxWidth()
-        .statusBarsPadding()
-    ) {
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Column {
-          Text(
-            text = "프로젝트 목록",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF212121)
-          )
-          Text(
-            text = "총 ${stats.totalProjects}개 프로젝트",
-            fontSize = 14.sp,
-            color = Color(0xFF757575)
-          )
-        }
-
-        Row(
-          horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-          IconButton(onClick = onNotificationClick) {
-            BadgedBox(
-              badge = {
-                Badge(
-                  containerColor = Color(0xFFFF5252)
-                ) {
-                  Text("3", fontSize = 10.sp)
-                }
-              }
-            ) {
-              Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = "알림",
-                tint = Color(0xFF424242)
-              )
-            }
-          }
-          IconButton(onClick = onSettingsClick) {
-            Icon(
-              imageVector = Icons.Outlined.Settings,
-              contentDescription = "설정",
-              tint = Color(0xFF424242)
-            )
-          }
-        }
-      }
-
-      // 통계 카드
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp)
-          .padding(bottom = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        StatsCard(
-          modifier = Modifier.weight(1f),
-          title = "모집중",
-          value = stats.recruitingProjects.toString(),
-          color = Color(0xFF4CAF50)
-        )
-        StatsCard(
-          modifier = Modifier.weight(1f),
-          title = "진행중",
-          value = stats.activeProjects.toString(),
-          color = Color(0xFF2196F3)
-        )
-        StatsCard(
-          modifier = Modifier.weight(1f),
-          title = "평균 일당",
-          value = NumberFormat.getInstance(Locale.KOREA)
-            .format(stats.averageWage) + "원",
-          color = Color(0xFFFF9800)
-        )
-      }
-    }
-  }
-}
-
-@Composable
-private fun StatsCard(
-  title: String,
-  value: String,
-  color: Color,
-  modifier: Modifier = Modifier
-) {
-  Card(
-    modifier = modifier,
-    shape = RoundedCornerShape(12.dp),
-    colors = CardDefaults.cardColors(
-      containerColor = color.copy(alpha = 0.1f)
-    ),
-    elevation = CardDefaults.cardElevation(0.dp)
-  ) {
-    Column(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(12.dp),
-      horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-      Text(
-        text = title,
-        fontSize = 12.sp,
-        color = Color(0xFF616161)
-      )
-      Spacer(modifier = Modifier.height(4.dp))
-      Text(
-        text = value,
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Bold,
-        color = color
-      )
-    }
-  }
-}
-
-@Composable
-private fun SearchAndFilterSection(
-  searchQuery: String,
-  selectedFilter: ProjectFilter,
-  onSearchQueryChange: (String) -> Unit,
-  onFilterSelect: (ProjectFilter) -> Unit
-) {
-  Column(
-    modifier = Modifier
-      .fillMaxWidth()
-      .background(Color.White)
-      .padding(16.dp)
-  ) {
-    // 검색바
-    OutlinedTextField(
-      value = searchQuery,
-      onValueChange = onSearchQueryChange,
-      modifier = Modifier.fillMaxWidth(),
-      placeholder = {
-        Text(
-          text = "프로젝트명, 회사명, 위치로 검색",
-          color = Color(0xFF9E9E9E)
-        )
-      },
-      leadingIcon = {
-        Icon(
-          imageVector = Icons.Filled.Search,
-          contentDescription = "검색",
-          tint = Color(0xFF757575)
-        )
-      },
-      trailingIcon = {
-        if (searchQuery.isNotEmpty()) {
-          IconButton(onClick = { onSearchQueryChange("") }) {
-            Icon(
-              imageVector = Icons.Filled.Clear,
-              contentDescription = "지우기",
-              tint = Color(0xFF757575)
-            )
-          }
-        }
-      },
-      shape = RoundedCornerShape(12.dp),
-      colors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = Color(0xFF1E88E5),
-        unfocusedBorderColor = Color(0xFFE0E0E0)
-      ),
-      singleLine = true
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    // 필터 칩
-    LazyRow(
-      horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-      items(ProjectFilter.values().size) { index ->
-        val filter = ProjectFilter.values()[index]
-        FilterChip(
-          selected = selectedFilter == filter,
-          onClick = { onFilterSelect(filter) },
-          label = {
-            Text(
-              text = filter.displayName,
-              fontSize = 14.sp
-            )
-          },
-          colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = Color(0xFF1E88E5),
-            selectedLabelColor = Color.White,
-            containerColor = Color(0xFFF5F5F5),
-            labelColor = Color(0xFF616161)
-          ),
-          border = FilterChipDefaults.filterChipBorder(
-            enabled = true,
-            selected = selectedFilter == filter,
-            borderColor = Color.Transparent,
-            selectedBorderColor = Color.Transparent
-          )
-        )
-      }
-    }
   }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProjectCard(
-  project: Project,
-  onClick: () -> Unit,
-  onBookmarkClick: () -> Unit
+private fun ProjectListTopBar() {
+  TopAppBar(
+    title = {
+      Text(
+        text = "프로젝트 목록",
+        style = AppTypography.titleLarge.copy(
+          fontWeight = FontWeight.Bold
+        )
+      )
+    },
+    actions = {
+      IconButton(onClick = { /* 그리드/리스트 뷰 전환 */ }) {
+        Icon(
+          imageVector = Icons.Default.GridView,
+          contentDescription = "뷰 전환",
+          tint = Color.Gray
+        )
+      }
+      IconButton(onClick = { /* 메뉴 */ }) {
+        Icon(
+          imageVector = Icons.Default.Menu,
+          contentDescription = "메뉴",
+          tint = Color.Gray
+        )
+      }
+    },
+    colors = TopAppBarDefaults.topAppBarColors(
+      containerColor = Color.White
+    )
+  )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProjectFilterTabs(
+  selectedFilter: ProjectFilter,
+  stats: ProjectStats,
+  onFilterSelected: (ProjectFilter) -> Unit
 ) {
-  Card(
-    onClick = onClick,
+  val filters = listOf(
+    ProjectFilter.ALL to stats.totalProjects,
+    ProjectFilter.RECRUITING to stats.recruitingProjects,
+    ProjectFilter.IN_PROGRESS to stats.activeProjects,
+    ProjectFilter.COMPLETED to stats.completedProjects
+  )
+
+  Row(
     modifier = Modifier
       .fillMaxWidth()
-      .shadow(
-        elevation = 4.dp,
-        shape = RoundedCornerShape(16.dp),
-        spotColor = Color(0x1A000000)
-      ),
-    shape = RoundedCornerShape(16.dp),
+      .background(Color.White)
+      .padding(horizontal = 16.dp, vertical = 8.dp),
+    horizontalArrangement = Arrangement.spacedBy(8.dp)
+  ) {
+    filters.forEach { (filter, count) ->
+      FilterChip(
+        selected = selectedFilter == filter,
+        onClick = { onFilterSelected(filter) },
+        label = {
+          Text(
+            text = "${filter.displayName} ($count)",
+            style = AppTypography.labelMedium
+          )
+        },
+        colors = FilterChipDefaults.filterChipColors(
+          selectedContainerColor = appColorScheme.primary,
+          selectedLabelColor = Color.White,
+          containerColor = appColorScheme.surfaceVariant,
+          labelColor = appColorScheme.onSurfaceVariant
+        )
+      )
+    }
+  }
+}
+
+@Composable
+private fun RecruitingProjectsHeader(
+  count: Int,
+  modifier: Modifier = Modifier
+) {
+  Card(
+    modifier = modifier,
+    colors = CardDefaults.cardColors(
+      containerColor = appColorScheme.primaryContainer
+    ),
+    shape = RoundedCornerShape(12.dp)
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Column {
+        Text(
+          text = "모집중 프로젝트",
+          style = AppTypography.titleMedium.copy(
+            color = appColorScheme.onPrimaryContainer
+          )
+        )
+        Text(
+          text = "총 ${count}개",
+          style = AppTypography.bodyMedium.copy(
+            color = appColorScheme.onPrimaryContainer
+          )
+        )
+      }
+      Text(
+        text = count.toString(),
+        style = AppTypography.headlineMedium.copy(
+          fontWeight = FontWeight.Bold,
+          color = appColorScheme.primary
+        )
+      )
+    }
+  }
+}
+
+@Composable
+private fun ProjectCard(
+  project: Project,
+  onProjectClick: () -> Unit,
+  onEditClick: () -> Unit,
+  onRecruitClick: () -> Unit,
+  onToggleBookmark: () -> Unit
+) {
+  Card(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clickable { onProjectClick() },
     colors = CardDefaults.cardColors(
       containerColor = Color.White
+    ),
+    shape = RoundedCornerShape(12.dp),
+    elevation = CardDefaults.cardElevation(
+      defaultElevation = 2.dp
     )
   ) {
     Column(
@@ -401,67 +304,64 @@ private fun ProjectCard(
         .fillMaxWidth()
         .padding(16.dp)
     ) {
-      // 헤더
+      // 제목과 상태
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
       ) {
         Column(modifier = Modifier.weight(1f)) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            if (project.isUrgent) {
-              Badge(
-                containerColor = Color(0xFFFF5252),
-                contentColor = Color.White
-              ) {
-                Text(
-                  text = "긴급",
-                  fontSize = 11.sp,
-                  modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                )
-              }
-            }
-            StatusBadge(status = project.status)
-          }
-
-          Spacer(modifier = Modifier.height(8.dp))
-
           Text(
             text = project.title,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF212121),
+            style = AppTypography.titleMedium.copy(
+              fontWeight = FontWeight.Bold
+            ),
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
           )
-
-          Spacer(modifier = Modifier.height(4.dp))
-
-          Text(
-            text = project.company,
-            fontSize = 14.sp,
-            color = Color(0xFF757575)
-          )
+          if (project.isUrgent) {
+            Spacer(modifier = Modifier.height(4.dp))
+            StatusChip(
+              text = "긴급",
+              backgroundColor = Color(0xFFFFEBEE),
+              textColor = Color(0xFFF44336)
+            )
+          }
         }
-
-        IconButton(
-          onClick = onBookmarkClick,
-          modifier = Modifier.size(32.dp)
+        Row(
+          horizontalArrangement = Arrangement.spacedBy(8.dp),
+          verticalAlignment = Alignment.CenterVertically
         ) {
-          Icon(
-            imageVector = if (project.isBookmarked) {
-              Icons.Filled.Bookmark
-            } else {
-              Icons.Outlined.BookmarkBorder
+          // 북마크 버튼
+          IconButton(
+            onClick = onToggleBookmark,
+            modifier = Modifier.size(32.dp)
+          ) {
+            Icon(
+              imageVector = if (project.isBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+              contentDescription = if (project.isBookmarked) "북마크 해제" else "북마크",
+              tint = if (project.isBookmarked) appColorScheme.primary else Color.Gray
+            )
+          }
+
+          StatusChip(
+            text = when (project.status) {
+              "RECRUITING" -> "모집중"
+              "IN_PROGRESS" -> "진행중"
+              "COMPLETED" -> "완료"
+              else -> "기타"
             },
-            contentDescription = "북마크",
-            tint = if (project.isBookmarked) {
-              Color(0xFFFFD600)
-            } else {
-              Color(0xFF9E9E9E)
+            backgroundColor = when (project.status) {
+              "RECRUITING" -> Color(0xFFE8F5E9)
+              "IN_PROGRESS" -> Color(0xFFFFF3E0)
+              "COMPLETED" -> Color(0xFFF3E5F5)
+              else -> Color(0xFFF5F5F5)
+            },
+            textColor = when (project.status) {
+              "RECRUITING" -> Color(0xFF4CAF50)
+              "IN_PROGRESS" -> Color(0xFFFF9800)
+              "COMPLETED" -> Color(0xFF9C27B0)
+              else -> Color.Gray
             }
           )
         }
@@ -469,82 +369,128 @@ private fun ProjectCard(
 
       Spacer(modifier = Modifier.height(12.dp))
 
-      // 정보 섹션
+      // 위치
       Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        verticalAlignment = Alignment.CenterVertically
       ) {
-        InfoItem(
-          icon = Icons.Outlined.LocationOn,
-          text = project.location
+        Icon(
+          imageVector = Icons.Default.LocationOn,
+          contentDescription = null,
+          tint = Color(0xFFE91E63),
+          modifier = Modifier.size(16.dp)
         )
-        InfoItem(
-          icon = Icons.Outlined.DateRange,
-          text = "${project.startDate.format(DateTimeFormatter.ofPattern("MM/dd"))} ~ ${
-            project.endDate.format(DateTimeFormatter.ofPattern("MM/dd"))
-          }"
+        Text(
+          text = project.location,
+          style = AppTypography.bodyMedium.copy(
+            color = Color.Gray
+          ),
+          modifier = Modifier.padding(start = 4.dp)
         )
       }
 
       Spacer(modifier = Modifier.height(8.dp))
 
+      // 기간
       Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        verticalAlignment = Alignment.CenterVertically
       ) {
-        InfoItem(
-          icon = Icons.Outlined.Groups,
-          text = "${project.currentApplicants}/${project.maxApplicants}명"
+        Icon(
+          imageVector = Icons.Default.CalendarToday,
+          contentDescription = null,
+          tint = appColorScheme.primary,
+          modifier = Modifier.size(16.dp)
         )
-        InfoItem(
-          icon = Icons.Outlined.AttachMoney,
-          text = "${NumberFormat.getInstance(Locale.KOREA).format(project.wage)}원/일"
+        val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
+        Text(
+          text = "${project.startDate.format(dateFormatter)} ~ ${project.endDate.format(dateFormatter)}",
+          style = AppTypography.bodyMedium.copy(
+            color = Color.Gray
+          ),
+          modifier = Modifier.padding(start = 4.dp)
+        )
+      }
+
+      // 지원자 수
+      Row(
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Icon(
+          imageVector = Icons.Default.People,
+          contentDescription = null,
+          tint = Color(0xFF9C27B0),
+          modifier = Modifier.size(16.dp)
+        )
+        Text(
+          text = "${project.currentApplicants}/${project.maxApplicants}명",
+          style = AppTypography.bodyMedium.copy(
+            color = Color.Gray
+          ),
+          modifier = Modifier.padding(start = 4.dp)
         )
       }
 
       Spacer(modifier = Modifier.height(12.dp))
 
-      // 하단 액션
+      // 일당
+      Row(
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(
+          text = "💰",
+          style = AppTypography.bodyLarge
+        )
+        Text(
+          text = "${formatCurrency(project.wage)}/일",
+          style = AppTypography.titleMedium.copy(
+            fontWeight = FontWeight.Bold,
+            color = appColorScheme.primary
+          ),
+          modifier = Modifier.padding(start = 8.dp)
+        )
+      }
+
+      Spacer(modifier = Modifier.height(16.dp))
+
+      // 버튼들
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
       ) {
         OutlinedButton(
-          onClick = { /* TODO: 지원자 보기 */ },
+          onClick = onEditClick,
           modifier = Modifier.weight(1f),
-          shape = RoundedCornerShape(8.dp),
-          border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+          colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = appColorScheme.primary
+          ),
+          border = ButtonDefaults.outlinedButtonBorder.copy(
+            width = 1.dp,
+            brush = androidx.compose.ui.graphics.SolidColor(appColorScheme.primary)
+          )
         ) {
           Icon(
-            imageVector = Icons.Outlined.People,
+            imageVector = Icons.Default.Edit,
             contentDescription = null,
             modifier = Modifier.size(16.dp)
           )
           Spacer(modifier = Modifier.width(4.dp))
-          Text(
-            text = "지원자 보기",
-            fontSize = 14.sp
-          )
+          Text(text = "수정")
         }
 
         Button(
-          onClick = { /* TODO: 프로젝트 관리 */ },
+          onClick = onRecruitClick,
           modifier = Modifier.weight(1f),
-          shape = RoundedCornerShape(8.dp),
           colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF1E88E5)
+            containerColor = appColorScheme.primary
           )
         ) {
           Icon(
-            imageVector = Icons.Outlined.Edit,
+            imageVector = Icons.Default.PersonAdd,
             contentDescription = null,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(16.dp),
+            tint = Color.Red
           )
           Spacer(modifier = Modifier.width(4.dp))
-          Text(
-            text = "프로젝트 관리",
-            fontSize = 14.sp
-          )
+          Text(text = "인력 모집")
         }
       }
     }
@@ -552,146 +498,161 @@ private fun ProjectCard(
 }
 
 @Composable
-private fun StatusBadge(status: String) {
-  val (text, color) = when (status) {
-    "RECRUITING" -> "모집중" to Color(0xFF4CAF50)
-    "IN_PROGRESS" -> "진행중" to Color(0xFF2196F3)
-    "COMPLETED" -> "완료" to Color(0xFF9E9E9E)
-    else -> "기타" to Color(0xFF757575)
-  }
-
+private fun StatusChip(
+  text: String,
+  backgroundColor: Color,
+  textColor: Color
+) {
   Surface(
-    shape = RoundedCornerShape(4.dp),
-    color = color.copy(alpha = 0.1f)
+    color = backgroundColor,
+    shape = RoundedCornerShape(4.dp)
   ) {
     Text(
       text = text,
-      fontSize = 12.sp,
-      fontWeight = FontWeight.Medium,
-      color = color,
+      color = textColor,
+      style = AppTypography.labelSmall.copy(
+        fontWeight = FontWeight.Medium
+      ),
       modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
     )
   }
 }
 
 @Composable
-private fun InfoItem(
-  icon: androidx.compose.ui.graphics.vector.ImageVector,
-  text: String
+private fun ErrorMessage(
+  message: String,
+  onRetry: () -> Unit,
+  modifier: Modifier = Modifier
 ) {
-  Row(
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(4.dp)
+  Column(
+    modifier = modifier,
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.Center
   ) {
     Icon(
-      imageVector = icon,
+      imageVector = Icons.Default.Error,
       contentDescription = null,
-      tint = Color(0xFF757575),
-      modifier = Modifier.size(16.dp)
+      tint = appColorScheme.error,
+      modifier = Modifier.size(48.dp)
     )
+    Spacer(modifier = Modifier.height(16.dp))
     Text(
-      text = text,
-      fontSize = 13.sp,
-      color = Color(0xFF616161),
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis
+      text = message,
+      style = AppTypography.bodyLarge,
+      textAlign = TextAlign.Center
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    Button(onClick = onRetry) {
+      Text("다시 시도")
+    }
+  }
+}
+
+@Composable
+private fun EmptyProjectList(
+  filter: ProjectFilter,
+  modifier: Modifier = Modifier
+) {
+  Column(
+    modifier = modifier,
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.Center
+  ) {
+    Icon(
+      imageVector = Icons.Default.Assignment,
+      contentDescription = null,
+      tint = Color.Gray,
+      modifier = Modifier.size(64.dp)
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    Text(
+      text = when (filter) {
+        ProjectFilter.ALL -> "등록된 프로젝트가 없습니다"
+        ProjectFilter.RECRUITING -> "모집중인 프로젝트가 없습니다"
+        ProjectFilter.IN_PROGRESS -> "진행중인 프로젝트가 없습니다"
+        ProjectFilter.COMPLETED -> "완료된 프로젝트가 없습니다"
+        ProjectFilter.BOOKMARKED -> "북마크한 프로젝트가 없습니다"
+      },
+      style = AppTypography.bodyLarge,
+      color = Color.Gray,
+      textAlign = TextAlign.Center
     )
   }
 }
 
-@Composable
-private fun EmptyState(message: String) {
-  Box(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(32.dp),
-    contentAlignment = Alignment.Center
-  ) {
-    Column(
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-      Icon(
-        imageVector = Icons.Outlined.FolderOpen,
-        contentDescription = null,
-        modifier = Modifier.size(64.dp),
-        tint = Color(0xFFBDBDBD)
-      )
-      Text(
-        text = message,
-        fontSize = 16.sp,
-        color = Color(0xFF757575),
-        textAlign = TextAlign.Center
-      )
-    }
-  }
+private fun formatCurrency(amount: Int): String {
+  val formatter = NumberFormat.getInstance(Locale.KOREA)
+  return formatter.format(amount) + "원"
 }
 
-@Composable
-private fun ErrorState(
-  message: String,
-  onRetry: () -> Unit
-) {
-  Box(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(32.dp),
-    contentAlignment = Alignment.Center
-  ) {
-    Column(
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-      Icon(
-        imageVector = Icons.Outlined.ErrorOutline,
-        contentDescription = null,
-        modifier = Modifier.size(64.dp),
-        tint = Color(0xFFFF5252)
-      )
-      Text(
-        text = message,
-        fontSize = 16.sp,
-        color = Color(0xFF757575),
-        textAlign = TextAlign.Center
-      )
-      Button(
-        onClick = onRetry,
-        colors = ButtonDefaults.buttonColors(
-          containerColor = Color(0xFF1E88E5)
-        )
-      ) {
-        Text("다시 시도")
-      }
-    }
-  }
-}
-
-@Composable
-private fun CreateProjectDialog(
-  onDismiss: () -> Unit,
-  onCreate: () -> Unit
-) {
-  AlertDialog(
-    onDismissRequest = onDismiss,
-    title = {
-      Text(
-        text = "새 프로젝트 생성",
-        fontWeight = FontWeight.Bold
-      )
-    },
-    text = {
-      Text("프로젝트 생성 기능은 준비 중입니다.")
-    },
-    confirmButton = {
-      TextButton(onClick = onDismiss) {
-        Text("확인")
-      }
-    }
-  )
-}
-
+// Preview
 @Preview(showBackground = true)
 @Composable
 fun ProjectListScreenPreview() {
-  ProjectListScreen(navController = rememberNavController())
+  MaterialTheme {
+    ProjectListContent(
+      uiState = ProjectListUiState(
+        filteredProjects = listOf(
+          Project(
+            id = "1",
+            title = "사하구 낙동5블럭 낙동강 온도 측정 센터 신축공사",
+            company = "대한건설(주)",
+            location = "부산 사하구",
+            category = "REBAR_WORKER",
+            status = "RECRUITING",
+            startDate = java.time.LocalDateTime.now().plusDays(3),
+            endDate = java.time.LocalDateTime.now().plusDays(45),
+            wage = 510000,
+            description = "35층 아파트 신축공사 철근 조립 및 설치 작업",
+            requirements = listOf("철근 작업 경력 2년 이상", "건설기능사 자격증"),
+            benefits = listOf("4대보험 완비", "중식 제공", "교통비 지원"),
+            currentApplicants = 3,
+            maxApplicants = 15,
+            isBookmarked = false,
+            isUrgent = true,
+            createdAt = java.time.LocalDateTime.now(),
+            updatedAt = java.time.LocalDateTime.now()
+          ),
+          Project(
+            id = "2",
+            title = "인천 물류센터 건설",
+            company = "서울전기공사",
+            location = "인천 연수구",
+            category = "ELECTRICIAN",
+            status = "IN_PROGRESS",
+            startDate = java.time.LocalDateTime.now().minusDays(5),
+            endDate = java.time.LocalDateTime.now().plusDays(25),
+            wage = 300000,
+            description = "대형 쇼핑몰 전기설비 설치 및 배선 작업",
+            requirements = listOf("전기기능사 자격증 필수"),
+            benefits = listOf("주말 특근비 별도", "숙박 제공"),
+            currentApplicants = 12,
+            maxApplicants = 30,
+            isBookmarked = true,
+            isUrgent = false,
+            createdAt = java.time.LocalDateTime.now(),
+            updatedAt = java.time.LocalDateTime.now()
+          )
+        ),
+        stats = ProjectStats(
+          totalProjects = 4,
+          activeProjects = 1,
+          recruitingProjects = 2,
+          completedProjects = 1,
+          totalApplicants = 15,
+          averageWage = 405000
+        ),
+        isLoading = false,
+        error = null
+      ),
+      selectedFilter = ProjectFilter.ALL,
+      navController = rememberNavController(),
+      onFilterSelected = {},
+      onProjectClick = {},
+      onEditClick = {},
+      onRecruitClick = {},
+      onRefresh = {},
+      onToggleBookmark = {}
+    )
+  }
 }

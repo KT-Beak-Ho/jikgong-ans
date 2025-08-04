@@ -1,42 +1,40 @@
+// app/src/main/java/com/billcorea/jikgong/presentation/company/main/navigation/CompanyNavigation.kt
 package com.billcorea.jikgong.presentation.company.main.navigation
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
-import com.billcorea.jikgong.presentation.company.main.info.CompanyInfoScreen
-//import com.billcorea.jikgong.presentation.company.main.money.MoneyManagementScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.screen.ProjectListScreen
-//import com.billcorea.jikgong.presentation.company.main.scout.ScoutScreen
 
 @Composable
-fun CompanyMainScreen(
-  navController: NavHostController = rememberNavController()
+fun CompanyNavigation(
+  navController: NavHostController,
+  startDestination: String = "company/projectlist"
 ) {
-  Scaffold(
-    bottomBar = {
-      CompanyBottomBar(navController = navController)
+  NavHost(
+    navController = navController,
+    startDestination = startDestination
+  ) {
+    composable("company/projectlist") {
+      ProjectListScreen(navController = navController)
     }
-  ) { paddingValues ->
-    NavHost(
-      navController = navController,
-      startDestination = "company/projectlist",
-      modifier = Modifier.padding(paddingValues)
-    ) {
-      composable("company/projectlist") {
-        ProjectListScreen(navController = navController)
-      }
 
+    composable("company/scout") {
+      // TODO: Scout Screen
+    }
 
-      composable("company/projectdetail/{projectId}") { backStackEntry ->
-        val projectId = backStackEntry.arguments?.getString("projectId") ?: ""
-        // TODO: ProjectDetailScreen(projectId = projectId, navController = navController)
-      }
+    composable("company/money") {
+      // TODO: Money Management Screen
+    }
+
+    composable("company/info") {
+      // TODO: Info/MyPage Screen
+    }
+
+    composable("company/projectdetail/{projectId}") { backStackEntry ->
+      val projectId = backStackEntry.arguments?.getString("projectId") ?: ""
+      // TODO: Project Detail Screen
     }
   }
 }
