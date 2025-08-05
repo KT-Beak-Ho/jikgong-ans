@@ -6,7 +6,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.billcorea.jikgong.presentation.company.main.projectlist.ProjectListScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.screen.ProjectListScreen
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 
 @Composable

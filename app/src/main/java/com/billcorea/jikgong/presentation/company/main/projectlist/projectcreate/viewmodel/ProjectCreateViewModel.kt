@@ -1,4 +1,3 @@
-// app/src/main/java/com/billcorea/jikgong/presentation/company/main/projectlist/projectcreate/viewmodel/ProjectCreateViewModel.kt
 package com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -24,9 +23,14 @@ class ProjectCreateViewModel(
   fun handleEvent(event: ProjectCreateEvent) {
     when (event) {
       is ProjectCreateEvent.UpdateProjectName -> updateProjectName(event.name)
+      is ProjectCreateEvent.UpdateCategory -> updateCategory(event.category)
       is ProjectCreateEvent.UpdateStartDate -> updateStartDate(event.date)
       is ProjectCreateEvent.UpdateEndDate -> updateEndDate(event.date)
       is ProjectCreateEvent.UpdateWorkLocation -> updateWorkLocation(event.location)
+      is ProjectCreateEvent.UpdateWage -> updateWage(event.wage)
+      is ProjectCreateEvent.UpdateMaxApplicants -> updateMaxApplicants(event.count)
+      is ProjectCreateEvent.UpdateDescription -> updateDescription(event.description)
+      is ProjectCreateEvent.ToggleUrgent -> toggleUrgent(event.isUrgent)
       is ProjectCreateEvent.CreateProject -> createProject()
       is ProjectCreateEvent.DismissSuccessDialog -> dismissSuccessDialog()
       is ProjectCreateEvent.DismissError -> dismissError()
@@ -37,26 +41,20 @@ class ProjectCreateViewModel(
     _uiState.update { state ->
       state.copy(
         projectName = name,
-        isFormValid = validateForm(
-          name = name,
-          startDate = state.startDate,
-          endDate = state.endDate,
-          location = state.workLocation
-        )
+        isFormValid = validateForm(state.copy(projectName = name))
       )
     }
+  }
+
+  private fun updateCategory(category: String) {
+    _uiState.update { it.copy(category = category) }
   }
 
   private fun updateStartDate(date: LocalDate) {
     _uiState.update { state ->
       state.copy(
         startDate = date,
-        isFormValid = validateForm(
-          name = state.projectName,
-          startDate = date,
-          endDate = state.endDate,
-          location = state.workLocation
-        )
+        isFormValid = validateForm(state.copy(startDate = date))
       )
     }
   }
@@ -65,12 +63,7 @@ class ProjectCreateViewModel(
     _uiState.update { state ->
       state.copy(
         endDate = date,
-        isFormValid = validateForm(
-          name = state.projectName,
-          startDate = state.startDate,
-          endDate = date,
-          location = state.workLocation
-        )
+        isFormValid = validateForm(state.copy(endDate = date))
       )
     }
   }
@@ -79,27 +72,48 @@ class ProjectCreateViewModel(
     _uiState.update { state ->
       state.copy(
         workLocation = location,
-        isFormValid = validateForm(
-          name = state.projectName,
-          startDate = state.startDate,
-          endDate = state.endDate,
-          location = location
-        )
+        isFormValid = validateForm(state.copy(workLocation = location))
       )
     }
   }
 
-  private fun validateForm(
-    name: String,
-    startDate: LocalDate?,
-    endDate: LocalDate?,
-    location: String
-  ): Boolean {
-    return name.isNotBlank() &&
-      startDate != null &&
-      endDate != null &&
-      location.isNotBlank() &&
-      (endDate.isAfter(startDate) || endDate.isEqual(startDate))
+  private fun updateWage(wage: String) {
+    val numericWage = wage.filter { it.isDigit() }
+    _uiState.update { state ->
+      state.copy(
+        wage = numericWage,
+        isFormValid = validateForm(state.copy(wage = numericWage))
+      )
+    }
+  }
+
+  private fun updateMaxApplicants(count: String) {
+    val numericCount = count.filter { it.isDigit() }
+    _uiState.update { state ->
+      state.copy(
+        maxApplicants = numericCount,
+        isFormValid = validateForm(state.copy(maxApplicants = numericCount))
+      )
+    }
+  }
+
+  private fun updateDescription(description: String) {
+    _uiState.update { it.copy(description = description) }
+  }
+
+  private fun toggleUrgent(isUrgent: Boolean) {
+    _uiState.update { it.copy(isUrgent = isUrgent) }
+  }
+
+  private fun validateForm(state: ProjectCreateUiState): Boolean {
+    return state.projectName.isNotBlank() &&
+      state.startDate != null &&
+      state.endDate != null &&
+      state.workLocation.isNotBlank() &&
+      state.wage.isNotBlank() &&
+      state.maxApplicants.isNotBlank() &&
+      (state.endDate?.isAfter(state.startDate) == true ||
+        state.endDate?.isEqual(state.startDate) == true)
   }
 
   private fun createProject() {
@@ -110,22 +124,19 @@ class ProjectCreateViewModel(
       _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
       val project = Project(
-        id = "", // 서버에서 생성
+        id = "",
         title = state.projectName,
-        company = "대림건설", // TODO: 실제 회사 정보 사용
+        company = "대림건설(주)", // TODO: SharedPreferences에서 가져오기
         location = state.workLocation,
-        category = "GENERAL", // TODO: 카테고리 선택 기능 추가
+        category = state.category,
         status = "RECRUITING",
         startDate = state.startDate?.atStartOfDay() ?: LocalDateTime.now(),
         endDate = state.endDate?.atStartOfDay() ?: LocalDateTime.now(),
-        wage = 200000, // TODO: 일당 입력 기능 추가
-        description = "",
-        requirements = emptyList(),
-        benefits = emptyList(),
+        wage = state.wage.toIntOrNull() ?: 0,
+        description = state.description,
         currentApplicants = 0,
-        maxApplicants = 10, // TODO: 필요 인원 입력 기능 추가
-        isUrgent = false,
-        isBookmarked = false
+        maxApplicants = state.maxApplicants.toIntOrNull() ?: 0,
+        isUrgent = state.isUrgent
       )
 
       repository.createProject(project)
@@ -141,7 +152,7 @@ class ProjectCreateViewModel(
           _uiState.update {
             it.copy(
               isLoading = false,
-              errorMessage = "프로젝트 등록에 실패했습니다: ${exception.message}"
+              errorMessage = exception.message ?: "프로젝트 등록에 실패했습니다"
             )
           }
         }

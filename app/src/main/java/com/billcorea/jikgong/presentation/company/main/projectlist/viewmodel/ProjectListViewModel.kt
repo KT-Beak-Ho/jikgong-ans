@@ -1,4 +1,4 @@
-// app/src/main/java/com/billcorea/jikgong/presentation/company/main/projectlist/viewmodel/ProjectListViewModel.kt
+
 package com.billcorea.jikgong.presentation.company.main.projectlist.viewmodel
 
 import androidx.lifecycle.ViewModel
