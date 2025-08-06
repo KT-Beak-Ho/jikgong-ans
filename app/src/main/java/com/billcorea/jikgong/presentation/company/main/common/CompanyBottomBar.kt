@@ -1,5 +1,5 @@
 // app/src/main/java/com/billcorea/jikgong/presentation/company/common/CompanyBottomBar.kt
-package com.billcorea.jikgong.presentation.company.common
+package com.billcorea.jikgong.presentation.company.commonc
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
