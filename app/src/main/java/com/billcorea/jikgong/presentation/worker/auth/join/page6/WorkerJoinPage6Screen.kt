@@ -1,9 +1,7 @@
 package com.billcorea.jikgong.presentation.worker.auth.join.page6
 
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -23,11 +21,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -59,6 +53,7 @@ import com.billcorea.jikgong.presentation.company.auth.common.components.CommonT
 import com.billcorea.jikgong.presentation.company.auth.common.components.LabelText
 import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage5ScreenDestination
+import com.billcorea.jikgong.presentation.worker.auth.common.components.CommonBottomSheetInput
 import com.billcorea.jikgong.presentation.worker.auth.common.components.CommonWorkerTopBar
 import com.billcorea.jikgong.presentation.worker.auth.common.constants.WorkerJoinConstants
 import com.billcorea.jikgong.presentation.worker.auth.join.page6.components.JobSelectList
@@ -175,35 +170,16 @@ fun WorkerJoinPage6Screen(
 
         Spacer(modifier = Modifier.padding(5.dp))
 
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-              showBottomSheet = true
-              focusManager.clearFocus()
-            }
-        ) {
-          OutlinedTextField(
-            value = uiState.selectedJobName,
-            onValueChange = { },
-            placeholder = { Text("직종을 선택해주세요") },
-            readOnly = true,
-            enabled = false,
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-              Icon(
-                painter = painterResource(R.drawable.ic_keyboard_arrow_down_24dp),
-                contentDescription = "arrow down"
-              )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-              disabledTextColor = MaterialTheme.colorScheme.onSurface,
-              disabledBorderColor = MaterialTheme.colorScheme.outline,
-              disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-              disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          )
-        }
+        CommonBottomSheetInput(
+          value = uiState.selectedJobName,
+          placeholderText = stringResource(R.string.msgSelectJob),
+          errorKey = "jobName",
+          validationErrors = uiState.validationErrors,
+          iconPainter = painterResource(R.drawable.ic_keyboard_arrow_down_24dp),
+          onClick = {
+            showBottomSheet = true
+          }
+        )
       }
 
       // 경력 입력
