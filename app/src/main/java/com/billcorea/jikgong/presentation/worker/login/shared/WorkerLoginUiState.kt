@@ -3,18 +3,36 @@ package com.billcorea.jikgong.presentation.worker.login.shared
 data class WorkerLoginUiState (
 
   // Login Request
-  val loginIdOrPhone: String = "",
-  val password: String = "",
+  var loginIdOrPhone: String = "",
+  var password: String = "",
   val deviceToken: String = "",
 
   // Login Response
-  val accessToken: String = "",
-  val refreshToken: String = "",
-  val role: String = "",
+  var accessToken: String = "",
+  var refreshToken: String = "",
+  var role: String = "",
 
-  // Loigin Response Error
-  val status: String = "",
-  val code: String = "",
-  val errorMessage: String ?= null,
+  // Login Response Error
+  var status: String = "",
+  var code: String = "",
+  var errorMessage: String ?= null,
+
+  val message: String = "",
+
+  // Shared
+  val validationErrors: Map<String, String> = emptyMap(),
 ) {
+
+  // 로그인 입력 확인
+  val isLoginEmpty: Boolean
+    get() = loginIdOrPhone.isNotEmpty() &&
+      password.isNotEmpty()
+
+  // 로그인 에러 메세지 반환
+  val getErrorMessage: String?
+    get() = errorMessage
+
+  // 로그인 토큰 반환
+  val getLoginToken: String
+    get() = accessToken
 }
