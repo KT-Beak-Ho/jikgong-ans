@@ -139,7 +139,7 @@ fun WorkerJoinPage4Screen(
   }
 
   LaunchedEffect(uiState.roadAddress) {
-      // roadAddress에 null 값이 포함되어 있는지 확인
+      // roadAddress에 null 값이 포함되어 있는지 확인, 필요 시엔 리스트 전체가 아닌 일부만 null일 경우로 변경
       if (uiState.roadAddress.any { it == null }) {
         showErrorDialog = true
       }

@@ -42,6 +42,8 @@ import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSh
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.GraphScreenDestination
+import com.billcorea.jikgong.presentation.destinations.IncomeManagementScreenDestination
 import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
 import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
@@ -66,6 +68,8 @@ import com.billcorea.jikgong.presentation.worker.auth.join.page4.WorkerJoinPage4
 import com.billcorea.jikgong.presentation.worker.auth.join.page5.WorkerJoinPage5Screen
 import com.billcorea.jikgong.presentation.worker.auth.join.page6.WorkerJoinPage6Screen
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
+import com.billcorea.jikgong.presentation.worker.income.page1.IncomeManagementScreen
+import com.billcorea.jikgong.presentation.worker.income.page2.GraphScreen
 import com.billcorea.jikgong.presentation.worker.login.page1.WorkerLoginPage
 import com.billcorea.jikgong.presentation.worker.project.WorkerProject
 import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
@@ -144,7 +148,12 @@ class MainActivity : ComponentActivity() {
                             composable(WorkerProjectDestination.route) {
                                 WorkerProject()
                             }
-
+                            composable(IncomeManagementScreenDestination.route) {
+                                IncomeManagementScreen(navigator = navigator)
+                            }
+                            composable(GraphScreenDestination.route) {
+                                GraphScreen()
+                            }
                             composable(WorkerJoinPage1ScreenDestination.route) {
                                 WorkerJoinPage1Screen(
                                     workerJoinViewModel = workerJoinViewModel,
