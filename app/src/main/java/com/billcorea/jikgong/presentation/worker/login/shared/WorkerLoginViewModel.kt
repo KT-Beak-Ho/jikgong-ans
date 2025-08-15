@@ -40,7 +40,8 @@ class WorkerLoginViewModel : ViewModel() {
     private fun canNavigateToProjectListPage(): Boolean {
         val state = _uiState.value
 
-        return state.getLoginToken.isNotEmpty()
+        // return state.getLoginToken.isNotEmpty()
+        return true
     }
 
     /**
@@ -109,6 +110,7 @@ class WorkerLoginViewModel : ViewModel() {
                         WorkerLoginSharedEvent.updateLoginToken(loginData.accessToken, loginData.refreshToken)
                         WorkerLoginSharedEvent.updateRole(loginData.role)
                         Log.d("LOGIN", "로그인 성공: ${loginData}")
+                        WorkerLoginSharedEvent.toProjectListPage
                     } catch (e: Exception) {
                         WorkerLoginSharedEvent.updateErrorMessage("로그인 실패")
                     }
