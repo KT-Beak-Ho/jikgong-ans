@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -192,6 +193,10 @@ fun WorkerJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterName),
           validationError = uiState.validationErrors["name"],
+          keyboardActions = KeyboardActions(onNext = {
+            focusRequesters[1].requestFocus()
+            // keyboardController?.hide()
+          }),
           modifier = Modifier
             .fillMaxWidth()
             .focusRequester(focusRequesters[0]),
@@ -209,7 +214,11 @@ fun WorkerJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterId),
           validationError = uiState.validationErrors["id"],
-          modifier = Modifier.fillMaxWidth(),
+          keyboardActions = KeyboardActions(onNext = {
+            focusRequesters[2].requestFocus()
+            // keyboardController?.hide()
+          }),
+          modifier = Modifier.fillMaxWidth().focusRequester(focusRequesters[1]),
           onChange = {
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateUserId(it))
           }
@@ -224,6 +233,10 @@ fun WorkerJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterPassword),
           validationError = uiState.validationErrors["password"],
+          keyboardActions = KeyboardActions(onNext = {
+            focusRequesters[3].requestFocus()
+            // keyboardController?.hide()
+          }),
           modifier = Modifier.fillMaxWidth(),
           onChange = {
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateUserPassword(it))
@@ -239,6 +252,10 @@ fun WorkerJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterEmail),
           validationError = uiState.validationErrors["email"],
+          keyboardActions = KeyboardActions(onNext = {
+            focusRequesters[4].requestFocus()
+            // keyboardController?.hide()
+          }),
           modifier = Modifier.fillMaxWidth(),
           onChange = {
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateUserMail(it))

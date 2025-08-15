@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -31,8 +32,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,8 +50,8 @@ import com.billcorea.jikgong.R
 import com.billcorea.jikgong.network.AddressFindRoadAddress
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
-import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage3ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage5ScreenDestination
 import com.billcorea.jikgong.presentation.worker.auth.common.components.CommonWorkerTopBar
 import com.billcorea.jikgong.presentation.worker.auth.common.constants.WorkerJoinConstants
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedEvent
@@ -69,16 +74,57 @@ fun WorkerJoinPage4Screen(
   val uiState by workerJoinViewModel.uiState.collectAsStateWithLifecycle()
   val shouldNavigateToNextPage by workerJoinViewModel.shouldNavigateToNextPage.collectAsStateWithLifecycle()
   val shouldNavigateBack by workerJoinViewModel.shouldNavigateBack.collectAsStateWithLifecycle()
+  val context = LocalContext.current
+  var showErrorDialog by remember { mutableStateOf(false) }
+
+  //gps 을 통한 위치 확인시 시간이 소요 되어 미리 해 둠.
+  /* if (uiState.address.isEmpty()) {
+    workerJoinViewModel.setLocation(context)
+  } */
+
+  // 에러 다이얼로그
+  if (showErrorDialog) {
+    AlertDialog(
+      onDismissRequest = { showErrorDialog = false },
+      title = {
+        Text(
+          text = "주소 검색 오류",
+          style = AppTypography.titleMedium,
+          color = appColorScheme.error
+        )
+      },
+      text = {
+        Text(
+          text = "도로명 주소 또는 건물 명을 입력 해 주세요.",
+          style = AppTypography.bodyMedium
+        )
+      },
+      confirmButton = {
+        TextButton(
+          onClick = {
+            showErrorDialog = false
+            workerJoinViewModel.onEvent(WorkerJoinSharedEvent.ResetJoin4Flow)
+          }
+        ) {
+          Text(
+            text = "확인",
+            color = appColorScheme.primary
+          )
+        }
+      }
+    )
+  }
 
   // 페이지 실행 시 초기화
   LaunchedEffect(Unit) {
     workerJoinViewModel.onEvent(WorkerJoinSharedEvent.ResetJoin4Flow)
+    workerJoinViewModel.setLocation(context)
   }
 
   // 네비게이션 이벤트 처리 - 다음페이지
   LaunchedEffect(shouldNavigateToNextPage) {
     if (shouldNavigateToNextPage) {
-      navigator.navigate(WorkerJoinPage1ScreenDestination)
+      navigator.navigate(WorkerJoinPage5ScreenDestination)
       workerJoinViewModel.clearNavigationEvents()
     }
   }
@@ -90,6 +136,13 @@ fun WorkerJoinPage4Screen(
       navigator.navigate(WorkerJoinPage3ScreenDestination)
       workerJoinViewModel.clearNavigationEvents()
     }
+  }
+
+  LaunchedEffect(uiState.roadAddress) {
+      // roadAddress에 null 값이 포함되어 있는지 확인, 필요 시엔 리스트 전체가 아닌 일부만 null일 경우로 변경
+      if (uiState.roadAddress.any { it == null }) {
+        showErrorDialog = true
+      }
   }
 
   Scaffold(

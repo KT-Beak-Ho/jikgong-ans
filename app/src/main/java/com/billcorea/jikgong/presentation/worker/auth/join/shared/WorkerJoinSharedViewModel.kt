@@ -1,7 +1,13 @@
 package com.billcorea.jikgong.presentation.worker.auth.join.shared
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
 import com.billcorea.jikgong.network.AddressFindResponse
 import com.billcorea.jikgong.network.AddressFindRoadAddress
@@ -13,6 +19,8 @@ import com.billcorea.jikgong.network.RetrofitAPI
 import com.billcorea.jikgong.network.SmsVerificationRequest
 import com.billcorea.jikgong.network.SmsVerificationResponse
 import com.billcorea.jikgong.presentation.worker.auth.common.constants.WorkerJoinConstants.TOTAL_PAGES
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,6 +48,8 @@ class WorkerJoinSharedViewModel : ViewModel() {
     "IM뱅크","토스뱅크","BNK부산은행","SC제일은행","MG새마을금고","우체국","BNK경남은행","광주은행","KDB산업은행","신협","전북은행",
     "씨티뱅크","SH수협은행","제주은행")
   val bankCode = arrayOf("006","021","089","020","011","005","003","090","031","092","032","023","045","071","039","034","002","048","037","027","007","035")
+
+  lateinit var fusedLocationClient: FusedLocationProviderClient
 
   /**
    * 네비게이션 이벤트 클리어
@@ -467,6 +477,26 @@ class WorkerJoinSharedViewModel : ViewModel() {
       })
   }
 
+  fun setLocation(context: Context) {
+    fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+      != PackageManager.PERMISSION_GRANTED) {
+      return
+    }
+    Log.e("", "getLastKnownLocation ...")
+    fusedLocationClient.lastLocation
+      .addOnSuccessListener { location: Location? ->
+        location?.let {
+          _uiState.value = _uiState.value.copy(
+            lat = it.latitude,  // uistate인지 파악 : 맞으면 값 넣고 dofindaddress 실행, 틀리면 빈 값 또는 두 함수를 합치는 방법도 있음
+            lon = it.longitude
+          )
+          Toast.makeText(context, " 위치 정보을 확인 하고 있습니다. ", Toast.LENGTH_SHORT).show()
+        }
+      }
+    Log.e("", "setLocation ... ${uiState.value.lat} ${uiState.value.lon}")
+  }
+
   fun getJobNameByCode(jobCode: String): String {
     val jobNames = arrayOf("보통인부", "작업반장", "특별인부", "조력공", "비계공", "형틀목공", "철근공",
       "철골공", "용접공", "콘크리트공", "조적공", "견출공", "건축목공", "창호공", "유리공",
@@ -739,15 +769,6 @@ class WorkerJoinSharedViewModel : ViewModel() {
       is WorkerJoinSharedEvent.UpdateAddressName -> {
         _uiState.value = _uiState.value.copy(
           addressName = event.addressName
-        )
-      }
-
-      /**
-       * Page 4: 응답 주소
-       */
-      is WorkerJoinSharedEvent.UpdateRespAddress -> {
-        _uiState.value = _uiState.value.copy(
-          respAddress = event.respAddress
         )
       }
 

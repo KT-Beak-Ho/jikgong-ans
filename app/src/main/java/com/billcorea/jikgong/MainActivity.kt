@@ -35,8 +35,6 @@ import com.billcorea.jikgong.presentation.JoinPage5
 import com.billcorea.jikgong.presentation.JoinPage6
 import com.billcorea.jikgong.presentation.KakaoMapView
 import com.billcorea.jikgong.presentation.SplashScreen
-import com.billcorea.jikgong.presentation.worker.login.page1.WorkerLoginPage
-import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
 import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPage1Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
@@ -44,6 +42,8 @@ import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSh
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.GraphScreenDestination
+import com.billcorea.jikgong.presentation.destinations.IncomeManagementScreenDestination
 import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
 import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
@@ -61,6 +61,7 @@ import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDest
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage5ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerProjectDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
 import com.billcorea.jikgong.presentation.worker.auth.join.page1.WorkerJoinPage1Screen
 import com.billcorea.jikgong.presentation.worker.auth.join.page2.WorkerJoinPage2Screen
@@ -72,6 +73,11 @@ import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinShar
 import com.billcorea.jikgong.presentation.worker.login.shared.WorkerLoginViewModel
 import com.billcorea.jikgong.presentation.worker.myProject.page1.WorkerMyProjectAcceptedScreen
 import com.billcorea.jikgong.presentation.destinations.WorkerMyProjectAcceptedScreenDestination
+import com.billcorea.jikgong.presentation.worker.income.page1.IncomeManagementScreen
+import com.billcorea.jikgong.presentation.worker.income.page2.GraphScreen
+import com.billcorea.jikgong.presentation.worker.login.page1.WorkerLoginPage
+import com.billcorea.jikgong.presentation.worker.project.WorkerProject
+import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -155,7 +161,15 @@ class MainActivity : ComponentActivity() {
                             composable(MyInfoDestination.route) {
                                 MyInfo(viewModel, navigator, modifier = Modifier.padding(5.dp))
                             }
-
+                            composable(WorkerProjectDestination.route) {
+                                WorkerProject()
+                            }
+                            composable(IncomeManagementScreenDestination.route) {
+                                IncomeManagementScreen(navigator = navigator)
+                            }
+                            composable(GraphScreenDestination.route) {
+                                GraphScreen()
+                            }
                             composable(WorkerJoinPage1ScreenDestination.route) {
                                 WorkerJoinPage1Screen(
                                     workerJoinViewModel = workerJoinViewModel,
