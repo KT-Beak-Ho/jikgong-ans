@@ -1,13 +1,34 @@
 package com.billcorea.jikgong.di
 
+import com.billcorea.jikgong.presentation.company.main.common.CompanySharedViewModel
+import com.billcorea.jikgong.presentation.company.main.info.viewmodel.CompanyInfoViewModel
+import com.billcorea.jikgong.presentation.company.main.projectlist.viewmodel.ProjectListViewModel
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.viewmodel.ProjectCreateViewModel
-// 기존 ViewModel imports...
+import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
+import com.billcorea.jikgong.presentation.worker.login.shared.WorkerLoginViewModel
+import com.billcorea.jikgong.utils.MainViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
-  // 기존 ViewModel들...
+  // Main
+  viewModel { MainViewModel() }
 
-  // 프로젝트 생성 ViewModel 추가
-  viewModel { ProjectCreateViewModel(get()) }
+  // Worker Auth
+  viewModel { WorkerJoinSharedViewModel() }
+  viewModel { WorkerLoginViewModel() }
+
+  // Company 공통 (싱글톤으로 관리)
+  single { CompanySharedViewModel(get()) }  // CompanyRepository 주입
+
+  // Company Info
+  viewModel { CompanyInfoViewModel(get()) }  // CompanySharedViewModel 주입
+
+  // Company ProjectList
+  viewModel { ProjectListViewModel(get()) }  // ProjectRepository 주입
+
+  // Company ProjectCreate
+  viewModel { ProjectCreateViewModel(get()) }  // ProjectCreateRepository 주입
+
+  // 기타 기존 ViewModels...
 }

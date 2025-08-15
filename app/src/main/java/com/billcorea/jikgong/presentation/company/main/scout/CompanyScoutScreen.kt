@@ -1,4 +1,4 @@
-// app/src/main/java/com/billcorea/jikgong/presentation/company/main/scout/CompanyScoutScreen.kt
+
 package com.billcorea.jikgong.presentation.company.main.scout
 
 import androidx.compose.animation.animateContentSize

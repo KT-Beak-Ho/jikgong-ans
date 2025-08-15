@@ -1,5 +1,3 @@
-// 📍 경로: app/src/main/java/com/billcorea/jikgong/presentation/company/main/projectlist/screen/ProjectListScreen.kt
-
 package com.billcorea.jikgong.presentation.company.main.projectlist.screen
 
 import androidx.compose.foundation.background
@@ -24,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.billcorea.jikgong.presentation.company.common.CompanyBottomBar
+import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme

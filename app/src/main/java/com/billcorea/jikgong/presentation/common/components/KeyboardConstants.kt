@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation.common
+package com.billcorea.jikgong.presentation.common.components
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions

@@ -31,7 +31,7 @@ import com.billcorea.jikgong.api.models.response.LoginIdValidationResponse
 import com.billcorea.jikgong.api.models.response.PhoneValidationResponse
 import com.billcorea.jikgong.api.models.response.SmsVerificationResponse
 import com.billcorea.jikgong.api.repository.join.JoinRepository
-import com.billcorea.jikgong.presentation.common.KeyboardConstants
+import com.billcorea.jikgong.presentation.common.components.KeyboardConstants
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTopBar
