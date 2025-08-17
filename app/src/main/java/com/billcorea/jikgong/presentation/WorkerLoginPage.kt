@@ -63,7 +63,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import org.koin.androidx.compose.koinViewModel
 
-@Destination
 @Composable
 fun WorkerLoginPage(
   viewModel : MainViewModel = koinViewModel(),
