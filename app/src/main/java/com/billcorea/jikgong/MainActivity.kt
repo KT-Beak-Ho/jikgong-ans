@@ -45,6 +45,7 @@ import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPag
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
+import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedViewModel
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
@@ -67,7 +68,6 @@ import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage3ScreenDest
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage5ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
-import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
 import com.billcorea.jikgong.presentation.worker.auth.join.page1.WorkerJoinPage1Screen
@@ -98,13 +98,13 @@ import com.kakao.vectormap.KakaoMapSdk
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
+import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
 
-
-
   val viewModel : MainViewModel by viewModels()
-  private val companyJoinViewModel = CompanyJoinSharedViewModel()
+  private val companyJoinViewModel: CompanyJoinSharedViewModel by inject()
+  private val companyLoginViewModel: CompanyLoginSharedViewModel by inject()
   private val workerJoinViewModel = WorkerJoinSharedViewModel()
   private val workerLoginViewModel = WorkerLoginViewModel()
   private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -125,7 +125,7 @@ class MainActivity : ComponentActivity() {
       val navigator = navController.toDestinationsNavigator()
 
       
-            Jikgong1111Theme(dynamicColor = true) {
+        Jikgong1111Theme(dynamicColor = true) {
                 Surface (tonalElevation = 5.dp) {
                     if (isSplash) {
                         SplashScreen(modifier = Modifier.padding(3.dp), onTimeout = {
@@ -254,12 +254,8 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-          }
-        }
-      }
     }
   }
-
   private fun checkLocationPermission() {
     Log.e("", "checkLocationPermission ...")
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -297,9 +293,13 @@ class MainActivity : ComponentActivity() {
   }
 
   fun getKeyHash(context: Context): String? {
-    return  KakaoMapSdk.INSTANCE.getHashKey()
+    return  KakaoMapSdk.INSTANCE?.getHashKey()
   }
 }
+
+
+
+
 
 @Composable
 @Preview
