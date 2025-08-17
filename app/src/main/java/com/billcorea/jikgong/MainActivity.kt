@@ -3,10 +3,15 @@ package com.billcorea.jikgong
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,6 +40,7 @@ import com.billcorea.jikgong.presentation.JoinPage5
 import com.billcorea.jikgong.presentation.JoinPage6
 import com.billcorea.jikgong.presentation.KakaoMapView
 import com.billcorea.jikgong.presentation.SplashScreen
+import com.billcorea.jikgong.presentation.WorkerLoginPage  
 import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPage1Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
@@ -52,6 +58,7 @@ import com.billcorea.jikgong.presentation.destinations.JoinPage4Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.presentation.destinations.MyInfoDestination
 import com.billcorea.jikgong.presentation.worker.myInfo.page1.MyInfo
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage1ScreenDestination
@@ -80,34 +87,44 @@ import com.billcorea.jikgong.presentation.worker.project.WorkerProject
 import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
+import com.google.accompanist.web.AccompanistWebChromeClient
+import com.google.accompanist.web.AccompanistWebViewClient
+import com.google.accompanist.web.WebView
+import com.google.accompanist.web.rememberWebViewNavigator
+import com.google.accompanist.web.rememberWebViewState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMapSdk
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 
 class MainActivity : ComponentActivity() {
 
-    val viewModel : MainViewModel by viewModels()
-    private val companyJoinViewModel = CompanyJoinSharedViewModel()
-    private val workerJoinViewModel = WorkerJoinSharedViewModel()
-    private val workerLoginViewModel = WorkerLoginViewModel()
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        Log.e("", "KeyHash: ${getKeyHash(this)} ${BuildConfig.KAKAO_API}")
+  val viewModel : MainViewModel by viewModels()
+  private val companyJoinViewModel = CompanyJoinSharedViewModel()
+  private val workerJoinViewModel = WorkerJoinSharedViewModel()
+  private val workerLoginViewModel = WorkerLoginViewModel()
+  private lateinit var fusedLocationClient: FusedLocationProviderClient
+  
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    enableEdgeToEdge()
 
-        checkLocationPermission()
+    fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+    Log.e("", "KeyHash: ${getKeyHash(this)} ${BuildConfig.KAKAO_API}")
 
-        setContent {
+    checkLocationPermission()
 
-            var isSplash by remember { mutableStateOf(true)}
-            val navController = rememberNavController()
-            val navigator = navController.toDestinationsNavigator()
+    setContent {
 
+      var isSplash by remember { mutableStateOf(true)}
+      val navController = rememberNavController()
+      val navigator = navController.toDestinationsNavigator()
+
+      
             Jikgong1111Theme(dynamicColor = true) {
                 Surface (tonalElevation = 5.dp) {
                     if (isSplash) {
@@ -237,72 +254,75 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+          }
         }
+      }
     }
+  }
 
-    private fun checkLocationPermission() {
-        Log.e("", "checkLocationPermission ...")
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            == PackageManager.PERMISSION_GRANTED) {
-            getLastKnownLocation()
-        } else {
-            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+  private fun checkLocationPermission() {
+    Log.e("", "checkLocationPermission ...")
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+      == PackageManager.PERMISSION_GRANTED) {
+      getLastKnownLocation()
+    } else {
+      requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+  }
+
+  private val requestPermissionLauncher = registerForActivityResult(
+    ActivityResultContracts.RequestPermission()
+  ) { isGranted: Boolean ->
+    if (isGranted) {
+      getLastKnownLocation()
+    } else {
+      MaterialDialog(this).show {
+        icon(R.drawable.ic_jikgong_v1)
+        title(R.string.app_name)
+        message(R.string.location_permission_message)
+        positiveButton(R.string.OK) {
+          finish()
         }
+      }
     }
+  }
 
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            getLastKnownLocation()
-        } else {
-            MaterialDialog(this).show {
-                icon(R.drawable.ic_jikgong_v1)
-                title(R.string.app_name)
-                message(R.string.location_permission_message)
-                positiveButton(R.string.OK) {
-                    finish()
-                }
-            }
-        }
+  @SuppressLint("CommitPrefEdits")
+  private fun getLastKnownLocation() {
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+      != PackageManager.PERMISSION_GRANTED) {
+      checkLocationPermission()
+      return
     }
+  }
 
-    @SuppressLint("CommitPrefEdits")
-    private fun getLastKnownLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-            checkLocationPermission()
-            return
-        }
-    }
-
-    fun getKeyHash(context: Context): String? {
-        return  KakaoMapSdk.INSTANCE.getHashKey()
-    }
+  fun getKeyHash(context: Context): String? {
+    return  KakaoMapSdk.INSTANCE.getHashKey()
+  }
 }
 
 @Composable
 @Preview
 fun AppPreview() {
-    val navController = rememberNavController()
-    val navigator = navController.toDestinationsNavigator()
-    Jikgong1111Theme(dynamicColor = true) {
-        Surface (tonalElevation = 5.dp) {
-            JikgongApp(navigator = navigator, modifier = Modifier.padding(3.dp))
-        }
+  val navController = rememberNavController()
+  val navigator = navController.toDestinationsNavigator()
+  Jikgong1111Theme(dynamicColor = true) {
+    Surface (tonalElevation = 5.dp) {
+      JikgongApp(navigator = navigator, modifier = Modifier.padding(3.dp))
     }
+  }
 }
 
 @Composable
 @Preview
 fun DarkAppPreview() {
-    val navController = rememberNavController()
-    val navigator = navController.toDestinationsNavigator()
-    Jikgong1111Theme(darkTheme = true,
-        dynamicColor = true
-    ) {
-        Surface (tonalElevation = 5.dp) {
-            JikgongApp(navigator = navigator, modifier = Modifier.padding(3.dp))
-        }
+  val navController = rememberNavController()
+  val navigator = navController.toDestinationsNavigator()
+  Jikgong1111Theme(darkTheme = true,
+    dynamicColor = true
+  ) {
+    Surface (tonalElevation = 5.dp) {
+      JikgongApp(navigator = navigator, modifier = Modifier.padding(3.dp))
     }
+  }
 }

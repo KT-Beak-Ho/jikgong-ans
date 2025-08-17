@@ -12,16 +12,19 @@ data class CompanyJoinSharedUiState(
   val isPhoneVerified: Boolean = false,       //  전화번호 검증 완료
   val isSecurityStepActive: Boolean = false,  //  인증절차 단계
   val isWaiting: Boolean = false,             //  인증 진행중
+  val isPhoneNumberAvailable: Boolean = false,//  사용가능한 휴대폰 번호인가
 
   // Page 2: 기본 정보
-  val name: String = "",              //  사용자 이름
-  val id: String = "",                 //  사용자 ID
-  val email: String = "",             //  사용자 Email
-  val password: String = "",          //  사용자 비밀번호
-  val passwordConfirm: String = "",   //  사용자 비밀번호 재입력(검증)
-  val businessNumber: String = "",    //  사업자 등록 번호
-  val companyName: String = "",       //  회사명
-  val inquiry: String = "",           //  문의사항
+  val name: String = "",                //  사용자 이름
+  val id: String = "",                  //  사용자 ID
+  val email: String = "",               //  사용자 Email
+  val password: String = "",            //  사용자 비밀번호
+  val passwordConfirm: String = "",     //  사용자 비밀번호 재입력(검증)
+  val businessNumber: String = "",      //  사업자 등록 번호
+  val companyName: String = "",         //  회사명
+  val inquiry: String = "",             //  문의사항
+  val isIdAvailable: Boolean = false,   //  사용가능한 ID 인가
+  val isEmailAvailable: Boolean = false,//  사용가능한 Email 인가
 
   // 공통 상태
   val currentPage: Int = 1,
