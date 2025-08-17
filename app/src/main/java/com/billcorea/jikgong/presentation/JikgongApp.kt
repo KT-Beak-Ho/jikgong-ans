@@ -39,11 +39,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
+
 import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage4Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
+import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -72,29 +75,56 @@ fun JikgongApp (
   val sheetState = rememberModalBottomSheetState( skipPartiallyExpanded = false)
   var showBottomSheet by remember { mutableStateOf(false) }
   var showLoginBottomSheet by remember { mutableStateOf(false) }
-
-  Scaffold(
-    bottomBar = {
-      if (showBottomSheet) {
-        ModalBottomSheet(
-          onDismissRequest = {
-            showBottomSheet = false
-          }
-          , sheetState = sheetState
-          , modifier = Modifier.height((screenHeight * .8).dp)
-        ) {
-          BottomMiddleView(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(5.dp),
-            doCloseBottom = {
-              showBottomSheet = false
-            },
-            doJoinPerson = {
-              showBottomSheet = false
-              navigator.navigate(JoinPage1Destination)
-            },
-            doJoinCorp = {
+Scaffold(
+        bottomBar = {
+            if (showBottomSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        showBottomSheet = false
+                    }
+                    , sheetState = sheetState
+                    , modifier = Modifier.height((screenHeight * .8).dp)
+                ) {
+                    BottomMiddleView(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(5.dp),
+                        doCloseBottom = {
+                            showBottomSheet = false
+                        },
+                        doJoinPerson = {
+                            showBottomSheet = false
+                            // navigator.navigate(JoinPage2Destination)
+                            navigator.navigate(WorkerJoinPage4ScreenDestination)
+                                       },
+                        doJoinCorp = {
+                            showBottomSheet = false
+                            navigator.navigate(CompanyJoinPage1ScreenDestination)
+//                            navigator.navigate(CompanyJoinPage2ScreenDestination)
+                        }
+                    )
+                }
+            }
+            if (showLoginBottomSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        showLoginBottomSheet = false
+                    }
+                    , sheetState = sheetState
+                    , modifier = Modifier.height((screenHeight * .8).dp)
+                ) {
+                  LoginBottomMiddleView(
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .padding(5.dp),
+                    doCloseBottom = {
+                      showLoginBottomSheet = false
+                    },
+                    doLoginPerson = {
+                      showLoginBottomSheet = false
+                      navigator.navigate(WorkerLoginPageDestination)
+                    },
+                    doLoginCorp = {
 
             }
           )

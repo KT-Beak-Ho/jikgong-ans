@@ -40,7 +40,6 @@ data class WorkerJoinSharedUiState(
   val address: String = "",
   val roadAddress: List<AddressFindRoadAddress> = emptyList(),
   val roadAddress1: List<Coord2RoadAddress> = emptyList(),
-  val respAddress: String = "",
   val addressName: String = "",
 
   // Page 5 (자격증 등록) 관련 상태 - 수정된 버전
@@ -86,6 +85,8 @@ data class WorkerJoinSharedUiState(
 
     val isPage4Complete: Boolean
     get() = addressName.isNotEmpty() &&
+      address.isNotEmpty() &&
+      roadAddress.isNotEmpty() &&
       lat != 0.0 &&
       lon != 0.0
 

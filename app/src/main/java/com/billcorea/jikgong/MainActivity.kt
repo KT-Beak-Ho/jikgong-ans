@@ -40,7 +40,16 @@ import com.billcorea.jikgong.presentation.JoinPage5
 import com.billcorea.jikgong.presentation.JoinPage6
 import com.billcorea.jikgong.presentation.KakaoMapView
 import com.billcorea.jikgong.presentation.SplashScreen
-import com.billcorea.jikgong.presentation.WorkerLoginPage
+import com.billcorea.jikgong.presentation.WorkerLoginPage  
+import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPage1Screen
+import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
+import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
+import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
+import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.GraphScreenDestination
+import com.billcorea.jikgong.presentation.destinations.IncomeManagementScreenDestination
 import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
 import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
@@ -50,6 +59,32 @@ import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
+import com.billcorea.jikgong.presentation.destinations.MyInfoDestination
+import com.billcorea.jikgong.presentation.worker.myInfo.page1.MyInfo
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage1ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage2ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage3ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage5ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerProjectDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
+import com.billcorea.jikgong.presentation.worker.auth.join.page1.WorkerJoinPage1Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page2.WorkerJoinPage2Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page3.WorkerJoinPage3Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page4.WorkerJoinPage4Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page5.WorkerJoinPage5Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.page6.WorkerJoinPage6Screen
+import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
+import com.billcorea.jikgong.presentation.worker.login.shared.WorkerLoginViewModel
+import com.billcorea.jikgong.presentation.worker.myProject.page1.WorkerMyProjectAcceptedScreen
+import com.billcorea.jikgong.presentation.destinations.WorkerMyProjectAcceptedScreenDestination
+import com.billcorea.jikgong.presentation.worker.income.page1.IncomeManagementScreen
+import com.billcorea.jikgong.presentation.worker.income.page2.GraphScreen
+import com.billcorea.jikgong.presentation.worker.login.page1.WorkerLoginPage
+import com.billcorea.jikgong.presentation.worker.project.WorkerProject
+import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
 import com.google.accompanist.web.AccompanistWebChromeClient
@@ -66,9 +101,14 @@ import java.security.NoSuchAlgorithmException
 
 class MainActivity : ComponentActivity() {
 
-  val viewModel : MainViewModel by viewModels()
-  private lateinit var fusedLocationClient: FusedLocationProviderClient
 
+
+  val viewModel : MainViewModel by viewModels()
+  private val companyJoinViewModel = CompanyJoinSharedViewModel()
+  private val workerJoinViewModel = WorkerJoinSharedViewModel()
+  private val workerLoginViewModel = WorkerLoginViewModel()
+  private lateinit var fusedLocationClient: FusedLocationProviderClient
+  
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
@@ -84,46 +124,135 @@ class MainActivity : ComponentActivity() {
       val navController = rememberNavController()
       val navigator = navController.toDestinationsNavigator()
 
-      Jikgong1111Theme(dynamicColor = true) {
-        Surface (tonalElevation = 5.dp) {
-          if (isSplash) {
-            SplashScreen(modifier = Modifier.padding(3.dp), onTimeout = {
-              Log.e("", "이제 뭐 하지 ???")
-              isSplash = false
-            })
-          } else {
-            NavHost(
-              navController = navController,
-              startDestination = JikgongAppDestination.route,
-              modifier = Modifier.padding(1.dp)
-            ) {
-              composable(JikgongAppDestination.route) {
-                JikgongApp(navigator, modifier = Modifier.padding(5.dp))
-              }
-              composable(JoinPage1Destination.route) {
-                JoinPage1(viewModel, navigator, modifier = Modifier.padding(5.dp))
-              }
-              composable(JoinPage2Destination.route) {
-                JoinPage2(viewModel, navigator, modifier = Modifier.padding(5.dp))
-              }
-              composable(JoinPage3Destination.route) {
-                JoinPage3(viewModel, navigator, modifier = Modifier.padding(5.dp))
-              }
-              composable(JoinPage4Destination.route) {
-                JoinPage4(viewModel, navigator, modifier = Modifier.padding(5.dp), this@MainActivity)
-              }
-              composable(KakaoMapViewDestination.route) {
-                KakaoMapView(viewModel, navigator)
-              }
-              composable(JoinPage5Destination.route) {
-                JoinPage5(viewModel, navigator, modifier = Modifier.padding(5.dp))
-              }
-              composable(JoinPage6Destination.route) {
-                JoinPage6(viewModel, navigator, modifier = Modifier.padding(5.dp))
-              }
-              composable(WorkerLoginPageDestination.route) {
-                WorkerLoginPage(viewModel, navigator, modifier = Modifier.padding(5.dp))
-              }
+      
+            Jikgong1111Theme(dynamicColor = true) {
+                Surface (tonalElevation = 5.dp) {
+                    if (isSplash) {
+                        SplashScreen(modifier = Modifier.padding(3.dp), onTimeout = {
+                            Log.e("", "이제 뭐 하지 ???")
+                            isSplash = false
+                        })
+                    } else {
+                        NavHost(
+                            navController = navController,
+                            startDestination = JikgongAppDestination.route,
+                            modifier = Modifier.padding(1.dp)
+                        ) {
+                            composable(JikgongAppDestination.route) {
+                                JikgongApp(navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(JoinPage1Destination.route) {
+                                JoinPage1(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(JoinPage2Destination.route) {
+                                JoinPage2(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(JoinPage3Destination.route) {
+                                JoinPage3(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(JoinPage4Destination.route) {
+                                JoinPage4(viewModel, navigator, modifier = Modifier.padding(5.dp), this@MainActivity)
+                            }
+                            composable(KakaoMapViewDestination.route) {
+                                KakaoMapView(viewModel, navigator)
+                            }
+                            composable(JoinPage5Destination.route) {
+                                JoinPage5(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(JoinPage6Destination.route) {
+                                JoinPage6(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(WorkerLoginPageDestination.route) {
+                                WorkerLoginPage(
+                                    workerLoginViewModel = workerLoginViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerProjectListDestination.route) {
+                                WorkerProjectList(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(WorkerMyProjectAcceptedScreenDestination.route) {
+                                WorkerMyProjectAcceptedScreen(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(MyInfoDestination.route) {
+                                MyInfo(viewModel, navigator, modifier = Modifier.padding(5.dp))
+                            }
+                            composable(WorkerProjectDestination.route) {
+                                WorkerProject()
+                            }
+                            composable(IncomeManagementScreenDestination.route) {
+                                IncomeManagementScreen(navigator = navigator)
+                            }
+                            composable(GraphScreenDestination.route) {
+                                GraphScreen()
+                            }
+                            composable(WorkerJoinPage1ScreenDestination.route) {
+                                WorkerJoinPage1Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage2ScreenDestination.route) {
+                                WorkerJoinPage2Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage3ScreenDestination.route) {
+                                WorkerJoinPage3Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage4ScreenDestination.route) {
+                                WorkerJoinPage4Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage5ScreenDestination.route) {
+                                WorkerJoinPage5Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(WorkerJoinPage6ScreenDestination.route) {
+                                WorkerJoinPage6Screen(
+                                    workerJoinViewModel = workerJoinViewModel,
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(CompanyJoinPage1ScreenDestination.route) {
+                                CompanyJoinPage1Screen(
+                                    companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(CompanyJoinPage2ScreenDestination.route) {
+                                CompanyJoinPage2Screen(
+                                    companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                            composable(CompanyJoinPage3ScreenDestination.route) {
+                                CompanyJoinPage3Screen(
+                                    companyJoinViewModel = companyJoinViewModel, // 기업 전용 ViewModel 전달
+                                    navigator = navigator,
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                            }
+                        }
+                    }
+                }
             }
           }
         }

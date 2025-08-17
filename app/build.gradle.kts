@@ -154,9 +154,11 @@ dependencies {
 
     // ===== Permissions =====
     implementation(libs.google.accompanist.permissions)
-
+    
     // ===== Image Loading =====
     // Glide
-    implementation(libs.glide)
-    ksp(libs.glide.compiler)
+    // glide
+    implementation (libs.glide)
+    ksp (libs.glide.compiler)
+
 }
