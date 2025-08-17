@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -30,7 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,7 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.BankSelectList
-import com.billcorea.jikgong.presentation.common.KeyboardConstants
+import com.billcorea.jikgong.presentation.common.components.KeyboardConstants
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.LabelText
@@ -71,9 +72,11 @@ fun WorkerJoinPage3Screen(
   val uiState by workerJoinViewModel.uiState.collectAsStateWithLifecycle()
   val shouldNavigateToNextPage by workerJoinViewModel.shouldNavigateToNextPage.collectAsStateWithLifecycle()
   val shouldNavigateBack by workerJoinViewModel.shouldNavigateBack.collectAsStateWithLifecycle()
+  val keyboardController = LocalSoftwareKeyboardController.current
 
-  val focusManager = LocalFocusManager.current
-  val focusRequester = remember { FocusRequester() }
+  val focusRequesters = remember {
+    List(3) { FocusRequester() }
+  }
 
 
   // 페이지 실행 시 초기화
@@ -188,8 +191,12 @@ fun WorkerJoinPage3Screen(
           labelMainText = stringResource(R.string.accountName),
           placeholder = stringResource(R.string.enterName),
           validationError = uiState.validationErrors["accountName"],
-          keyboardOptions = KeyboardConstants.Options.PHONE,
-          modifier = Modifier.fillMaxWidth(),
+          keyboardOptions = KeyboardConstants.Options.DEFAULT,
+          keyboardActions = KeyboardActions(onNext = {
+            showBottomSheet = true
+            keyboardController?.hide()
+          }),
+          modifier = Modifier.fillMaxWidth().focusRequester(focusRequesters[0]),
           onChange = {
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateAccountName(it))
           }
@@ -226,7 +233,7 @@ fun WorkerJoinPage3Screen(
           keyboardOptions = KeyboardConstants.Options.PHONE,
           modifier = Modifier
             .fillMaxWidth()
-            .focusRequester(focusRequester),
+            .focusRequester(focusRequesters[2]),
           onChange = {
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateAccountNumber(it))
           },
@@ -242,13 +249,13 @@ fun WorkerJoinPage3Screen(
       sheetState = sheetState,
       modifier = Modifier
         .fillMaxHeight()
-        .focusRequester(focusRequester)
+        .focusRequester(focusRequesters[1])
     ) {
       BankSelectList(
         doBankSelect = { bankCode ->
           Log.e(",", "bankCode = $bankCode")
           workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateBankName(workerJoinViewModel.bankName[workerJoinViewModel.bankCode.indexOf(bankCode)]))
-          // _bankCode = bankCode
+          focusRequesters[2].requestFocus()
           showBottomSheet = false
         },
         doClose = {

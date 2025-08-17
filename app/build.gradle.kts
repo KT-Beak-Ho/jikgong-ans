@@ -24,9 +24,12 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        // NDK ABI 필터 수정 - 모든 주요 아키텍처 지원
         ndk {
-            abiFilters += listOf("arm64-v8a")
+            abiFilters += listOf("arm64-v8a", "x86_64", "x86", "armeabi-v7a")
         }
+
+        // 만약 NDK를 사용하지 않는다면 위의 ndk 블록을 완전히 삭제하세요
     }
 
     buildTypes {
@@ -50,34 +53,46 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = "17"
     }
+
     buildFeatures {
         compose = true
         buildConfig = true
     }
+
+    // Compose 컴파일러 버전 명시 (Kotlin 2.0.21과 호환)
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
 }
 
 dependencies {
+    // ===== 네트워크 관련 의존성 (정리됨) =====
+    // Retrofit (이미 OkHttp와 Gson 포함)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    // 추가
-    // ===== 추가된 네트워크 관련 의존성 =====
-    // OkHttp Logging Interceptor (로깅용)
+    // OkHttp Logging Interceptor만 추가 (디버깅용)
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // Gson (JSON 파싱)
-    implementation("com.google.code.gson:gson:2.10.1")
-    // 추가
+    // 중복 제거 - Retrofit에 이미 포함됨
+    // implementation("com.squareup.okhttp3:okhttp:4.12.0") // 제거
+    // implementation("com.google.code.gson:gson:2.10.1") // 제거
 
+    // ===== AndroidX Core =====
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
+    // ===== Compose =====
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -85,8 +100,14 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.androidx.runtime.livedata)
+
+    // ===== Location Services =====
     implementation(libs.play.services.location)
+
+    // ===== Media =====
     implementation(libs.androidx.media3.common.ktx)
+
+    // ===== Testing =====
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -95,48 +116,49 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // koin
+    // ===== Dependency Injection =====
+    // Koin
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
 
-    // material icons
-    implementation (libs.androidx.material.icons.core)
-    implementation (libs.androidx.material.icons.extended)
+    // ===== UI Components =====
+    // Material Icons
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
 
-    // navigation
+    // ===== Navigation =====
     implementation(libs.androidx.navigation.compose)
-    // raamcosta compose destination
+
+    // Raamcosta Compose Destinations
     implementation(libs.raamcosta.core)
     ksp(libs.raamcosta.ksp)
 
-    // date picker ref ...
-    // https://github.com/commandiron/WheelPickerCompose
-    implementation (libs.snapper)
+    // ===== UI Libraries =====
+    // Date Picker
+    implementation(libs.snapper)
 
-    // bottomsheetdialog
-    implementation (libs.bottomsheetdialog.compose)
+    // Bottom Sheet Dialog
+    implementation(libs.bottomsheetdialog.compose)
 
-    // material dialogs :  이 diaglog 는 res/values 의 colors, themes 의 영향을 받음.
-    // https://github.com/afollestad/material-dialogs/tree/main
-    implementation (libs.dialogs.core)
-    implementation (libs.dialogs.lifecycle)
+    // Material Dialogs
+    implementation(libs.dialogs.core)
+    implementation(libs.dialogs.lifecycle)
 
-    // rest api (retrofit / json)
-    // retrofit
-    implementation (libs.retrofit)
-    implementation (libs.converter.gson)
+    // WebView
+    implementation(libs.accompanist.webview)
 
-    // webView
-    implementation (libs.accompanist.webview)
-
-    // kakao map
+    // ===== Maps & Navigation =====
+    // Kakao Map
     implementation(libs.kakao.android)
     implementation(libs.kakao.v2.navi)
 
-    //권한획득
+    // ===== Permissions =====
     implementation(libs.google.accompanist.permissions)
-
+    
+    // ===== Image Loading =====
+    // Glide
     // glide
     implementation (libs.glide)
     ksp (libs.glide.compiler)
+
 }

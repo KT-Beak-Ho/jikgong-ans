@@ -28,7 +28,6 @@ sealed class WorkerJoinSharedEvent {
   data class UpdateLat(val lat: Double) : WorkerJoinSharedEvent()
   data class UpdateLon(val lon: Double) : WorkerJoinSharedEvent()
   data class UpdateAddressName(val addressName: String) : WorkerJoinSharedEvent()
-  data class UpdateRespAddress(val respAddress: String) : WorkerJoinSharedEvent()
   data class KakaoGeocoding(val query: String) : WorkerJoinSharedEvent()
 
   // Page 5 이벤트

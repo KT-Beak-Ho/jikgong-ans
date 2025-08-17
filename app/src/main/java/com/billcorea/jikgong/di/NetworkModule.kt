@@ -4,6 +4,7 @@ import android.util.Log
 import com.billcorea.jikgong.BuildConfig
 import com.billcorea.jikgong.api.service.AuthApi
 import com.billcorea.jikgong.api.service.JoinApi
+// import com.billcorea.jikgong.api.service.ProjectApi
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
@@ -51,10 +52,16 @@ val networkModule = module {
       .build()
   }
 
+  // API Services
   single<JoinApi> {
     get<Retrofit>().create(JoinApi::class.java)
   }
   single<AuthApi> {
     get<Retrofit>().create(AuthApi::class.java)
   }
+
+  // 프로젝트 관련 API (향후 구현 시 주석 해제)
+  // single<ProjectApi> {
+  //   get<Retrofit>().create(ProjectApi::class.java)
+  // }
 }

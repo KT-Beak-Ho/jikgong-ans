@@ -3,6 +3,7 @@ package com.billcorea.jikgong.presentation.worker.login.page1
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -35,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -47,10 +48,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.R
+import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedEvent
+import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
+import com.billcorea.jikgong.presentation.worker.login.shared.WorkerLoginSharedEvent
+import com.billcorea.jikgong.presentation.worker.login.shared.WorkerLoginViewModel
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -63,7 +69,7 @@ import org.koin.androidx.compose.koinViewModel
 @Destination
 @Composable
 fun WorkerLoginPage(
-    viewModel : MainViewModel = koinViewModel(),
+    workerLoginViewModel : WorkerLoginViewModel = koinViewModel(),
     navigator: DestinationsNavigator,
     modifier: Modifier = Modifier
 ) {
@@ -75,15 +81,11 @@ fun WorkerLoginPage(
     val screenHeight = config.screenHeightDp
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester }
 
-    var loginIdOrPhone by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val focusRequester = remember { FocusRequester() }
-    val _loginResult = viewModel.loginResult.observeAsState()
-    val _loginError = viewModel.loginError.observeAsState()
-    val loginResult = _loginResult.value
-    val loginError = _loginError.value
-
+    val uiState by workerLoginViewModel.uiState.collectAsStateWithLifecycle()
+    val shouldNavigateToNextPage by workerLoginViewModel.shouldNavigateToNextPage.collectAsStateWithLifecycle()
+/*
     LaunchedEffect(loginError) {
         loginError?.let {
             MaterialDialog(context).show {
@@ -99,6 +101,32 @@ fun WorkerLoginPage(
             // 로그인 성공 시 SharedPreferences 등에 저장 가능
             navigator.navigate(WorkerProjectListDestination)
         }
+    }
+*/
+    LaunchedEffect(shouldNavigateToNextPage) {
+        if (shouldNavigateToNextPage) {
+            navigator.navigate(WorkerProjectListDestination)
+            workerLoginViewModel.clearNavigationEvents()
+        }
+    }
+
+    uiState.errorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = {
+                workerLoginViewModel.onEvent(WorkerLoginSharedEvent.ClearError)
+            },
+            title = { Text("알림") },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        workerLoginViewModel.onEvent(WorkerLoginSharedEvent.ClearError)
+                    }
+                ) {
+                    Text("확인")
+                }
+            }
+        )
     }
 
     Scaffold (
@@ -146,9 +174,9 @@ fun WorkerLoginPage(
             .padding(innerPadding)) {
             Spacer(modifier = Modifier.padding(5.dp))
             OutlinedTextField(
-                value = loginIdOrPhone,
+                value = uiState.loginIdOrPhone,
                 onValueChange = {
-                    loginIdOrPhone = it
+                    workerLoginViewModel.onEvent(WorkerLoginSharedEvent.updateLoginIdOrPhone(it))
                 },
                 placeholder = {
                     Text(text = stringResource(R.string.loginIdOrPhone))
@@ -158,14 +186,14 @@ fun WorkerLoginPage(
                 modifier = Modifier
                     .width((screenWidth * .90).dp)
                     .align(Alignment.CenterHorizontally)
-                    .focusRequester(focusRequester)
+
             )
 
             Spacer(modifier = Modifier.padding(4.dp))
             OutlinedTextField(
-                value = password,
+                value = uiState.password,
                 onValueChange = {
-                    password = it
+                    workerLoginViewModel.onEvent(WorkerLoginSharedEvent.updatePassword(it))
                 },
                 placeholder = {
                     Text(text = stringResource(R.string.password))
@@ -185,19 +213,10 @@ fun WorkerLoginPage(
             // 로그인 버튼
             TextButton(
                 onClick = {
-                    if (loginIdOrPhone.isNotBlank() && password.isNotBlank()) {
-                        val deviceToken = "test_device_token"
-                        viewModel.doLogin(loginIdOrPhone, password, deviceToken)
-
-
-                    } else {
-                        MaterialDialog(context).show {
-                            icon(R.drawable.ic_jikgong_white)
-                            message(R.string.errorLoginBlank)
-                            positiveButton(R.string.OK) { it.dismiss() }
-                        }
-                    }
+                    // workerLoginViewModel.onEvent(WorkerLoginSharedEvent.RequestLogin)
+                    workerLoginViewModel.onEvent(WorkerLoginSharedEvent.toProjectListPage)
                 },
+                // enabled = uiState.loginIdOrPhone.isNotEmpty() && uiState.password.isNotEmpty(),
                 modifier = Modifier
                     .width((screenWidth * .90).dp)
                     .align(Alignment.CenterHorizontally)
@@ -222,11 +241,11 @@ fun WorkerLoginPage(
 @Preview(showBackground = true)
 @Composable
 fun WorkerLoginPagePreview() {
-    val viewModel = MainViewModel()
+    val workerLoginViewModel = WorkerLoginViewModel()
     val navController = rememberNavController()
     val navigator = navController.toDestinationsNavigator()
 
     Jikgong1111Theme {
-        WorkerLoginPage(viewModel, navigator, modifier = Modifier.padding(3.dp))
+        WorkerLoginPage(workerLoginViewModel, navigator, modifier = Modifier.padding(3.dp))
     }
 }
