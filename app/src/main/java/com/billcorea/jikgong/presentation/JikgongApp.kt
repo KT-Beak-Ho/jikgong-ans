@@ -206,7 +206,7 @@ fun JikgongApp (
 fun JikgongAppPreview() {
   val navController = rememberNavController()
   val navigator = navController.toDestinationsNavigator()
-  Jikgong1111Theme {
+  Jikgong1111Theme {d
     JikgongApp(navigator, modifier = Modifier.padding(3.dp))
   }
 }
