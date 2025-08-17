@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.destinations.GraphScreenDestination
-import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerBottomNav
+import com.billcorea.jikgong.presentation.worker.common.WorkerBottomNav
 import com.billcorea.jikgong.presentation.worker.projectList.page2.components.WorkingDatesCalendar
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
