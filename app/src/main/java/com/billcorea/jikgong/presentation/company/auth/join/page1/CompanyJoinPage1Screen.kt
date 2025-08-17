@@ -25,7 +25,13 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.presentation.common.KeyboardConstants
+import com.billcorea.jikgong.api.models.response.ApiResult
+import com.billcorea.jikgong.api.models.response.EmailValidationResponse
+import com.billcorea.jikgong.api.models.response.LoginIdValidationResponse
+import com.billcorea.jikgong.api.models.response.PhoneValidationResponse
+import com.billcorea.jikgong.api.models.response.SmsVerificationResponse
+import com.billcorea.jikgong.api.repository.join.JoinRepository
+import com.billcorea.jikgong.presentation.common.components.KeyboardConstants
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTopBar
@@ -55,7 +61,10 @@ fun CompanyJoinPage1Screen(
 
   // 페이지 실행 시 초기화
   LaunchedEffect(Unit) {
+    //  로컬 변수 초기화
     companyJoinViewModel.onEvent(CompanyJoinSharedEvent.ResetJoin1Flow)
+    //  에러 변수 초기화
+    companyJoinViewModel.onEvent(CompanyJoinSharedEvent.ClearError)
   }
 
   // 네비게이션 이벤트 처리 - 다음페이지
@@ -74,7 +83,7 @@ fun CompanyJoinPage1Screen(
     }
   }
 
-  // 🚨 에러 다이얼로그 처리
+  /** 에러 다이얼로그 처리 */
   uiState.errorMessage?.let { message ->
     AlertDialog(
       onDismissRequest = {
@@ -94,7 +103,7 @@ fun CompanyJoinPage1Screen(
     )
   }
 
-  //  화면 시작
+  /** 화면 시작 */
   Scaffold(
     modifier = modifier
       .fillMaxSize()
@@ -126,7 +135,7 @@ fun CompanyJoinPage1Screen(
       )
     }
   ) {
-    //  중앙 (메인)
+    /** 중앙 (메인) */
       innerPadding ->
     //  전화 번호 입력 섹션
     Column(
@@ -198,9 +207,21 @@ fun JoinPage1ScreenPreview() {
   val navController = rememberNavController()
   val navigator = navController.toDestinationsNavigator()
 
+  // 빈 Repository로 ViewModel 생성 (네트워크 호출 무시)
+  val emptyRepository = object : JoinRepository {
+    override suspend fun sendSmsVerification(phoneNumber: String): ApiResult<SmsVerificationResponse> =
+      ApiResult.Error(Exception("Preview mode"))
+    override suspend fun validatePhone(phoneNumber: String): ApiResult<PhoneValidationResponse> =
+      ApiResult.Error(Exception("Preview mode"))
+    override suspend fun validateLoginId(loginId: String): ApiResult<LoginIdValidationResponse> =
+      ApiResult.Error(Exception("Preview mode"))
+    override suspend fun validateEmail(email: String): ApiResult<EmailValidationResponse> =
+      ApiResult.Error(Exception("Preview mode"))
+  }
+
   Jikgong1111Theme {
     CompanyJoinPage1Screen(
-      companyJoinViewModel = CompanyJoinSharedViewModel(), // ViewModel 직접 생성
+      companyJoinViewModel = CompanyJoinSharedViewModel(emptyRepository), // ViewModel 직접 생성
       navigator = navigator,
       modifier = Modifier.padding(3.dp)
     )

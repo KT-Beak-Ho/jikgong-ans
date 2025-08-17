@@ -95,6 +95,7 @@ class MainViewModel : ViewModel() {
         , "PANEL_ASSEMBLER", "ROOFER", "LANDSCAPER", "CAULKER", "PLUMBER", "BOILER_TECHNICIAN", "SANITARY_TECHNICIAN", "DUCT_INSTALLER"
         , "INSULATION_WORKER", "MECHANICAL_EQUIPMENT_TECHNICIAN", "ELECTRICIAN", "TELECOMMUNICATIONS_INSTALLER", "TELECOMMUNICATIONS_EQUIPMENT_INSTALLER")
 
+
     val _isLoginValidation = MutableLiveData("")
     val isLoginValidation: LiveData<String> = _isLoginValidation
 
