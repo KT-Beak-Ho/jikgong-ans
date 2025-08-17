@@ -1,7 +1,6 @@
 package com.billcorea.jikgong.presentation
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -9,7 +8,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,6 +28,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -38,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -45,8 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -64,14 +61,11 @@ import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.billcorea.jikgong.utils.AddressFindActivity
 import com.billcorea.jikgong.utils.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.require
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import org.koin.androidx.compose.koinViewModel
-import com.ramcosta.composedestinations.navigation.DestinationDependenciesContainer
 
 
 @Destination
@@ -85,6 +79,8 @@ fun JoinPage4(
 
     var lat by remember { mutableStateOf("") }
     var lon by remember { mutableStateOf("") }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     val config = LocalConfiguration.current
@@ -100,6 +96,74 @@ fun JoinPage4(
     val name by remember { mutableStateOf("") }
     var _name by remember { mutableStateOf(name) }
 
+    // roadAddress가 null이거나 빈 값일 때 에러 처리
+    LaunchedEffect(roadAddress) {
+        try {
+            // roadAddress에 null 값이 포함되어 있는지 확인
+            if (roadAddress.any { it == null }) {
+                errorMessage = "주소 검색 중 오류가 발생했습니다. 다시 시도해주세요."
+                showErrorDialog = true
+                // null 값들을 필터링하여 안전한 리스트로 만듦
+                viewModel._roadAddress.value = roadAddress.filterNotNull()
+            }
+        } catch (e: Exception) {
+            Log.e("JoinPage4", "Error processing roadAddress: ${e.message}")
+            errorMessage = "주소 처리 중 오류가 발생했습니다."
+            showErrorDialog = true
+        }
+    }
+
+    // 에러 다이얼로그
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = {
+                Text(
+                    text = "주소 검색 오류",
+                    style = AppTypography.titleMedium,
+                    color = appColorScheme.error
+                )
+            },
+            text = {
+                Text(
+                    text = "주소 검색 중 오류가 발생했습니다. 다시 시도해주세요.",
+                    style = AppTypography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showErrorDialog = false
+                        // 에러 후 초기화
+                        viewModel._roadAddress.value = emptyList()
+                        _name = ""
+                    }
+                ) {
+                    Text(
+                        text = "확인",
+                        color = appColorScheme.primary
+                    )
+                }
+            },
+            /* dismissButton = {
+                TextButton(
+                    onClick = {
+                        showErrorDialog = false
+                        // 다시 검색하기
+                        if (_name.isNotEmpty()) {
+                            viewModel.doKakaoGeocoding(_name)
+                        }
+                    }
+                ) {
+                    Text(
+                        text = "다시 검색",
+                        color = appColorScheme.secondary
+                    )
+                }
+            } */
+        )
+    }
+
     //gps 을 통한 위치 확인시 시간이 소요 되어 미리 해 둠.
     if (address?.isEmpty() == true) {
         viewModel.setLocation(context)
@@ -111,7 +175,7 @@ fun JoinPage4(
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             result.data.let { data ->
                 val getAddress = data?.getStringExtra("data")
-                Log.e("", "data=$getAddress")
+                Log.e("looaf", "data=$getAddress")
                 if (getAddress != null) {
                     viewModel.doKakaoGeocoding(getAddress)
                     viewModel._respAddress.value = getAddress
@@ -159,6 +223,8 @@ fun JoinPage4(
                     editor.putString("lat", lat)
                     Log.e("", "${lat} ${lon}")
                     editor.apply()
+                    viewModel._respAddress.value = ""
+                    viewModel._roadAddress.value = emptyList()
                     _name = ""
                     if (isSecretOk) {
                         navigator.navigate(JoinPage5Destination)
@@ -253,7 +319,13 @@ fun JoinPage4(
 //                        val intent = Intent(context, AddressFindActivity::class.java)
 //                        getPostNo.launch(intent)
                                     if (_name != "") {
-                                        viewModel.doKakaoGeocoding(_name)
+                                        try {
+                                            viewModel.doKakaoGeocoding(_name)
+                                        } catch (e: Exception) {
+                                            Log.e("JoinPage4", "Geocoding error: ${e.message}")
+                                            errorMessage = "주소 검색 중 오류가 발생했습니다."
+                                            showErrorDialog = true
+                                        }
                                     }
                                 }) {
                                     Image(
@@ -297,7 +369,9 @@ fun JoinPage4(
                 }
             }
             if (address?.isEmpty() == true) {
-                itemsIndexed(roadAddress) { index, item ->
+                // null 체크를 추가하여 안전하게 처리
+                val safeRoadAddress = roadAddress.filterNotNull()
+                itemsIndexed(safeRoadAddress) { index, item ->
                     DisplayAddress(item, doSetCenterPosition = {
                         viewModel._respAddress.value = item.addressName
                         viewModel._geoCoding.value = "${item.y},${item.x}"
@@ -355,8 +429,6 @@ fun DisplayAddress(
     }
 }
 
-
-
 @Preview
 @Composable
 fun JoinPage4Preview() {
@@ -368,6 +440,7 @@ fun JoinPage4Preview() {
         JoinPage4(fakeViewModel, navigator, modifier = Modifier.padding(3.dp), mainActivity = null)
     }
 }
+
 
 
 

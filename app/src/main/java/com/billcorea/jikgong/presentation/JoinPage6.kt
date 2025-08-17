@@ -119,6 +119,9 @@ fun JoinPage6(
     var _jobCode by remember { mutableStateOf("") }
     var textInput by remember { mutableStateOf("") }
     var numberInput by remember { mutableStateOf("") }
+    var yearInput by remember { mutableStateOf("") }
+    var monthInput by remember { mutableStateOf("") }
+    var totalMonthInput by remember { mutableStateOf("") }
     val addedItems = remember { mutableStateListOf<Pair<String, Int>>() }
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState( skipPartiallyExpanded = false)
@@ -323,19 +326,52 @@ fun JoinPage6(
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = numberInput,
-                    onValueChange = { newValue ->
-                        // 숫자만 허용
-                        if (newValue.all { it.isDigit() }) {
-                            numberInput = newValue
-                        }
-                    },
-                    label = { Text("경력 입력") },
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                //  경력 입력
+                Text(
+                    text = stringResource(R.string.testText),
+                    color = appColorScheme.primary,
+                    lineHeight = 1.25.em,
+                    style = AppTypography.bodyMedium,
                     modifier = Modifier.fillMaxWidth()
                 )
+                Text(
+//                    text = "${totalMonthInput} ${stringResource(R.string.testText2)}" ,
+                    text = stringResource(R.string.testText2) ,
+                    color = appColorScheme.primary,
+                    lineHeight = 1.25.em,
+                    style = AppTypography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    OutlinedTextField(
+                        value = yearInput,
+                        onValueChange = { newValue ->
+                            if (newValue.all { it.isDigit() }) {
+                                yearInput = newValue
+//                                totalMonthInput = yearInput * 12
+                            }
+                        },
+                        label = { Text("년") },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    OutlinedTextField(
+                        value = monthInput,
+                        onValueChange = { newValue ->
+                            if (newValue.all { it.isDigit() }) {
+                                monthInput = newValue
+                                totalMonthInput += monthInput
+                            }
+                        },
+                        label = { Text("월") },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
                 Spacer(modifier = Modifier.height(12.dp))
 
                 TextButton(
@@ -938,3 +974,30 @@ fun JobSelectList(
     }
 }
 
+@Preview
+@Composable
+fun JoinPage6Preview() {
+    val fakeViewModel = MainViewModel()
+    val navController = rememberNavController()
+    val navigator = navController.toDestinationsNavigator()
+
+    Jikgong1111Theme {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "직종: ")
+                Text(text = "경력(개월): ")
+            }
+        }
+    }
+}

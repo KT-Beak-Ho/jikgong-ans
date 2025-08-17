@@ -1,5 +1,6 @@
 package com.billcorea.jikgong.utils
 
+
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -11,23 +12,21 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.afollestad.materialdialogs.MaterialDialog
-import com.billcorea.jikgong.R
 import com.billcorea.jikgong.network.AddressFindResponse
 import com.billcorea.jikgong.network.AddressFindRoadAddress
 import com.billcorea.jikgong.network.Coord2AddressResponse
 import com.billcorea.jikgong.network.Coord2RoadAddress
 import com.billcorea.jikgong.network.DefaultResponse
+import com.billcorea.jikgong.network.LoginData
+import com.billcorea.jikgong.network.LoginErrorData
 import com.billcorea.jikgong.network.LoginIdValidationRequest
 import com.billcorea.jikgong.network.LoginIdValidationResponse
+import com.billcorea.jikgong.network.LoginRequest
+import com.billcorea.jikgong.network.LoginResponse
 import com.billcorea.jikgong.network.PhoneValidationRequest
 import com.billcorea.jikgong.network.PhoneValidationResponse
 import com.billcorea.jikgong.network.RegisterWorker
 import com.billcorea.jikgong.network.RegisterWorkerResponse
-import com.billcorea.jikgong.network.LoginData
-import com.billcorea.jikgong.network.LoginErrorData
-import com.billcorea.jikgong.network.LoginRequest
-import com.billcorea.jikgong.network.LoginResponse
 import com.billcorea.jikgong.network.RetrofitAPI
 import com.billcorea.jikgong.network.SmsVerificationRequest
 import com.billcorea.jikgong.network.SmsVerificationResponse
@@ -36,15 +35,12 @@ import com.billcorea.jikgong.network.WorkExperience
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.gson.Gson
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.MediaType.Companion.toMediaType
-
-
-import java.util.Dictionary
 
 class MainViewModel : ViewModel() {
 
@@ -86,7 +82,7 @@ class MainViewModel : ViewModel() {
         "씨티뱅크","SH수협은행","제주은행")
     val bankCode = arrayOf("006","021","089","020","011","005","003","090","031","092","032","023","045","071","039","034","002","048","037","027","007","035")
 
-val _registerResult = MutableLiveData("")
+    val _registerResult = MutableLiveData("")
     val registerResult: LiveData<String> get() = _registerResult
 
     val jobName = arrayOf("보통인부", "작업반장", "특별인부", "조력공", "비계공", "형틀목공", "철근공", "철골공", "용접공", "콘트리트공",
@@ -104,6 +100,7 @@ val _registerResult = MutableLiveData("")
 
     val _isPhoneValidation = MutableLiveData("")
     val isPhoneValidation: LiveData<String> = _isPhoneValidation
+
     fun doLogin(loginIdOrPhone: String, password: String, deviceToken: String) {
         val body = LoginRequest(loginIdOrPhone, password, deviceToken)
         RetrofitAPI.create().login(body).enqueue(object : Callback<LoginResponse> {
@@ -191,6 +188,24 @@ val _registerResult = MutableLiveData("")
                 }
             })
     }
+    fun setLocation(context: Context) {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+        Log.e("", "getLastKnownLocation ...")
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                location?.let {
+                    _lat.value = it.latitude
+                    _lon.value = it.longitude
+                    Toast.makeText(context, " 위치 정보을 확인 하고 있습니다. ", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        Log.e("", "setLocation ... ${lat.value} ${lon.value}")
+    }
 
     fun doVisaExpiryDate(body : VisaExpiryDateRequest) {
         RetrofitAPI.create().visaExpiryDate(body).enqueue(object : Callback<DefaultResponse>{
@@ -225,25 +240,6 @@ val _registerResult = MutableLiveData("")
         })
     }
 
-    fun setLocation(context: Context) {
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-            return
-        }
-        Log.e("", "getLastKnownLocation ...")
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location: Location? ->
-                location?.let {
-                    _lat.value = it.latitude
-                    _lon.value = it.longitude
-                    Toast.makeText(context, " 위치 정보을 확인 하고 있습니다. ", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-        Log.e("", "setLocation ... ${lat.value} ${lon.value}")
-    }
-
     fun doPhoneValidation(phone: String) {
         val phoneBody = PhoneValidationRequest(phone)
         RetrofitAPI.create().phoneValidation(phoneBody).enqueue(object:
@@ -276,7 +272,6 @@ val _registerResult = MutableLiveData("")
             override fun onFailure(request: Call<PhoneValidationResponse>, t: Throwable) {
                 Log.e("", "error ${t.localizedMessage}")
             }
-
         })
     }
 

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -66,6 +67,7 @@ import com.billcorea.jikgong.utils.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,11 +96,17 @@ fun JoinPage3(
     var showBottomSheet by remember { mutableStateOf(false) }
 
     fun validationData() {
-        if (_name.isNotEmpty() && _bankCode.isNotEmpty() && _accountNumber.isNotEmpty()) {
+        /* if (_name.isNotEmpty() && _bankCode.isNotEmpty() && _accountNumber.isNotEmpty()) {
             isSecretOk = true
         } else {
             isSecretOk = false
-        }
+        } */
+    }
+
+    if (_name.isNotEmpty() && _bankCode.isNotEmpty() && _accountNumber.isNotEmpty() && _accountNumber.length >= 10) {
+        isSecretOk = true
+    } else {
+        isSecretOk = false
     }
 
     if (_bankCode.isNotEmpty()) {
@@ -263,7 +271,10 @@ fun JoinPage3(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, appColorScheme.inverseSurface),
+                        .border(1.dp, appColorScheme.inverseSurface)
+                        .clickable {
+                            showBottomSheet = true
+                        },
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -323,7 +334,8 @@ fun JoinPage3(
                         .focusRequester(focusRequester)
                         .onFocusChanged { isFocus ->
                             validationData()
-                        }
+                        },
+                    isError = _accountNumber.length in 1..9
                 )
             }
         }
