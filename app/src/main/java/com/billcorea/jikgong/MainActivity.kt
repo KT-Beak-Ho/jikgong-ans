@@ -3,15 +3,10 @@ package com.billcorea.jikgong
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
-import android.webkit.JavascriptInterface
-import android.webkit.WebView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,15 +27,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.presentation.JikgongApp
-import com.billcorea.jikgong.presentation.JoinPage1
-import com.billcorea.jikgong.presentation.JoinPage2
-import com.billcorea.jikgong.presentation.JoinPage3
-import com.billcorea.jikgong.presentation.JoinPage4
-import com.billcorea.jikgong.presentation.JoinPage5
-import com.billcorea.jikgong.presentation.JoinPage6
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage1
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage2
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage3
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage4
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage5
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage6
 import com.billcorea.jikgong.presentation.KakaoMapView
 import com.billcorea.jikgong.presentation.SplashScreen
-import com.billcorea.jikgong.presentation.WorkerLoginPage  
 import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPage1Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
@@ -87,17 +81,10 @@ import com.billcorea.jikgong.presentation.worker.project.WorkerProject
 import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
-import com.google.accompanist.web.AccompanistWebChromeClient
-import com.google.accompanist.web.AccompanistWebViewClient
-import com.google.accompanist.web.WebView
-import com.google.accompanist.web.rememberWebViewNavigator
-import com.google.accompanist.web.rememberWebViewState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMapSdk
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {

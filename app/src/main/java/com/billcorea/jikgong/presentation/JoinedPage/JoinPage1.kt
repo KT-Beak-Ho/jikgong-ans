@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation
+package com.billcorea.jikgong.presentation.JoinedPage
 
 import android.content.Context
 import android.util.Log
@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.em
 import androidx.navigation.compose.rememberNavController
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.R
+import com.billcorea.jikgong.presentation.PageIndicator
 import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
