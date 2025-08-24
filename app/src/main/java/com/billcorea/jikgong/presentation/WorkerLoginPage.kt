@@ -63,173 +63,172 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import org.koin.androidx.compose.koinViewModel
 
-@Destination
 @Composable
 fun WorkerLoginPage(
-    viewModel : MainViewModel = koinViewModel(),
-    navigator: DestinationsNavigator,
-    modifier: Modifier = Modifier
+  viewModel : MainViewModel = koinViewModel(),
+  navigator: DestinationsNavigator,
+  modifier: Modifier = Modifier
 ) {
 
-    val context = LocalContext.current
-    val sp = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
-    val config = LocalConfiguration.current
-    val screenWidth = config.screenWidthDp
-    val screenHeight = config.screenHeightDp
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
+  val context = LocalContext.current
+  val sp = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
+  val config = LocalConfiguration.current
+  val screenWidth = config.screenWidthDp
+  val screenHeight = config.screenHeightDp
+  val keyboardController = LocalSoftwareKeyboardController.current
+  val focusManager = LocalFocusManager.current
 
-    var loginIdOrPhone by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
-    val _loginResult = viewModel.loginResult.observeAsState()
-    val _loginError = viewModel.loginError.observeAsState()
-    val loginResult = _loginResult.value
-    val loginError = _loginError.value
+  var loginIdOrPhone by remember { mutableStateOf("") }
+  var password by remember { mutableStateOf("") }
+  val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
+  val _loginResult = viewModel.loginResult.observeAsState()
+  val _loginError = viewModel.loginError.observeAsState()
+  val loginResult = _loginResult.value
+  val loginError = _loginError.value
 
-    LaunchedEffect(loginError) {
-        loginError?.let {
+  LaunchedEffect(loginError) {
+    loginError?.let {
+      MaterialDialog(context).show {
+        icon(R.drawable.ic_jikgong_white)
+        message(text = it)
+        positiveButton(R.string.OK) { dialog -> dialog.dismiss() }
+      }
+    }
+  }
+
+  LaunchedEffect(loginResult) {
+    loginResult?.let {
+      // 로그인 성공 시 SharedPreferences 등에 저장 가능
+      navigator.navigate(JoinPage2Destination)
+    }
+  }
+
+  Scaffold (
+    modifier = modifier
+      .fillMaxSize()
+      .padding(top = 20.dp)
+      .drawBehind {
+        val strokeWidth = 1.dp.toPx()
+        val y = size.height - strokeWidth / 2
+        drawLine(
+          color = appColorScheme.outlineVariant,
+          start = Offset(0f, y),
+          end = Offset(size.width, y),
+          strokeWidth = strokeWidth
+        )
+      }
+    , topBar = {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(5.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        IconButton(onClick = {
+          Log.e("", "backArrow")
+          navigator.navigateUp()
+        }) {
+          Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "Arrow Back"
+          )
+        }
+        Text(
+          text = stringResource(R.string.login),
+          color = appColorScheme.onPrimaryContainer,
+          style = AppTypography.titleMedium,
+        )
+      }
+
+
+    }
+  ) { innerPadding ->
+    Column(modifier = modifier
+      .fillMaxSize()
+      .padding(innerPadding)) {
+      Spacer(modifier = Modifier.padding(5.dp))
+      OutlinedTextField(
+        value = loginIdOrPhone,
+        onValueChange = {
+          loginIdOrPhone = it
+        },
+        placeholder = {
+          Text(text = stringResource(R.string.loginIdOrPhone))
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+        maxLines = 1,
+        modifier = Modifier
+          .width((screenWidth * .90).dp)
+          .align(Alignment.CenterHorizontally)
+          .focusRequester(focusRequester)
+      )
+
+      Spacer(modifier = Modifier.padding(4.dp))
+      OutlinedTextField(
+        value = password,
+        onValueChange = {
+          password = it
+        },
+        placeholder = {
+          Text(text = stringResource(R.string.password))
+        },
+        maxLines = 1,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = {
+          keyboardController?.hide()
+          focusManager.clearFocus()
+        }),
+        modifier = Modifier
+          .width((screenWidth * .90).dp)
+          .align(Alignment.CenterHorizontally)
+      )
+
+      Spacer(modifier = Modifier.padding(10.dp))
+      // 로그인 버튼
+      TextButton(
+        onClick = {
+          if (loginIdOrPhone.isNotBlank() && password.isNotBlank()) {
+            val deviceToken = "test_device_token"
+            viewModel.doLogin(loginIdOrPhone, password, deviceToken)
+
+
+          } else {
             MaterialDialog(context).show {
-                icon(R.drawable.ic_jikgong_white)
-                message(text = it)
-                positiveButton(R.string.OK) { dialog -> dialog.dismiss() }
+              icon(R.drawable.ic_jikgong_white)
+              message(R.string.errorLoginBlank)
+              positiveButton(R.string.OK) { it.dismiss() }
             }
-        }
+          }
+        },
+        modifier = Modifier
+          .width((screenWidth * .90).dp)
+          .align(Alignment.CenterHorizontally)
+          .padding(WindowInsets.navigationBars.asPaddingValues())
+          .background(appColorScheme.primary)
+      ) {
+        Text(
+          text = stringResource(R.string.login),
+          color = appColorScheme.onPrimary,
+          lineHeight = 1.25.em,
+          style = AppTypography.labelMedium,
+          modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentWidth(Alignment.CenterHorizontally)
+        )
+      }
+
     }
-
-    LaunchedEffect(loginResult) {
-        loginResult?.let {
-            // 로그인 성공 시 SharedPreferences 등에 저장 가능
-            navigator.navigate(JoinPage2Destination)
-        }
-    }
-
-    Scaffold (
-        modifier = modifier
-            .fillMaxSize()
-            .padding(top = 20.dp)
-            .drawBehind {
-                val strokeWidth = 1.dp.toPx()
-                val y = size.height - strokeWidth / 2
-                drawLine(
-                    color = appColorScheme.outlineVariant,
-                    start = Offset(0f, y),
-                    end = Offset(size.width, y),
-                    strokeWidth = strokeWidth
-                )
-            }
-        , topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = {
-                    Log.e("", "backArrow")
-                    navigator.navigateUp()
-                }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Arrow Back"
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.login),
-                    color = appColorScheme.onPrimaryContainer,
-                    style = AppTypography.titleMedium,
-                )
-            }
-
-
-        }
-    ) { innerPadding ->
-        Column(modifier = modifier
-            .fillMaxSize()
-            .padding(innerPadding)) {
-            Spacer(modifier = Modifier.padding(5.dp))
-            OutlinedTextField(
-                value = loginIdOrPhone,
-                onValueChange = {
-                    loginIdOrPhone = it
-                },
-                placeholder = {
-                    Text(text = stringResource(R.string.loginIdOrPhone))
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
-                maxLines = 1,
-                modifier = Modifier
-                    .width((screenWidth * .90).dp)
-                    .align(Alignment.CenterHorizontally)
-                    .focusRequester(focusRequester)
-            )
-
-            Spacer(modifier = Modifier.padding(4.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                },
-                placeholder = {
-                    Text(text = stringResource(R.string.password))
-                },
-                maxLines = 1,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = {
-                    keyboardController?.hide()
-                    focusManager.clearFocus()
-                }),
-                modifier = Modifier
-                    .width((screenWidth * .90).dp)
-                    .align(Alignment.CenterHorizontally)
-            )
-
-            Spacer(modifier = Modifier.padding(10.dp))
-            // 로그인 버튼
-            TextButton(
-                onClick = {
-                    if (loginIdOrPhone.isNotBlank() && password.isNotBlank()) {
-                        val deviceToken = "test_device_token"
-                        viewModel.doLogin(loginIdOrPhone, password, deviceToken)
-
-
-                    } else {
-                        MaterialDialog(context).show {
-                            icon(R.drawable.ic_jikgong_white)
-                            message(R.string.errorLoginBlank)
-                            positiveButton(R.string.OK) { it.dismiss() }
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .width((screenWidth * .90).dp)
-                    .align(Alignment.CenterHorizontally)
-                    .padding(WindowInsets.navigationBars.asPaddingValues())
-                    .background(appColorScheme.primary)
-            ) {
-                Text(
-                    text = stringResource(R.string.login),
-                    color = appColorScheme.onPrimary,
-                    lineHeight = 1.25.em,
-                    style = AppTypography.labelMedium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentWidth(Alignment.CenterHorizontally)
-                )
-            }
-
-        }
-    }
+  }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun WorkerLoginPagePreview() {
-    val viewModel = MainViewModel()
-    val navController = rememberNavController()
-    val navigator = navController.toDestinationsNavigator()
+  val viewModel = MainViewModel()
+  val navController = rememberNavController()
+  val navigator = navController.toDestinationsNavigator()
 
-    Jikgong1111Theme {
-        WorkerLoginPage(viewModel, navigator, modifier = Modifier.padding(3.dp))
-    }
+  Jikgong1111Theme {
+    WorkerLoginPage(viewModel, navigator, modifier = Modifier.padding(3.dp))
+  }
 }

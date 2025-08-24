@@ -1,9 +1,6 @@
 package com.billcorea.jikgong.datepicker
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -17,15 +14,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
-import com.billcorea.jikgong.presentation.JoinPage2
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.billcorea.jikgong.utils.MainViewModel
 import com.commandiron.wheel_picker_compose.core.SelectorProperties
 import com.commandiron.wheel_picker_compose.core.WheelPickerDefaults
-import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter

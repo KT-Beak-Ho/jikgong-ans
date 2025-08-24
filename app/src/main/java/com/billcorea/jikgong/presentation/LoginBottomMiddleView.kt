@@ -51,148 +51,148 @@ import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 
 @Composable
 fun LoginBottomMiddleView(
-    modifier: Modifier = Modifier,
-    doCloseBottom: () -> Unit,
-    doLoginPerson: () -> Unit,
-    doLoginCorp: () -> Unit
+  modifier: Modifier = Modifier,
+  doCloseBottom: () -> Unit,
+  doLoginPerson: () -> Unit,
+  doLoginCorp: () -> Unit
 ) {
-    val config = LocalConfiguration.current
-    val screenWeight = config.screenWidthDp
-    val screenHeight = config.screenHeightDp
+  val config = LocalConfiguration.current
+  val screenWeight = config.screenWidthDp
+  val screenHeight = config.screenHeightDp
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .fillMaxHeight()
-            .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+  Box(
+    modifier = modifier
+      .fillMaxSize()
+      .fillMaxHeight()
+      .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+  ) {
+    Text(
+      text = stringResource(R.string.login),
+      color = MaterialTheme.colorScheme.primary,
+      lineHeight = 1.22.em,
+      style = AppTypography.titleMedium,
+      modifier = Modifier
+        .align(alignment = Alignment.TopCenter)
+        .offset(
+          x = (-132.5).dp,
+          y = 17.dp
+        )
+        .wrapContentHeight(align = Alignment.CenterVertically))
+    Image(
+      painter = painterResource(id = R.drawable.ic_line_1px),
+      contentDescription = "Line_1px",
+      colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+      modifier = Modifier
+        .align(alignment = Alignment.TopCenter)
+        .offset(
+          x = 0.dp,
+          y = 210.dp
+        )
+        .requiredWidth(width = 375.dp)
+        .requiredHeight(height = 1.dp))
+    IconButton(onClick = {
+      doCloseBottom()
+    }, modifier = Modifier
+      .align(alignment = Alignment.TopStart)
+      .offset(
+        x = 327.dp,
+        y = 16.dp
+      )
     ) {
-        Text(
-            text = stringResource(R.string.login),
-            color = MaterialTheme.colorScheme.primary,
-            lineHeight = 1.22.em,
-            style = AppTypography.titleMedium,
-            modifier = Modifier
-                .align(alignment = Alignment.TopCenter)
-                .offset(
-                    x = (-132.5).dp,
-                    y = 17.dp
-                )
-                .wrapContentHeight(align = Alignment.CenterVertically))
-        Image(
-            painter = painterResource(id = R.drawable.ic_line_1px),
-            contentDescription = "Line_1px",
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-            modifier = Modifier
-                .align(alignment = Alignment.TopCenter)
-                .offset(
-                    x = 0.dp,
-                    y = 210.dp
-                )
-                .requiredWidth(width = 375.dp)
-                .requiredHeight(height = 1.dp))
-        IconButton(onClick = {
-            doCloseBottom()
-        }, modifier = Modifier
-            .align(alignment = Alignment.TopStart)
-            .offset(
-                x = 327.dp,
-                y = 16.dp
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Close,
-                contentDescription = "24/close",
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.87f),
-            )
-        }
-        Text(
-            text = stringResource(R.string.findJobPlace),
-            color = MaterialTheme.colorScheme.onSurface,
-            lineHeight = 1.33.em,
-            style = AppTypography.titleLarge,
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 211.dp,
-                    y = 80.dp
-                )
-                .wrapContentHeight(align = Alignment.CenterVertically))
-        Text(
-            text = stringResource(R.string.findWorker),
-            color = MaterialTheme.colorScheme.onSurface,
-            lineHeight = 1.33.em,
-            style = AppTypography.titleLarge,
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 211.dp,
-                    y = 254.dp
-                )
-                .wrapContentHeight(align = Alignment.CenterVertically))
-        TextButton(
-            onClick = {
-                doLoginPerson()
-            }, modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 211.dp,
-                    y = 156.dp
-                )
-                .wrapContentHeight(align = Alignment.CenterVertically)
-        ) {
-            Text(
-                text = stringResource(R.string.personForLogin),
-                color = MaterialTheme.colorScheme.secondary,
-                lineHeight = 1.22.em,
-                style = AppTypography.bodyMedium,
-
-                )
-        }
-        TextButton(
-            onClick = {
-                doLoginCorp()
-            }, modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 211.dp,
-                    y = 330.dp
-                )
-                .wrapContentHeight(align = Alignment.CenterVertically)
+      Icon(
+        imageVector = Icons.Rounded.Close,
+        contentDescription = "24/close",
+        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.87f),
+      )
+    }
+    Text(
+      text = stringResource(R.string.findJobPlace),
+      color = MaterialTheme.colorScheme.onSurface,
+      lineHeight = 1.33.em,
+      style = AppTypography.titleLarge,
+      modifier = Modifier
+        .align(alignment = Alignment.TopStart)
+        .offset(
+          x = 211.dp,
+          y = 80.dp
         )
-        {
-            Text(
-                text = stringResource(R.string.corpForLogin),
-                color = MaterialTheme.colorScheme.secondary,
-                lineHeight = 1.22.em,
-                style = AppTypography.bodyMedium,
-
-                )
-        }
-        Image(
-            painter = painterResource(id = R.drawable.ic_layer_1),
-            contentDescription = "Corp For",
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 40.dp,
-                    y = 243.dp
-                )
-                .requiredWidth(width = 131.dp)
-                .requiredHeight(height = 111.dp)
+        .wrapContentHeight(align = Alignment.CenterVertically))
+    Text(
+      text = stringResource(R.string.findWorker),
+      color = MaterialTheme.colorScheme.onSurface,
+      lineHeight = 1.33.em,
+      style = AppTypography.titleLarge,
+      modifier = Modifier
+        .align(alignment = Alignment.TopStart)
+        .offset(
+          x = 211.dp,
+          y = 254.dp
         )
-        Image(
-            painter = painterResource(id = R.drawable.ic_layer_2),
-            contentDescription = "Person For",
-            modifier = Modifier
-                .align(alignment = Alignment.TopStart)
-                .offset(
-                    x = 42.dp,
-                    y = 76.dp
-                )
-                .requiredWidth(width = 128.dp)
-                .requiredHeight(height = 102.dp)
+        .wrapContentHeight(align = Alignment.CenterVertically))
+    TextButton(
+      onClick = {
+        doLoginPerson()
+      }, modifier = Modifier
+        .align(alignment = Alignment.TopStart)
+        .offset(
+          x = 211.dp,
+          y = 156.dp
+        )
+        .wrapContentHeight(align = Alignment.CenterVertically)
+    ) {
+      Text(
+        text = stringResource(R.string.personForLogin),
+        color = MaterialTheme.colorScheme.secondary,
+        lineHeight = 1.22.em,
+        style = AppTypography.bodyMedium,
+
         )
     }
+    TextButton(
+      onClick = {
+        doLoginCorp()
+      }, modifier = Modifier
+        .align(alignment = Alignment.TopStart)
+        .offset(
+          x = 211.dp,
+          y = 330.dp
+        )
+        .wrapContentHeight(align = Alignment.CenterVertically)
+    )
+    {
+      Text(
+        text = stringResource(R.string.corpForLogin),
+        color = MaterialTheme.colorScheme.secondary,
+        lineHeight = 1.22.em,
+        style = AppTypography.bodyMedium,
+
+        )
+    }
+    Image(
+      painter = painterResource(id = R.drawable.ic_layer_1),
+      contentDescription = "Corp For",
+      modifier = Modifier
+        .align(alignment = Alignment.TopStart)
+        .offset(
+          x = 40.dp,
+          y = 243.dp
+        )
+        .requiredWidth(width = 131.dp)
+        .requiredHeight(height = 111.dp)
+    )
+    Image(
+      painter = painterResource(id = R.drawable.ic_layer_2),
+      contentDescription = "Person For",
+      modifier = Modifier
+        .align(alignment = Alignment.TopStart)
+        .offset(
+          x = 42.dp,
+          y = 76.dp
+        )
+        .requiredWidth(width = 128.dp)
+        .requiredHeight(height = 102.dp)
+    )
+  }
 }
 
 // 프리뷰
@@ -201,36 +201,34 @@ fun LoginBottomMiddleView(
 @Composable
 fun LoginBottomMiddleViewPreview() {
 
-    val config = LocalConfiguration.current
-    val navController = rememberNavController()
-    val navigator = navController.toDestinationsNavigator()
-    var showBottomSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState( skipPartiallyExpanded = false)
-    val screenHeight = config.screenHeightDp
+  val config = LocalConfiguration.current
+  val navController = rememberNavController()
+  val navigator = navController.toDestinationsNavigator()
+  var showBottomSheet by remember { mutableStateOf(false) }
+  val sheetState = rememberModalBottomSheetState( skipPartiallyExpanded = false)
+  val screenHeight = config.screenHeightDp
 
-    ModalBottomSheet(
-        onDismissRequest = {
-            showBottomSheet = false
-        }
-        , sheetState = sheetState
-        , modifier = Modifier.height((screenHeight * .5).dp) // .8
-    ) {
-
-        LoginBottomMiddleView(modifier = Modifier
-            .fillMaxWidth()
-            .padding(5.dp),
-            doCloseBottom = {
-                //showBottomSheet = false
-            },
-            doLoginPerson = {
-                // showBottomSheet = false
-                navigator.navigate(WorkerLoginPageDestination)
-            },
-            doLoginCorp = {
-
-            }
-        )
+  ModalBottomSheet(
+    onDismissRequest = {
+      showBottomSheet = false
     }
+    , sheetState = sheetState
+    , modifier = Modifier.height((screenHeight * .5).dp) // .8
+  ) {
+
+    LoginBottomMiddleView(modifier = Modifier
+      .fillMaxWidth()
+      .padding(5.dp),
+      doCloseBottom = {
+        //showBottomSheet = false
+      },
+      doLoginPerson = {
+        // showBottomSheet = false
+        navigator.navigate(WorkerLoginPageDestination)
+      },
+      doLoginCorp = {
+
+      }
+    )
+  }
 }
-
-
