@@ -1,5 +1,7 @@
 package com.billcorea.jikgong.di
 
+import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
+import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedViewModel
 import com.billcorea.jikgong.presentation.company.main.common.CompanySharedViewModel
 import com.billcorea.jikgong.presentation.company.main.info.viewmodel.CompanyInfoViewModel
 import com.billcorea.jikgong.presentation.company.main.projectlist.viewmodel.ProjectListViewModel
@@ -17,6 +19,10 @@ val viewModelModule = module {
   // Worker Auth
   viewModel { WorkerJoinSharedViewModel() }
   viewModel { WorkerLoginViewModel() }
+
+  // Company Auth
+  viewModel { CompanyJoinSharedViewModel(get()) }  // JoinRepository 주입
+  viewModel { CompanyLoginSharedViewModel(get()) } // LoginRepository 주입
 
   // Company 공통 (싱글톤으로 관리)
   single { CompanySharedViewModel(get()) }  // CompanyRepository 주입

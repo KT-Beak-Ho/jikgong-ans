@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ramcosta.composedestinations.annotation.Destination
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -47,6 +48,7 @@ data class SimpleProject(
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Destination
 @Composable
 fun ProjectListScreen(
   navController: NavController,
@@ -416,6 +418,24 @@ private fun ProjectCard(
           },
           trackColor = Color(0xFFE0E0E0)
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+          onClick = { /* 프로젝트 관리 액션 */ },
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp),
+          colors = ButtonDefaults.buttonColors(
+            containerColor = appColorScheme.primary
+          ),
+          shape = RoundedCornerShape(8.dp)
+        ) {
+          Text(
+            text = "프로젝트 관리",
+            style = AppTypography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = Color.White
+          )
+        }
       }
     }
   }

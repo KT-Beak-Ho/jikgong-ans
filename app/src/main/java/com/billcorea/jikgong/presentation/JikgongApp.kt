@@ -46,6 +46,7 @@ import com.billcorea.jikgong.presentation.destinations.JoinPage4Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.CompanyLoginPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
@@ -150,7 +151,7 @@ Scaffold(
               navigator.navigate(WorkerLoginPageDestination)
             },
             doLoginCorp = {
-
+              navigator.navigate(CompanyLoginPage1ScreenDestination)
             }
           )
         }
