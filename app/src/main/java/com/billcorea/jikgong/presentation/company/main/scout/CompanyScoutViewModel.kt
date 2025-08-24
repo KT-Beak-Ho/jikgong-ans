@@ -89,7 +89,9 @@ class CompanyScoutViewModel : ViewModel() {
         status = ProposalStatus.PENDING,
         createdAt = LocalDateTime.now(),
         jobTypes = worker.jobTypes,
-        distance = worker.distance
+        distance = "${worker.distance}km",
+        workerPhone = null,
+        rejectReason = null
       )
 
       // 리포지토리에 저장
@@ -108,6 +110,7 @@ class CompanyScoutViewModel : ViewModel() {
 
   fun showProposalDetail(proposal: Proposal) {
     // 제안 상세 보기 구현
+    // TODO: 상세 화면 네비게이션 또는 바텀시트 표시
   }
 
   fun updateLocation(location: String) {

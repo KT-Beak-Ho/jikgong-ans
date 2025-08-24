@@ -61,62 +61,62 @@ fun ProposalListPage(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 새로고침 및 로딩 표시
+            // 새로고침 버튼
             item {
-                if (isLoading) {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
-                        color = Color(0xFF4B7BFF)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "총 ${proposals.size}건",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
                     )
+
+                    IconButton(onClick = onRefresh) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "새로고침",
+                            tint = Color(0xFF4B7BFF)
+                        )
+                    }
                 }
             }
 
-            // 통계 카드
-            item {
-                ProposalStatisticsCard(
-                    totalCount = proposals.size,
-                    acceptedCount = acceptedProposals.size,
-                    pendingCount = pendingProposals.size,
-                    rejectedCount = rejectedProposals.size,
-                    onRefresh = onRefresh,
-                    isLoading = isLoading
-                )
+            // 대기중 제안
+            if (pendingProposals.isNotEmpty()) {
+                item {
+                    SectionHeader(title = "대기중 (${pendingProposals.size})")
+                }
+
+                items(
+                    items = pendingProposals,
+                    key = { it.id }
+                ) { proposal ->
+                    ProposalCard(
+                        proposal = proposal,
+                        onClick = { onProposalClick(proposal) }
+                    )
+                }
             }
 
             // 수락된 제안
             if (acceptedProposals.isNotEmpty()) {
                 item {
-                    SectionHeader(
-                        title = "수락됨",
-                        count = acceptedProposals.size,
-                        color = Color(0xFF66BB6A)
-                    )
+                    SectionHeader(title = "수락됨 (${acceptedProposals.size})")
                 }
 
-                items(acceptedProposals) { proposal ->
+                items(
+                    items = acceptedProposals,
+                    key = { it.id }
+                ) { proposal ->
                     ProposalCard(
                         proposal = proposal,
-                        onCardClick = { onProposalClick(proposal) }
-                    )
-                }
-            }
-
-            // 대기중인 제안
-            if (pendingProposals.isNotEmpty()) {
-                item {
-                    SectionHeader(
-                        title = "대기중",
-                        count = pendingProposals.size,
-                        color = Color(0xFFFFA726)
-                    )
-                }
-
-                items(pendingProposals) { proposal ->
-                    ProposalCard(
-                        proposal = proposal,
-                        onCardClick = { onProposalClick(proposal) }
+                        onClick = { onProposalClick(proposal) }
                     )
                 }
             }
@@ -124,17 +124,16 @@ fun ProposalListPage(
             // 거절된 제안
             if (rejectedProposals.isNotEmpty()) {
                 item {
-                    SectionHeader(
-                        title = "거절됨",
-                        count = rejectedProposals.size,
-                        color = Color(0xFFEF5350)
-                    )
+                    SectionHeader(title = "거절됨 (${rejectedProposals.size})")
                 }
 
-                items(rejectedProposals) { proposal ->
+                items(
+                    items = rejectedProposals,
+                    key = { it.id }
+                ) { proposal ->
                     ProposalCard(
                         proposal = proposal,
-                        onCardClick = { onProposalClick(proposal) }
+                        onClick = { onProposalClick(proposal) }
                     )
                 }
             }
@@ -148,160 +147,21 @@ fun ProposalListPage(
 }
 
 @Composable
-private fun ProposalStatisticsCard(
-    totalCount: Int,
-    acceptedCount: Int,
-    pendingCount: Int,
-    rejectedCount: Int,
-    onRefresh: () -> Unit,
-    isLoading: Boolean
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "제안 현황",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-
-                // 새로고침 버튼
-                IconButton(
-                    onClick = onRefresh,
-                    enabled = !isLoading,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "새로고침",
-                        tint = if (isLoading) Color.Gray else Color(0xFF4B7BFF)
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                StatisticItem(
-                    label = "전체",
-                    value = totalCount.toString(),
-                    color = Color.Black
-                )
-                StatisticItem(
-                    label = "수락",
-                    value = acceptedCount.toString(),
-                    color = Color(0xFF66BB6A)
-                )
-                StatisticItem(
-                    label = "대기",
-                    value = pendingCount.toString(),
-                    color = Color(0xFFFFA726)
-                )
-                StatisticItem(
-                    label = "거절",
-                    value = rejectedCount.toString(),
-                    color = Color(0xFFEF5350)
-                )
-            }
-
-            // 수락률
-            if (totalCount > 0) {
-                val acceptanceRate = (acceptedCount.toFloat() / totalCount * 100).toInt()
-                LinearProgressIndicator(
-                    progress = { acceptedCount.toFloat() / totalCount },
-                    modifier = Modifier.fillMaxWidth(),
-                    color = Color(0xFF66BB6A),
-                    trackColor = Color(0xFFE0E0E0)
-                )
-                Text(
-                    text = "수락률 $acceptanceRate%",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun StatisticItem(
-    label: String,
-    value: String,
-    color: Color
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold
-            ),
-            color = color
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray
-        )
-    }
-}
-
-@Composable
 private fun SectionHeader(
     title: String,
-    count: Int,
-    color: Color
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                shape = MaterialTheme.shapes.small,
-                color = color.copy(alpha = 0.1f)
-            ) {
-                Text(
-                    text = title,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = color
-                )
-            }
-            Text(
-                text = "${count}건",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
-        }
-    }
+    Text(
+        text = title,
+        modifier = modifier.padding(vertical = 8.dp),
+        style = MaterialTheme.typography.titleSmall.copy(
+            fontWeight = FontWeight.Bold
+        ),
+        color = Color.Black
+    )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFFF7F8FA)
 @Composable
 fun ProposalListPagePreview() {
     Jikgong1111Theme {
@@ -309,41 +169,74 @@ fun ProposalListPagePreview() {
             proposals = listOf(
                 Proposal(
                     id = "1",
-                    workerId = "1",
+                    workerId = "worker1",
                     workerName = "김철수",
-                    proposedWage = "일당 18만원",
-                    message = "프로젝트 참여 부탁드립니다.",
-                    status = ProposalStatus.ACCEPTED,
-                    createdAt = LocalDateTime.now(),
-                    jobTypes = listOf("철근공"),
-                    distance = 0.8,
-                    workerPhone = "010-1234-5678"
+                    proposedWage = "일당 20만원",
+                    message = "프로젝트에 꼭 필요한 인력입니다.",
+                    status = ProposalStatus.PENDING,
+                    createdAt = LocalDateTime.now().minusHours(2),
+                    respondedAt = null,
+                    jobTypes = listOf("철근공", "형틀목공"),
+                    distance = "2.5km",
+                    workerPhone = null,
+                    rejectReason = null
                 ),
                 Proposal(
                     id = "2",
-                    workerId = "2",
+                    workerId = "worker2",
                     workerName = "이영희",
-                    proposedWage = "일당 15만원",
-                    message = "다음 주부터 시작하는 프로젝트입니다.",
-                    status = ProposalStatus.PENDING,
-                    createdAt = LocalDateTime.now().minusHours(2),
+                    proposedWage = "일당 18만원",
+                    message = "경력이 풍부하신 분을 찾고 있습니다.",
+                    status = ProposalStatus.ACCEPTED,
+                    createdAt = LocalDateTime.now().minusDays(1),
+                    respondedAt = LocalDateTime.now().minusHours(3),
                     jobTypes = listOf("타일공"),
-                    distance = 1.2
+                    distance = "1.2km",
+                    workerPhone = "010-1234-5678",
+                    rejectReason = null
                 ),
                 Proposal(
                     id = "3",
-                    workerId = "3",
+                    workerId = "worker3",
                     workerName = "박민수",
-                    proposedWage = "일당 20만원",
-                    message = "긴급 프로젝트입니다.",
+                    proposedWage = "일당 15만원",
+                    message = "함께 일하고 싶습니다.",
                     status = ProposalStatus.REJECTED,
-                    createdAt = LocalDateTime.now().minusDays(1),
+                    createdAt = LocalDateTime.now().minusDays(2),
+                    respondedAt = LocalDateTime.now().minusDays(1),
                     jobTypes = listOf("전기공"),
-                    distance = 2.5,
+                    distance = "3.5km",
+                    workerPhone = null,
                     rejectReason = "일정이 맞지 않습니다"
                 )
             ),
             isLoading = false,
+            onProposalClick = {},
+            onRefresh = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+fun ProposalListPageEmptyPreview() {
+    Jikgong1111Theme {
+        ProposalListPage(
+            proposals = emptyList(),
+            isLoading = false,
+            onProposalClick = {},
+            onRefresh = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+fun ProposalListPageLoadingPreview() {
+    Jikgong1111Theme {
+        ProposalListPage(
+            proposals = emptyList(),
+            isLoading = true,
             onProposalClick = {},
             onRefresh = {}
         )

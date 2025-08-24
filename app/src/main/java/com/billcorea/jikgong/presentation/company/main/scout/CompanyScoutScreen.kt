@@ -1,25 +1,31 @@
 package com.billcorea.jikgong.presentation.company.main.scout
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
 import com.billcorea.jikgong.presentation.company.main.scout.data.Worker
+import com.billcorea.jikgong.presentation.company.main.scout.data.Proposal
+import com.billcorea.jikgong.presentation.company.main.scout.data.ProposalStatus
 import com.billcorea.jikgong.presentation.company.main.scout.pages.WorkerListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.ProposalListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.LocationSettingPage
@@ -27,6 +33,7 @@ import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 @Destination(route = "company_scout_main")
 @Composable
@@ -44,10 +51,12 @@ fun CompanyScoutMainScreen(
         modifier = modifier,
         topBar = {
             Column {
+                // 토스 스타일 헤더
                 TossStyleHeader(
                     currentLocation = uiState.currentLocation
                 )
 
+                // 탭 바
                 ScoutTabBarExtended(
                     selectedTab = pagerState.currentPage,
                     onTabSelected = { index ->
@@ -64,7 +73,7 @@ fun CompanyScoutMainScreen(
                 currentRoute = "company/scout"
             )
         },
-        containerColor = Color(0xFFF7F8FA)
+        containerColor = Color(0xFFF7F8FA) // 토스 배경색
     ) { paddingValues ->
         HorizontalPager(
             state = pagerState,
@@ -113,8 +122,9 @@ fun CompanyScoutMainScreen(
         }
     }
 
+    // 노동자 상세 바텀시트
     if (uiState.selectedWorker != null) {
-        WorkerDetailBottomSheet(
+        WorkerDetailBottomSheetContent(
             worker = uiState.selectedWorker!!,
             onDismiss = { viewModel.dismissWorkerDetail() },
             onScoutConfirm = { wage, message ->
@@ -130,58 +140,49 @@ fun CompanyScoutMainScreen(
 
 @Composable
 private fun TossStyleHeader(
-    currentLocation: String
+    currentLocation: String,
+    modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(horizontal = 20.dp, vertical = 20.dp)
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = Color.White,
+        shadowElevation = 0.dp
     ) {
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "인력 스카웃",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "주변의 우수한 인력을 찾아보세요",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
-                    )
-                }
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
+            // 타이틀
+            Text(
+                text = "스카웃",
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.Black
+            )
 
-                Surface(
-                    shape = MaterialTheme.shapes.small,
-                    color = Color(0xFFF0F0F0)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = "위치",
-                            modifier = Modifier.size(16.dp),
-                            tint = Color(0xFF4B7BFF)
-                        )
-                        Text(
-                            text = currentLocation,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Black
-                        )
-                    }
-                }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 현재 위치
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFFF5F5F5))
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = "위치",
+                    modifier = Modifier.size(16.dp),
+                    tint = Color(0xFF4B7BFF)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = currentLocation,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Black
+                )
             }
         }
     }
@@ -229,13 +230,15 @@ private fun TabItem(
     val textColor = if (isSelected) Color.White else Color.Gray
 
     Surface(
-        modifier = modifier.height(36.dp),
-        onClick = onClick,
-        shape = MaterialTheme.shapes.small,
+        modifier = modifier
+            .height(36.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .clickable { onClick() },
         color = backgroundColor
     ) {
         Box(
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
         ) {
             Text(
                 text = title,
@@ -250,7 +253,7 @@ private fun TabItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WorkerDetailBottomSheet(
+private fun WorkerDetailBottomSheetContent(
     worker: Worker,
     onDismiss: () -> Unit,
     onScoutConfirm: (wage: String, message: String) -> Unit
@@ -268,6 +271,7 @@ private fun WorkerDetailBottomSheet(
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
+            // 노동자 정보 헤더
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -286,6 +290,7 @@ private fun WorkerDetailBottomSheet(
                     )
                 }
 
+                // 평점
                 Surface(
                     shape = MaterialTheme.shapes.small,
                     color = Color(0xFFF0F0F0)
@@ -300,23 +305,25 @@ private fun WorkerDetailBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            InfoSection(
+            // 경력 정보
+            WorkerInfoSection(
                 title = "경력",
                 content = "${worker.experience}년"
             )
 
-            InfoSection(
+            WorkerInfoSection(
                 title = "희망 일당",
                 content = worker.desiredWage ?: "협의 가능"
             )
 
-            InfoSection(
+            WorkerInfoSection(
                 title = "자기소개",
                 content = worker.introduction ?: "등록된 소개가 없습니다."
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // 임금 입력
             OutlinedTextField(
                 value = wage,
                 onValueChange = { wage = it },
@@ -331,6 +338,7 @@ private fun WorkerDetailBottomSheet(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // 메시지 입력
             OutlinedTextField(
                 value = message,
                 onValueChange = { message = it },
@@ -346,6 +354,7 @@ private fun WorkerDetailBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // 스카웃 제안 버튼
             Button(
                 onClick = { onScoutConfirm(wage, message) },
                 modifier = Modifier
@@ -370,7 +379,7 @@ private fun WorkerDetailBottomSheet(
 }
 
 @Composable
-private fun InfoSection(
+private fun WorkerInfoSection(
     title: String,
     content: String
 ) {
@@ -388,51 +397,105 @@ private fun InfoSection(
     }
 }
 
-@Preview(name = "스카웃 화면 - 인력 목록", showBackground = true, widthDp = 360, heightDp = 800)
+// Preview Functions
+@Preview(showBackground = true, name = "Scout Screen - Worker List")
 @Composable
-fun CompanyScoutMainScreenWithDataPreview() {
+fun CompanyScoutScreenWorkerListPreview() {
     Jikgong1111Theme {
-        val mockNavController = rememberNavController()
-        val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
+        var selectedWorker by remember { mutableStateOf<Worker?>(null) }
 
-        // 샘플 데이터를 직접 생성
-        val sampleWorkers = listOf(
+        CompanyScoutMainScreenPreview(
+            selectedTab = 0,
+            selectedWorker = selectedWorker,
+            onWorkerSelect = { selectedWorker = it },
+            onWorkerDismiss = { selectedWorker = null }
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Scout Screen - Empty Worker List")
+@Composable
+fun CompanyScoutScreenEmptyWorkerListPreview() {
+    Jikgong1111Theme {
+        CompanyScoutMainScreenPreview(
+            selectedTab = 0,
+            hasWorkers = false
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Scout Screen - Proposal List")
+@Composable
+fun CompanyScoutScreenProposalListPreview() {
+    Jikgong1111Theme {
+        CompanyScoutMainScreenPreview(selectedTab = 1)
+    }
+}
+
+@Preview(showBackground = true, name = "Scout Screen - Empty Proposal List")
+@Composable
+fun CompanyScoutScreenEmptyProposalListPreview() {
+    Jikgong1111Theme {
+        CompanyScoutMainScreenPreview(
+            selectedTab = 1,
+            hasProposals = false
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Scout Screen - Location Settings")
+@Composable
+fun CompanyScoutScreenLocationPreview() {
+    Jikgong1111Theme {
+        CompanyScoutMainScreenPreview(selectedTab = 2)
+    }
+}
+
+@Composable
+private fun CompanyScoutMainScreenPreview(
+    selectedTab: Int = 0,
+    selectedWorker: Worker? = null,
+    onWorkerSelect: (Worker) -> Unit = {},
+    onWorkerDismiss: () -> Unit = {},
+    hasWorkers: Boolean = true,
+    hasProposals: Boolean = true
+) {
+    val pagerState = rememberPagerState(
+        initialPage = selectedTab,
+        pageCount = { 3 }
+    )
+    val coroutineScope = rememberCoroutineScope()
+
+    // Mock data
+    val mockWorkers = if (hasWorkers) {
+        listOf(
             Worker(
                 id = "1",
                 name = "김철수",
-                profileImageUrl = null,
                 jobTypes = listOf("철근공", "형틀목공"),
                 experience = 5,
                 distance = 0.8,
                 rating = 4.8f,
-                introduction = "성실하고 꼼꼼한 작업을 약속드립니다. 5년간 다양한 현장에서 경험을 쌓았습니다.",
+                introduction = "성실하고 꼼꼼한 작업을 약속드립니다.",
                 desiredWage = "일당 18만원",
                 isAvailable = true,
-                lastActiveAt = LocalDateTime.now().minusHours(2),
-                certifications = listOf("건설기능사", "안전교육이수"),
-                completedProjects = 52,
-                phoneNumber = null,
-                workArea = "서울 강남구, 서초구"
+                completedProjects = 52
             ),
             Worker(
                 id = "2",
                 name = "이영희",
-                profileImageUrl = null,
                 jobTypes = listOf("타일공"),
                 experience = 3,
                 distance = 1.2,
                 rating = 4.5f,
-                introduction = "깔끔한 마감 처리가 장점입니다. 욕실, 주방 타일 전문입니다.",
+                introduction = "깔끔한 마감 처리가 장점입니다.",
                 desiredWage = "일당 15만원",
                 isAvailable = true,
-                lastActiveAt = LocalDateTime.now().minusMinutes(30),
-                completedProjects = 28,
-                workArea = "서울 서초구, 강남구"
+                completedProjects = 28
             ),
             Worker(
                 id = "3",
                 name = "박민수",
-                profileImageUrl = null,
                 jobTypes = listOf("전기공", "배관공"),
                 experience = 8,
                 distance = 2.5,
@@ -440,15 +503,11 @@ fun CompanyScoutMainScreenWithDataPreview() {
                 introduction = "다년간의 경험으로 신속 정확한 작업 보장합니다.",
                 desiredWage = "일당 20만원",
                 isAvailable = false,
-                lastActiveAt = LocalDateTime.now().minusDays(1),
-                certifications = listOf("전기기능사", "배관기능사"),
-                completedProjects = 103,
-                workArea = "서울 송파구, 강동구"
+                completedProjects = 103
             ),
             Worker(
                 id = "4",
                 name = "정수진",
-                profileImageUrl = null,
                 jobTypes = listOf("도장공"),
                 experience = 2,
                 distance = 1.8,
@@ -456,198 +515,138 @@ fun CompanyScoutMainScreenWithDataPreview() {
                 introduction = "꼼꼼한 작업으로 만족도 높은 결과물을 제공합니다.",
                 desiredWage = "협의 가능",
                 isAvailable = true,
-                lastActiveAt = LocalDateTime.now().minusHours(5),
-                completedProjects = 15,
-                workArea = "서울 강동구"
+                completedProjects = 15
+            ),
+            Worker(
+                id = "5",
+                name = "최영호",
+                jobTypes = listOf("조적공", "미장공"),
+                experience = 10,
+                distance = 3.2,
+                rating = 4.7f,
+                introduction = "20년 경력의 베테랑입니다.",
+                desiredWage = "일당 22만원",
+                isAvailable = true,
+                completedProjects = 156
             )
         )
+    } else {
+        emptyList()
+    }
 
-        Scaffold(
-            topBar = {
-                Column {
-                    TossStyleHeader(
-                        currentLocation = "서울특별시 강남구"
-                    )
-                    ScoutTabBarExtended(
-                        selectedTab = pagerState.currentPage,
-                        onTabSelected = { }
-                    )
-                }
-            },
-            bottomBar = {
-                CompanyBottomBar(
-                    navController = mockNavController,
-                    currentRoute = "company/scout"
+    val mockProposals = if (hasProposals) {
+        listOf(
+            Proposal(
+                id = "1",
+                workerId = "worker1",
+                workerName = "김철수",
+                proposedWage = "일당 20만원",
+                message = "프로젝트에 꼭 필요한 인력입니다.",
+                status = ProposalStatus.PENDING,
+                createdAt = LocalDateTime.now().minusHours(2),
+                respondedAt = null,
+                jobTypes = listOf("철근공"),
+                distance = "2.5km",
+                workerPhone = null,
+                rejectReason = null
+            ),
+            Proposal(
+                id = "2",
+                workerId = "worker2",
+                workerName = "이영희",
+                proposedWage = "일당 18만원",
+                message = "경력이 풍부하신 분을 찾고 있습니다.",
+                status = ProposalStatus.ACCEPTED,
+                createdAt = LocalDateTime.now().minusDays(1),
+                respondedAt = LocalDateTime.now().minusHours(3),
+                jobTypes = listOf("타일공"),
+                distance = "1.2km",
+                workerPhone = "010-1234-5678",
+                rejectReason = null
+            ),
+            Proposal(
+                id = "3",
+                workerId = "worker3",
+                workerName = "박민수",
+                proposedWage = "일당 15만원",
+                message = "함께 일하고 싶습니다.",
+                status = ProposalStatus.REJECTED,
+                createdAt = LocalDateTime.now().minusDays(2),
+                respondedAt = LocalDateTime.now().minusDays(1),
+                jobTypes = listOf("전기공"),
+                distance = "3.5km",
+                workerPhone = null,
+                rejectReason = "일정이 맞지 않습니다"
+            )
+        )
+    } else {
+        emptyList()
+    }
+
+    Scaffold(
+        topBar = {
+            Column {
+                TossStyleHeader(
+                    currentLocation = "서울특별시 강남구"
                 )
-            },
-            containerColor = Color(0xFFF7F8FA)
-        ) { paddingValues ->
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) { page ->
-                when (page) {
-                    0 -> WorkerListPage(
-                        workers = sampleWorkers,
-                        isLoading = false,
-                        onWorkerClick = { },
-                        onScoutClick = { },
-                        onRefresh = { }
-                    )
-                    1 -> ProposalListPage(
-                        proposals = listOf(
-                            Proposal(
-                                id = "p1",
-                                workerId = "1",
-                                workerName = "김철수",
-                                proposedWage = "일당 18만원",
-                                message = "현재 진행 중인 강남구 프로젝트에 참여 부탁드립니다.",
-                                status = ProposalStatus.ACCEPTED,
-                                createdAt = LocalDateTime.now().minusDays(2),
-                                respondedAt = LocalDateTime.now().minusDays(1),
-                                jobTypes = listOf("철근공"),
-                                distance = 0.8,
-                                workerPhone = "010-1234-5678"
-                            ),
-                            Proposal(
-                                id = "p2",
-                                workerId = "2",
-                                workerName = "이영희",
-                                proposedWage = "일당 16만원",
-                                message = "다음 주 월요일부터 시작하는 프로젝트입니다.",
-                                status = ProposalStatus.PENDING,
-                                createdAt = LocalDateTime.now().minusHours(5),
-                                jobTypes = listOf("타일공"),
-                                distance = 1.2
-                            )
-                        ),
-                        isLoading = false,
-                        onProposalClick = { },
-                        onRefresh = { }
-                    )
-                    2 -> LocationSettingPage(
-                        currentLocation = "서울특별시 강남구",
-                        searchRadius = 10,
-                        onLocationChange = { },
-                        onRadiusChange = { },
-                        onCurrentLocationClick = { }
-                    )
-                }
+                ScoutTabBarExtended(
+                    selectedTab = pagerState.currentPage,
+                    onTabSelected = { index ->
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    }
+                )
+            }
+        },
+        bottomBar = {
+            // 실제 CompanyBottomBar 사용
+            val mockNavController = rememberNavController()
+            CompanyBottomBar(
+                navController = mockNavController,
+                currentRoute = "company/scout"
+            )
+        },
+        containerColor = Color(0xFFF7F8FA)
+    ) { paddingValues ->
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            userScrollEnabled = true
+        ) { page ->
+            when (page) {
+                0 -> WorkerListPage(
+                    workers = mockWorkers,
+                    isLoading = false,
+                    onWorkerClick = onWorkerSelect,
+                    onScoutClick = onWorkerSelect,
+                    onRefresh = {}
+                )
+                1 -> ProposalListPage(
+                    proposals = mockProposals,
+                    isLoading = false,
+                    onProposalClick = {},
+                    onRefresh = {}
+                )
+                2 -> LocationSettingPage(
+                    currentLocation = "서울특별시 강남구",
+                    searchRadius = 10,
+                    onLocationChange = {},
+                    onRadiusChange = {},
+                    onCurrentLocationClick = {}
+                )
             }
         }
     }
-}
 
-@Preview(name = "스카웃 화면 - 제안 목록", showBackground = true, widthDp = 360, heightDp = 800)
-@Composable
-fun CompanyScoutMainScreenProposalPreview() {
-    Jikgong1111Theme {
-        val mockNavController = rememberNavController()
-        val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 }) // 제안 목록 탭
-
-        // 샘플 제안 데이터
-        val sampleProposals = listOf(
-            Proposal(
-                id = "p1",
-                workerId = "1",
-                workerName = "김철수",
-                proposedWage = "일당 18만원",
-                message = "현재 진행 중인 강남구 프로젝트에 참여 부탁드립니다. 철근공 경력자를 찾고 있습니다.",
-                status = ProposalStatus.ACCEPTED,
-                createdAt = LocalDateTime.now().minusDays(2),
-                respondedAt = LocalDateTime.now().minusDays(1),
-                jobTypes = listOf("철근공"),
-                distance = 0.8,
-                workerPhone = "010-1234-5678"
-            ),
-            Proposal(
-                id = "p2",
-                workerId = "2",
-                workerName = "이영희",
-                proposedWage = "일당 16만원",
-                message = "다음 주 월요일부터 시작하는 프로젝트입니다.",
-                status = ProposalStatus.PENDING,
-                createdAt = LocalDateTime.now().minusHours(5),
-                jobTypes = listOf("타일공"),
-                distance = 1.2
-            ),
-            Proposal(
-                id = "p3",
-                workerId = "3",
-                workerName = "박민수",
-                proposedWage = "일당 20만원",
-                message = "긴급 프로젝트입니다. 전기 작업 경험이 풍부한 분을 모십니다.",
-                status = ProposalStatus.REJECTED,
-                createdAt = LocalDateTime.now().minusDays(3),
-                respondedAt = LocalDateTime.now().minusDays(3),
-                jobTypes = listOf("전기공"),
-                distance = 2.5,
-                rejectReason = "일정이 맞지 않습니다"
-            ),
-            Proposal(
-                id = "p4",
-                workerId = "4",
-                workerName = "정수진",
-                proposedWage = "일당 15만원",
-                message = "아파트 도장 작업입니다.",
-                status = ProposalStatus.PENDING,
-                createdAt = LocalDateTime.now().minusHours(12),
-                jobTypes = listOf("도장공"),
-                distance = 1.8
-            )
+    // Worker Detail Bottom Sheet
+    selectedWorker?.let { worker ->
+        WorkerDetailBottomSheetContent(
+            worker = worker,
+            onDismiss = onWorkerDismiss,
+            onScoutConfirm = { _, _ -> onWorkerDismiss() }
         )
-
-        Scaffold(
-            topBar = {
-                Column {
-                    TossStyleHeader(
-                        currentLocation = "서울특별시 강남구"
-                    )
-                    ScoutTabBarExtended(
-                        selectedTab = pagerState.currentPage,
-                        onTabSelected = { }
-                    )
-                }
-            },
-            bottomBar = {
-                CompanyBottomBar(
-                    navController = mockNavController,
-                    currentRoute = "company/scout"
-                )
-            },
-            containerColor = Color(0xFFF7F8FA)
-        ) { paddingValues ->
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) { page ->
-                when (page) {
-                    0 -> WorkerListPage(
-                        workers = emptyList(), // 인력 목록은 비어있음
-                        isLoading = false,
-                        onWorkerClick = { },
-                        onScoutClick = { },
-                        onRefresh = { }
-                    )
-                    1 -> ProposalListPage(
-                        proposals = sampleProposals, // 제안 목록 데이터
-                        isLoading = false,
-                        onProposalClick = { },
-                        onRefresh = { }
-                    )
-                    2 -> LocationSettingPage(
-                        currentLocation = "서울특별시 강남구",
-                        searchRadius = 10,
-                        onLocationChange = { },
-                        onRadiusChange = { },
-                        onCurrentLocationClick = { }
-                    )
-                }
-            }
-        }
     }
 }
