@@ -1,52 +1,68 @@
 package com.billcorea.jikgong.network.model.common
 
 /**
- * 모든 API 응답의 기본 구조
+ * 기본 API 응답 구조
  */
 data class BaseResponse<T>(
   val success: Boolean,
-  val code: Int,
+  val code: String,
   val message: String,
   val data: T? = null,
-  val timestamp: Long = System.currentTimeMillis()
+  val timestamp: String = System.currentTimeMillis().toString()
 )
 
 /**
- * 페이징 처리된 응답
+ * 페이징 응답 구조
  */
 data class PagedResponse<T>(
   val success: Boolean,
-  val code: Int,
+  val code: String,
   val message: String,
-  val data: PagedData<T>? = null,
-  val timestamp: Long = System.currentTimeMillis()
+  val data: PageData<T>,
+  val timestamp: String = System.currentTimeMillis().toString()
 )
 
-data class PagedData<T>(
+/**
+ * 페이지 데이터
+ */
+data class PageData<T>(
   val content: List<T>,
   val pageNumber: Int,
   val pageSize: Int,
   val totalElements: Long,
   val totalPages: Int,
-  val isFirst: Boolean,
-  val isLast: Boolean
+  val first: Boolean,
+  val last: Boolean,
+  val empty: Boolean
+)
+
+/**
+ * 기본 응답 (데이터 없음)
+ */
+data class DefaultResponse(
+  val success: Boolean,
+  val code: String,
+  val message: String,
+  val timestamp: String = System.currentTimeMillis().toString()
 )
 
 /**
  * 에러 응답
  */
 data class ErrorResponse(
+  val success: Boolean = false,
   val code: String,
   val message: String,
-  val details: Map<String, String>? = null,
-  val timestamp: Long = System.currentTimeMillis()
+  val errors: List<FieldError>? = null,
+  val timestamp: String = System.currentTimeMillis().toString()
 )
 
 /**
- * 기본 응답 (성공/실패만 반환)
+ * 필드 에러
  */
-data class DefaultResponse(
-  val success: Boolean,
-  val message: String
+data class FieldError(
+  val field: String,
+  val value: Any?,
+  val reason: String
 )
 

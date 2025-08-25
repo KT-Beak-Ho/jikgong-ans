@@ -55,6 +55,17 @@ data class MatchingRequest(
 )
 
 /**
+ * 매칭 확인 요청
+ */
+data class MatchingConfirmRequest(
+  val matchingId: String,
+  val workerId: String,
+  val projectId: String,
+  val confirmed: Boolean,
+  val reason: String? = null
+)
+
+/**
  * 매칭 결과
  */
 data class MatchingResult(

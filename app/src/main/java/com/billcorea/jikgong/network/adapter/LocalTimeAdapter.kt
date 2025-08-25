@@ -10,14 +10,19 @@ import java.time.format.DateTimeFormatter
  */
 class LocalTimeAdapter : JsonSerializer<LocalTime>, JsonDeserializer<LocalTime> {
 
-  private val formatter = DateTimeFormatter.ISO_LOCAL_TIME
+  private val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+  private val shortFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
   override fun serialize(
     src: LocalTime?,
     typeOfSrc: Type?,
     context: JsonSerializationContext?
   ): JsonElement {
-    return JsonPrimitive(src?.format(formatter))
+    return if (src == null) {
+      JsonNull.INSTANCE
+    } else {
+      JsonPrimitive(formatter.format(src))
+    }
   }
 
   override fun deserialize(
@@ -25,8 +30,23 @@ class LocalTimeAdapter : JsonSerializer<LocalTime>, JsonDeserializer<LocalTime> 
     typeOfT: Type?,
     context: JsonDeserializationContext?
   ): LocalTime? {
-    return json?.asString?.let {
-      LocalTime.parse(it, formatter)
+    return if (json == null || json.isJsonNull) {
+      null
+    } else {
+      val timeString = json.asString
+      try {
+        LocalTime.parse(timeString, formatter)
+      } catch (e: Exception) {
+        try {
+          LocalTime.parse(timeString, shortFormatter)
+        } catch (e2: Exception) {
+          try {
+            LocalTime.parse(timeString)
+          } catch (e3: Exception) {
+            null
+          }
+        }
+      }
     }
   }
 }

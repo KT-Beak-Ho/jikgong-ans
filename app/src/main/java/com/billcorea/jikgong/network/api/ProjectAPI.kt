@@ -2,6 +2,7 @@ package com.billcorea.jikgong.network.api
 
 import com.billcorea.jikgong.network.model.common.*
 import com.billcorea.jikgong.network.model.project.*
+import com.billcorea.jikgong.network.model.worker.WorkerData  // 추가된 import
 import retrofit2.Response
 import retrofit2.http.*
 
