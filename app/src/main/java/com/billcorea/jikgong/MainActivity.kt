@@ -39,6 +39,7 @@ import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPag
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
 import com.billcorea.jikgong.presentation.company.auth.login.page1.CompanyLoginPage1Screen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.ProjectDetailScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.screen.ProjectListScreen
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
@@ -55,6 +56,7 @@ import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
 import com.billcorea.jikgong.presentation.destinations.MyInfoDestination
+import com.billcorea.jikgong.presentation.destinations.ProjectDetailScreenDestination
 import com.billcorea.jikgong.presentation.destinations.ProjectListScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage2ScreenDestination
@@ -251,6 +253,17 @@ class MainActivity : ComponentActivity() {
               composable(ProjectListScreenDestination.route) {
                 ProjectListScreen(
                   navController = navController,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              composable(
+                route = ProjectDetailScreenDestination.route,
+                arguments = ProjectDetailScreenDestination.arguments
+              ) { navBackStackEntry ->
+                val projectId = navBackStackEntry.arguments?.getString("projectId") ?: ""
+                ProjectDetailScreen(
+                  navController = navController,
+                  projectId = projectId,
                   modifier = Modifier.padding(5.dp)
                 )
               }

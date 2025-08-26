@@ -24,6 +24,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.screen.ProjectCreateDialog
+import com.billcorea.jikgong.presentation.destinations.ProjectDetailScreenDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -217,8 +219,9 @@ fun ProjectListScreen(
           ProjectCard(
             project = project,
             onClick = {
-              navController.navigate("company/projectdetail/${project.id}")
-            }
+              navController.navigate(ProjectDetailScreenDestination(projectId = project.id).route)
+            },
+            navController = navController
           )
         }
       }
@@ -227,35 +230,9 @@ fun ProjectListScreen(
 
   // 프로젝트 생성 다이얼로그
   if (showCreateDialog) {
-    AlertDialog(
-      onDismissRequest = { showCreateDialog = false },
-      title = {
-        Text(
-          text = "프로젝트 등록",
-          style = AppTypography.titleLarge,
-          fontWeight = FontWeight.Bold
-        )
-      },
-      text = {
-        Text(
-          text = "새로운 프로젝트를 등록하시겠습니까?",
-          style = AppTypography.bodyMedium
-        )
-      },
-      confirmButton = {
-        TextButton(
-          onClick = {
-            showCreateDialog = false
-            navController.navigate("company/projectcreate")
-          }
-        ) {
-          Text("등록하기", color = appColorScheme.primary)
-        }
-      },
-      dismissButton = {
-        TextButton(onClick = { showCreateDialog = false }) {
-          Text("취소")
-        }
+    ProjectCreateDialog(
+      onDismiss = { showCreateDialog = false },
+      onConfirm = { projectData -> showCreateDialog = false
       }
     )
   }
@@ -264,7 +241,8 @@ fun ProjectListScreen(
 @Composable
 private fun ProjectCard(
   project: SimpleProject,
-  onClick: () -> Unit
+  onClick: () -> Unit,
+  navController: NavController
 ) {
   Card(
     modifier = Modifier
@@ -420,7 +398,9 @@ private fun ProjectCard(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-          onClick = { /* 프로젝트 관리 액션 */ },
+          onClick = { 
+            navController.navigate(ProjectDetailScreenDestination(projectId = project.id).route)
+          },
           modifier = Modifier
             .fillMaxWidth()
             .height(40.dp),
