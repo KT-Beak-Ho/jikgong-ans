@@ -45,10 +45,11 @@ import com.billcorea.jikgong.presentation.common.components.KeyboardConstants
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.LabelText
-import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage2ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
 import com.billcorea.jikgong.presentation.worker.auth.common.components.CommonBottomSheetInput
 import com.billcorea.jikgong.presentation.worker.auth.common.components.CommonWorkerTopBar
+import com.billcorea.jikgong.presentation.worker.auth.common.constants.WorkerJoinConstants
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedEvent
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
 import com.billcorea.jikgong.ui.theme.AppTypography
@@ -87,7 +88,7 @@ fun WorkerJoinPage3Screen(
   // 네비게이션 이벤트 처리 - 다음페이지
   LaunchedEffect(shouldNavigateToNextPage) {
     if (shouldNavigateToNextPage) {
-      navigator.navigate(WorkerJoinPage2ScreenDestination)
+      navigator.navigate(WorkerJoinPage4ScreenDestination)
       workerJoinViewModel.clearNavigationEvents()
     }
   }
@@ -130,7 +131,7 @@ fun WorkerJoinPage3Screen(
     topBar = {
       CommonWorkerTopBar(
         currentPage = uiState.currentPage,
-        totalPages = JoinConstants.TOTAL_PAGES,
+        totalPages = WorkerJoinConstants.TOTAL_PAGES,
         onBackClick = {
           workerJoinViewModel.onEvent(WorkerJoinSharedEvent.PreviousPage)
         }
