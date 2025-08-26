@@ -1,109 +1,115 @@
 package com.billcorea.jikgong.network.model.location
 
-import com.google.gson.annotations.SerializedName
-
 /**
- * Location 관련 모델 통합 파일
- * 기존 레거시 파일들(network/)을 그대로 유지
- * 변경사항 없음 - 코드 100% 동일
+ * 위치 관련 공통 데이터 모델
+ * 프로젝트 전반에서 사용하는 위치 데이터 모델들
  */
 
 // ============================================
-// AddressFindAddress.kt 그대로
+// 기본 위치 데이터
 // ============================================
-data class AddressFindAddress(
-  @SerializedName("address_name")
-  var addressName: String,
-  @SerializedName("b_code")
-  var bCode: String,
-  @SerializedName("h_code")
-  var hCode: String,
-  @SerializedName("main_address_no")
-  var mainAddressNo: String,
-  @SerializedName("mountain_yn")
-  var mountainYn: String,
-  @SerializedName("region_1depth_name")
-  var region1depthName: String,
-  @SerializedName("region_2depth_name")
-  var region2depthName: String,
-  @SerializedName("region_3depth_h_name")
-  var region3depthHName: String,
-  @SerializedName("region_3depth_name")
-  var region3depthName: String,
-  @SerializedName("sub_address_no")
-  var subAddressNo: String,
-  @SerializedName("x")
-  var x: String,
-  @SerializedName("y")
-  var y: String
+data class LocationData(
+  val latitude: Double,
+  val longitude: Double,
+  val address: String? = null,
+  val detailAddress: String? = null,
+  val postalCode: String? = null,
+  val timestamp: String? = null
 )
 
 // ============================================
-// AddressFindDocument.kt 그대로
+// 위치 정보 (상세)
 // ============================================
-data class AddressFindDocument(
-  @SerializedName("address")
-  var address: AddressFindAddress,
-  @SerializedName("address_name")
-  var addressName: String,
-  @SerializedName("address_type")
-  var addressType: String,
-  @SerializedName("road_address")
-  var roadAddress: AddressFindRoadAddress,
-  @SerializedName("x")
-  var x: String,
-  @SerializedName("y")
-  var y: String
+data class LocationInfo(
+  val latitude: Double,
+  val longitude: Double,
+  val address: String,
+  val detailAddress: String? = null,
+  val postalCode: String? = null,
+  val region1depth: String? = null,  // 시/도
+  val region2depth: String? = null,  // 구/군
+  val region3depth: String? = null,  // 동/읍/면
+  val roadAddress: String? = null,
+  val buildingName: String? = null
 )
 
 // ============================================
-// AddressFindMeta.kt 그대로
+// 지역 정보
 // ============================================
-data class AddressFindMeta(
-  @SerializedName("is_end")
-  var isEnd: Boolean,
-  @SerializedName("pageable_count")
-  var pageableCount: Int,
-  @SerializedName("total_count")
-  var totalCount: Int
+data class RegionData(
+  val code: String,
+  val name: String,
+  val level: RegionLevel,
+  val parentCode: String? = null
+)
+
+enum class RegionLevel {
+  SIDO,      // 시/도
+  SIGUNGU,   // 시/군/구
+  DONG       // 동/읍/면
+}
+
+// ============================================
+// 거리 계산 유틸
+// ============================================
+data class DistanceInfo(
+  val fromLocation: LocationData,
+  val toLocation: LocationData,
+  val distance: Double,  // 미터 단위
+  val duration: Int? = null  // 초 단위
 )
 
 // ============================================
-// AddressFindResponse.kt 그대로
+// 위치 검색 요청
 // ============================================
-data class AddressFindResponse(
-  @SerializedName("documents")
-  var documents: List<AddressFindDocument>,
-  @SerializedName("meta")
-  var meta: AddressFindMeta
+data class LocationSearchRequest(
+  val query: String,
+  val latitude: Double? = null,
+  val longitude: Double? = null,
+  val radius: Int? = null,  // 미터 단위
+  val page: Int = 1,
+  val size: Int = 10
 )
 
 // ============================================
-// AddressFindRoadAddress.kt 그대로
+// 위치 검색 결과
 // ============================================
-data class AddressFindRoadAddress(
-  @SerializedName("address_name")
-  var addressName: String,
-  @SerializedName("building_name")
-  var buildingName: String,
-  @SerializedName("main_building_no")
-  var mainBuildingNo: String,
-  @SerializedName("region_1depth_name")
-  var region1depthName: String,
-  @SerializedName("region_2depth_name")
-  var region2depthName: String,
-  @SerializedName("region_3depth_name")
-  var region3depthName: String,
-  @SerializedName("road_name")
-  var roadName: String,
-  @SerializedName("sub_building_no")
-  var subBuildingNo: String,
-  @SerializedName("underground_yn")
-  var undergroundYn: String,
-  @SerializedName("x")
-  var x: String,
-  @SerializedName("y")
-  var y: String,
-  @SerializedName("zone_no")
-  var zoneNo: String
+data class LocationSearchResult(
+  val locations: List<LocationInfo>,
+  val totalCount: Int,
+  val pageableCount: Int,
+  val isEnd: Boolean
+)
+
+// ============================================
+// 근처 위치 정보
+// ============================================
+data class NearbyLocation(
+  val location: LocationInfo,
+  val distance: Double,  // 미터 단위
+  val type: LocationType
+)
+
+enum class LocationType {
+  SUBWAY_STATION,  // 지하철역
+  BUS_STOP,       // 버스정류장
+  PARKING,        // 주차장
+  CONVENIENCE,    // 편의점
+  RESTAURANT,     // 음식점
+  CAFE,          // 카페
+  BANK,          // 은행
+  HOSPITAL,      // 병원
+  OTHER
+}
+
+// ============================================
+// 작업 현장 위치
+// ============================================
+data class WorkSiteLocation(
+  val siteId: String,
+  val siteName: String,
+  val location: LocationInfo,
+  val boundary: List<LocationData>? = null,  // 현장 경계
+  val checkInRadius: Double = 100.0,  // 출근 체크 가능 반경 (미터)
+  val landmarks: List<String> = emptyList()  // 주요 랜드마크
 )

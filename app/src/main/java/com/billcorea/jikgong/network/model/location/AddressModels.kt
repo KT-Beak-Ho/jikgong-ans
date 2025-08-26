@@ -2,75 +2,107 @@ package com.billcorea.jikgong.network.model.location
 
 import com.google.gson.annotations.SerializedName
 
-// AddressFindResponse.kt 내용
+/**
+ * 주소 검색(Address Find) 관련 모델
+ * Kakao 주소 검색 API 응답 모델들
+ */
+
+// ============================================
+// 주소 검색 응답
+// ============================================
 data class AddressFindResponse(
-  val documents: List<AddressFindDocument>,
-  val meta: AddressFindMeta
+  @SerializedName("documents")
+  var documents: List<AddressFindDocument>,
+  @SerializedName("meta")
+  var meta: AddressFindMeta
 )
 
-// AddressFindDocument.kt 내용
+// ============================================
+// 주소 검색 문서
+// ============================================
 data class AddressFindDocument(
-  val address: AddressFindAddress?,
-  @SerializedName("road_address")
-  val roadAddress: AddressFindRoadAddress?,
+  @SerializedName("address")
+  var address: AddressFindAddress,
   @SerializedName("address_name")
-  val addressName: String,
+  var addressName: String,
   @SerializedName("address_type")
-  val addressType: String,
-  val x: String,
-  val y: String
+  var addressType: String,
+  @SerializedName("road_address")
+  var roadAddress: AddressFindRoadAddress,
+  @SerializedName("x")
+  var x: String,
+  @SerializedName("y")
+  var y: String
 )
 
-// AddressFindAddress.kt 내용
+// ============================================
+// 지번 주소 정보
+// ============================================
 data class AddressFindAddress(
   @SerializedName("address_name")
-  val addressName: String,
-  @SerializedName("region_1depth_name")
-  val region1depthName: String,
-  @SerializedName("region_2depth_name")
-  val region2depthName: String,
-  @SerializedName("region_3depth_name")
-  val region3depthName: String,
-  @SerializedName("mountain_yn")
-  val mountainYn: String,
+  var addressName: String,
+  @SerializedName("b_code")
+  var bCode: String,
+  @SerializedName("h_code")
+  var hCode: String,
   @SerializedName("main_address_no")
-  val mainAddressNo: String,
+  var mainAddressNo: String,
+  @SerializedName("mountain_yn")
+  var mountainYn: String,
+  @SerializedName("region_1depth_name")
+  var region1depthName: String,
+  @SerializedName("region_2depth_name")
+  var region2depthName: String,
+  @SerializedName("region_3depth_h_name")
+  var region3depthHName: String,
+  @SerializedName("region_3depth_name")
+  var region3depthName: String,
   @SerializedName("sub_address_no")
-  val subAddressNo: String,
-  val x: String?,
-  val y: String?
+  var subAddressNo: String,
+  @SerializedName("x")
+  var x: String,
+  @SerializedName("y")
+  var y: String
 )
 
-// AddressFindRoadAddress.kt 내용
+// ============================================
+// 도로명 주소 정보
+// ============================================
 data class AddressFindRoadAddress(
   @SerializedName("address_name")
-  val addressName: String,
-  @SerializedName("region_1depth_name")
-  val region1depthName: String,
-  @SerializedName("region_2depth_name")
-  val region2depthName: String,
-  @SerializedName("region_3depth_name")
-  val region3depthName: String,
-  @SerializedName("road_name")
-  val roadName: String,
-  @SerializedName("underground_yn")
-  val undergroundYn: String,
-  @SerializedName("main_building_no")
-  val mainBuildingNo: String,
-  @SerializedName("sub_building_no")
-  val subBuildingNo: String,
+  var addressName: String,
   @SerializedName("building_name")
-  val buildingName: String,
+  var buildingName: String,
+  @SerializedName("main_building_no")
+  var mainBuildingNo: String,
+  @SerializedName("region_1depth_name")
+  var region1depthName: String,
+  @SerializedName("region_2depth_name")
+  var region2depthName: String,
+  @SerializedName("region_3depth_name")
+  var region3depthName: String,
+  @SerializedName("road_name")
+  var roadName: String,
+  @SerializedName("sub_building_no")
+  var subBuildingNo: String,
+  @SerializedName("underground_yn")
+  var undergroundYn: String,
+  @SerializedName("x")
+  var x: String,
+  @SerializedName("y")
+  var y: String,
   @SerializedName("zone_no")
-  val zoneNo: String
+  var zoneNo: String
 )
 
-// AddressFindMeta.kt 내용
+// ============================================
+// 메타 정보
+// ============================================
 data class AddressFindMeta(
-  @SerializedName("total_count")
-  val totalCount: Int,
-  @SerializedName("pageable_count")
-  val pageableCount: Int,
   @SerializedName("is_end")
-  val isEnd: Boolean
+  var isEnd: Boolean,
+  @SerializedName("pageable_count")
+  var pageableCount: Int,
+  @SerializedName("total_count")
+  var totalCount: Int
 )

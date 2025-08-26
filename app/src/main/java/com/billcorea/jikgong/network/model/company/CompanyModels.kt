@@ -3,8 +3,12 @@ package com.billcorea.jikgong.network.model.company
 import com.billcorea.jikgong.network.model.common.*
 
 /**
- * 기업 전체 데이터 모델
+ * 기업 관련 모델 (완전판)
  */
+
+// ============================================
+// 기업 전체 데이터 모델
+// ============================================
 data class CompanyData(
   // ===== 기본 정보 =====
   val id: String,
@@ -94,9 +98,9 @@ data class CompanyData(
   val updatedAt: String? = null
 )
 
-/**
- * 사업자등록증
- */
+// ============================================
+// 사업자등록증
+// ============================================
 data class BusinessLicense(
   val number: String,
   val issueDate: String,
@@ -104,9 +108,9 @@ data class BusinessLicense(
   val verified: Boolean = false
 )
 
-/**
- * 건설업 면허
- */
+// ============================================
+// 건설업 면허
+// ============================================
 data class ConstructionLicense(
   val number: String,
   val type: String,
@@ -116,9 +120,9 @@ data class ConstructionLicense(
   val imageUrl: String? = null
 )
 
-/**
- * 기업 인증
- */
+// ============================================
+// 기업 인증
+// ============================================
 data class CompanyCertification(
   val name: String,
   val issuer: String,
@@ -127,9 +131,9 @@ data class CompanyCertification(
   val certificateNumber: String
 )
 
-/**
- * 기업 평가
- */
+// ============================================
+// 기업 평가
+// ============================================
 data class CompanyRating(
   val averageScore: Double,
   val totalReviews: Int,
@@ -141,9 +145,9 @@ data class CompanyRating(
   val communicationScore: Double
 )
 
-/**
- * 기업 통계
- */
+// ============================================
+// 기업 통계
+// ============================================
 data class CompanyStats(
   val automatedDocs: StatItem,
   val matchedWorkers: StatItem,
@@ -151,9 +155,6 @@ data class CompanyStats(
   val activeConstructionSites: StatItem
 )
 
-/**
- * 통계 항목
- */
 data class StatItem(
   val icon: String,
   val label: String,
@@ -164,11 +165,103 @@ data class StatItem(
   val trendPercentage: Double? = null
 )
 
-/**
- * 알림 정보
- */
+// ============================================
+// 알림 정보
+// ============================================
 data class NotificationInfo(
   val unreadCount: Int = 0,
   val totalCount: Int = 0,
   val lastNotificationTime: String? = null
+)
+
+// ============================================
+// CompanyAPI에서 이동된 모델들
+// ============================================
+data class CompanyVerification(
+  val businessNumber: String,
+  val representativeName: String,
+  val verificationCode: String
+)
+
+data class BlacklistRequest(
+  val workerId: String,
+  val reason: String,
+  val incidentDate: String?
+)
+
+data class BlacklistedWorker(
+  val workerId: String,
+  val workerName: String,
+  val reason: String,
+  val blacklistedDate: String,
+  val incidentDate: String?
+)
+
+data class FinancialStats(
+  val revenue: Long,
+  val expense: Long,
+  val profit: Long,
+  val projectCosts: Long,
+  val laborCosts: Long,
+  val growthRate: Double,
+  val profitMargin: Double
+)
+
+data class PerformanceMetrics(
+  val totalProjects: Int,
+  val completedProjects: Int,
+  val ongoingProjects: Int,
+  val completionRate: Double,
+  val averageProjectDuration: Int,
+  val workerSatisfactionRate: Double,
+  val clientSatisfactionRate: Double,
+  val revenuePerProject: Long
+)
+
+data class CompanyReviewRequest(
+  val rating: Int,
+  val title: String,
+  val content: String,
+  val projectId: String?,
+  val isAnonymous: Boolean
+)
+
+data class CompanyReview(
+  val id: String,
+  val companyId: String,
+  val reviewerId: String,
+  val reviewerName: String?,
+  val rating: Int,
+  val title: String,
+  val content: String,
+  val projectId: String?,
+  val isAnonymous: Boolean,
+  val createdAt: String
+)
+
+data class CompanyDocument(
+  val id: String,
+  val type: String,
+  val name: String,
+  val url: String,
+  val description: String?,
+  val uploadedAt: String,
+  val expiryDate: String?
+)
+
+data class CompanyNotificationSettings(
+  val newProject: Boolean,
+  val workerApplication: Boolean,
+  val paymentDue: Boolean,
+  val documentExpiry: Boolean,
+  val reviewReceived: Boolean,
+  val emergencyAlert: Boolean
+)
+
+data class PartnerCompany(
+  val id: String,
+  val name: String,
+  val businessNumber: String,
+  val partnershipType: String,
+  val startDate: String
 )
