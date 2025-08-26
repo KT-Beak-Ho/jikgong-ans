@@ -5,6 +5,7 @@ import com.billcorea.jikgong.network.model.auth.*
 import com.billcorea.jikgong.network.model.common.*
 import com.billcorea.jikgong.network.model.location.*
 import com.billcorea.jikgong.network.model.worker.*
+import com.billcorea.jikgong.network.model.company.*
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -15,8 +16,6 @@ import retrofit2.http.*
  * - 기존 동기 호출을 지원하면서 점진적으로 suspend 함수로 마이그레이션
  * - Kakao 지도 API 포함
  * - 파일 업로드 및 기타 유틸리티 API 포함
- *
- * 모든 데이터 모델은 각 도메인별 Models 파일에 정의됨
  */
 interface RetrofitAPI {
 

@@ -1,106 +1,86 @@
+// ============================================
+// CompanyModels.kt - 기업 관련 모델 (RegisterCompanyResponse 추가)
+// ============================================
 package com.billcorea.jikgong.network.model.company
 
 import com.billcorea.jikgong.network.model.common.*
+import com.google.gson.annotations.SerializedName
 
-/**
- * 기업 관련 모델 (완전판)
- */
-
-// ============================================
-// 기업 전체 데이터 모델
-// ============================================
+// ===== 기업 기본 데이터 =====
 data class CompanyData(
-  // ===== 기본 정보 =====
-  val id: String,
+  val id: String? = null,
   val loginId: String,
   val password: String? = null,
   val role: UserRole = UserRole.COMPANY,
-
-  // ===== 회사 정보 =====
-  val name: String,
+  val companyName: String,
   val businessNumber: String,
   val representativeName: String,
+  val businessType: String,
+  val businessCategory: String,
   val establishedDate: String,
-  val companyType: CompanyType,
-  val status: CompanyStatus,
-  val statusText: String,
-
-  // ===== 연락처 =====
+  val employeeCount: Int? = null,
   val phone: String,
   val email: String,
-  val managerName: String,
-  val managerPhone: String,
   val fax: String? = null,
   val website: String? = null,
-
-  // ===== 위치 정보 =====
-  val region: String,
   val address: String,
+  val detailAddress: String? = null,
   val latitude: Double,
   val longitude: Double,
   val postalCode: String? = null,
-
-  // ===== 규모 정보 =====
-  val employeeCount: Int,
-  val annualRevenue: Long,
-  val capitalAmount: Long? = null,
-
-  // ===== 자격/인증 =====
   val businessLicense: BusinessLicense,
   val constructionLicense: ConstructionLicense? = null,
   val certifications: List<CompanyCertification> = emptyList(),
-  val companySeal: String? = null,
-  val creditRating: String? = null,
-
-  // ===== 사업 정보 =====
-  val businessFields: List<String>,
-  val registeredProjects: List<String> = emptyList(),
-  val jobRegistrations: List<String> = emptyList(),
-  val completedProjectCount: Int = 0,
-  val partnerCompanies: List<String> = emptyList(),
-
-  // ===== 인력 관리 =====
-  val usedWorkers: List<String> = emptyList(),
-  val savedWorkers: List<String> = emptyList(),
-  val savedWorkersCount: Int = 0,
-  val preferredWorkerTypes: List<JobType> = emptyList(),
-  val blacklistedWorkers: List<String> = emptyList(),
-
-  // ===== 평가/신뢰도 =====
   val rating: CompanyRating? = null,
-
-  // ===== 복지/보험 =====
-  val providedInsurances: List<InsuranceType> = emptyList(),
-  val providedBenefits: List<String> = emptyList(),
-
-  // ===== 재무 정보 =====
-  val monthlySavings: Long = 0L,
-  val previousMonthGrowth: Int = 0,
-  val targetAchievementRate: Int = 0,
-
-  // ===== 통계 =====
+  val description: String? = null,
+  val logoUrl: String? = null,
+  val bankName: String,
+  val bankAccount: String,
+  val accountHolder: String,
   val stats: CompanyStats? = null,
-
-  // ===== 알림 =====
   val notifications: NotificationInfo? = null,
+  val totalProjects: Int = 0,
+  val ongoingProjects: Int = 0,
+  val completedProjects: Int = 0,
+  val totalHiredWorkers: Int = 0,
   val deviceToken: String? = null,
   val isNotification: Boolean = true,
-
-  // ===== 동의 정보 =====
   val privacyConsent: Boolean = true,
   val termsConsent: Boolean = true,
   val marketingConsent: Boolean = false,
-
-  // ===== 기타 =====
   val memo: String? = null,
   val isActive: Boolean = true,
   val createdAt: String? = null,
   val updatedAt: String? = null
 )
 
-// ============================================
-// 사업자등록증
-// ============================================
+// ===== 기업 등록 응답 =====
+data class RegisterCompanyResponse(
+  @SerializedName("code")
+  val code: String,
+
+  @SerializedName("message")
+  val message: String,
+
+  @SerializedName("data")
+  val data: RegisterCompanyData? = null
+)
+
+data class RegisterCompanyData(
+  @SerializedName("companyId")
+  val companyId: String,
+
+  @SerializedName("loginId")
+  val loginId: String,
+
+  @SerializedName("companyName")
+  val companyName: String,
+
+  @SerializedName("businessNumber")
+  val businessNumber: String
+)
+
+// ===== 사업자등록증 =====
 data class BusinessLicense(
   val number: String,
   val issueDate: String,
@@ -108,9 +88,7 @@ data class BusinessLicense(
   val verified: Boolean = false
 )
 
-// ============================================
-// 건설업 면허
-// ============================================
+// ===== 건설업 면허 =====
 data class ConstructionLicense(
   val number: String,
   val type: String,
@@ -120,9 +98,7 @@ data class ConstructionLicense(
   val imageUrl: String? = null
 )
 
-// ============================================
-// 기업 인증
-// ============================================
+// ===== 기업 인증 =====
 data class CompanyCertification(
   val name: String,
   val issuer: String,
@@ -131,9 +107,7 @@ data class CompanyCertification(
   val certificateNumber: String
 )
 
-// ============================================
-// 기업 평가
-// ============================================
+// ===== 기업 평가 =====
 data class CompanyRating(
   val averageScore: Double,
   val totalReviews: Int,
@@ -145,9 +119,7 @@ data class CompanyRating(
   val communicationScore: Double
 )
 
-// ============================================
-// 기업 통계
-// ============================================
+// ===== 기업 통계 =====
 data class CompanyStats(
   val automatedDocs: StatItem,
   val matchedWorkers: StatItem,
@@ -165,18 +137,14 @@ data class StatItem(
   val trendPercentage: Double? = null
 )
 
-// ============================================
-// 알림 정보
-// ============================================
+// ===== 알림 정보 =====
 data class NotificationInfo(
   val unreadCount: Int = 0,
   val totalCount: Int = 0,
   val lastNotificationTime: String? = null
 )
 
-// ============================================
-// CompanyAPI에서 이동된 모델들
-// ============================================
+// ===== CompanyAPI에서 사용되는 추가 모델들 =====
 data class CompanyVerification(
   val businessNumber: String,
   val representativeName: String,

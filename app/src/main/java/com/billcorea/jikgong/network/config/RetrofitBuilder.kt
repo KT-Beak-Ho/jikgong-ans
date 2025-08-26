@@ -41,13 +41,10 @@ object RetrofitBuilder {
    */
   val gson: Gson = GsonBuilder()
     .setLenient()
-    // 날짜/시간 어댑터 등록
     .registerTypeAdapter(LocalDate::class.java, LocalDateAdapter())
     .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter())
     .registerTypeAdapter(LocalTime::class.java, LocalTimeAdapter())
-    // Pretty Print (디버깅용)
     .setPrettyPrinting()
-    // null 값 포함
     .serializeNulls()
     .create()
 
@@ -67,7 +64,7 @@ object RetrofitBuilder {
       // Interceptor 추가
       addInterceptor(HeaderInterceptor())
 
-      // Auth Token이 있는 경우
+      // Auth Token이 있는 경우 String으로 전달
       authToken?.let {
         addInterceptor(AuthInterceptor(it))
       }

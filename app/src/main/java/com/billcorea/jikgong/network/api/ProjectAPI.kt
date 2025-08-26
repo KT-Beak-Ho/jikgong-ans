@@ -15,8 +15,6 @@ import retrofit2.http.*
  * - 프로젝트 진행 관리
  * - 프로젝트 인력 관리
  * - 프로젝트 문서 관리
- *
- * 모든 데이터 모델은 ProjectModels.kt에 정의됨
  */
 interface ProjectAPI {
 
@@ -67,7 +65,7 @@ interface ProjectAPI {
     @Body statusUpdate: ProjectStatusUpdate
   ): Response<BaseResponse<ProjectData>>
 
-  // ===== 프로젝트 진행 관리 =====
+  // ===== 프로젝트 시작/종료 =====
 
   @POST("api/projects/{id}/start")
   suspend fun startProject(
@@ -76,34 +74,29 @@ interface ProjectAPI {
     @Body startRequest: ProjectStartRequest
   ): Response<BaseResponse<ProjectData>>
 
-  @POST("api/projects/{id}/pause")
-  suspend fun pauseProject(
-    @Header("Authorization") token: String,
-    @Path("id") projectId: String,
-    @Body reason: String
-  ): Response<BaseResponse<ProjectData>>
-
-  @POST("api/projects/{id}/resume")
-  suspend fun resumeProject(
-    @Header("Authorization") token: String,
-    @Path("id") projectId: String
-  ): Response<BaseResponse<ProjectData>>
-
   @POST("api/projects/{id}/complete")
   suspend fun completeProject(
     @Header("Authorization") token: String,
     @Path("id") projectId: String,
-    @Body completion: ProjectCompletionRequest
+    @Body completionRequest: ProjectCompletionRequest
   ): Response<BaseResponse<ProjectCompletion>>
+
+  // ===== 프로젝트 진행 관리 =====
+
+  @GET("api/projects/{id}/progress")
+  suspend fun getProjectProgress(
+    @Header("Authorization") token: String,
+    @Path("id") projectId: String
+  ): Response<BaseResponse<ProjectProgress>>
 
   @PUT("api/projects/{id}/progress")
   suspend fun updateProjectProgress(
     @Header("Authorization") token: String,
     @Path("id") projectId: String,
     @Body progress: ProgressUpdate
-  ): Response<BaseResponse<ProjectData>>
+  ): Response<BaseResponse<ProjectProgress>>
 
-  // ===== 프로젝트 인력 관리 =====
+  // ===== 프로젝트 신청 =====
 
   @POST("api/projects/{id}/apply")
   suspend fun applyToProject(
@@ -112,14 +105,14 @@ interface ProjectAPI {
     @Body application: ProjectApplicationRequest
   ): Response<BaseResponse<ProjectApplication>>
 
-  @GET("api/projects/{id}/applicants")
-  suspend fun getProjectApplicants(
+  @GET("api/projects/{id}/applications")
+  suspend fun getProjectApplications(
     @Header("Authorization") token: String,
     @Path("id") projectId: String,
-    @Query("status") status: String?,
-    @Query("page") page: Int = 0,
-    @Query("size") size: Int = 20
-  ): Response<PagedResponse<ProjectApplication>>
+    @Query("status") status: String?
+  ): Response<BaseResponse<List<ProjectApplication>>>
+
+  // ===== 프로젝트 인력 관리 =====
 
   @POST("api/projects/{id}/workers/confirm")
   suspend fun confirmWorker(
@@ -128,19 +121,10 @@ interface ProjectAPI {
     @Body confirmation: WorkerConfirmRequest
   ): Response<BaseResponse<ProjectWorker>>
 
-  @DELETE("api/projects/{id}/workers/{workerId}")
-  suspend fun removeWorker(
-    @Header("Authorization") token: String,
-    @Path("id") projectId: String,
-    @Path("workerId") workerId: String,
-    @Query("reason") reason: String
-  ): Response<DefaultResponse>
-
   @GET("api/projects/{id}/workers")
   suspend fun getProjectWorkers(
     @Header("Authorization") token: String,
-    @Path("id") projectId: String,
-    @Query("status") status: String?
+    @Path("id") projectId: String
   ): Response<BaseResponse<List<ProjectWorker>>>
 
   @POST("api/projects/{id}/workers/request")
@@ -296,3 +280,13 @@ interface ProjectAPI {
     @Body notification: ProjectNotificationRequest
   ): Response<DefaultResponse>
 }
+
+// ProjectProgress 추가 정의 (ProjectModels.kt에 추가)
+data class ProjectProgress(
+  val projectId: String,
+  val progressPercentage: Double,
+  val currentPhase: String,
+  val completedMilestones: Int,
+  val totalMilestones: Int,
+  val lastUpdated: String
+)

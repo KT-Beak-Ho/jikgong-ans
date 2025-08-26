@@ -52,6 +52,16 @@ interface PaymentAPI {
 
   // ===== 결제 내역 조회 =====
 
+  @GET("api/payments")
+  suspend fun getPayments(
+    @Header("Authorization") token: String,
+    @Query("status") status: String?,
+    @Query("startDate") startDate: String?,
+    @Query("endDate") endDate: String?,
+    @Query("page") page: Int = 0,
+    @Query("size") size: Int = 20
+  ): Response<PagedResponse<PaymentData>>
+
   @GET("api/payments/worker/{workerId}")
   suspend fun getWorkerPayments(
     @Header("Authorization") token: String,

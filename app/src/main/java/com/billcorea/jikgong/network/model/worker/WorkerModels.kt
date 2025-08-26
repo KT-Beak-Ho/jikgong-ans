@@ -1,104 +1,71 @@
+// ============================================
+// WorkerModels.kt - Worker 관련 모델 (완전판 v2)
+// ============================================
 package com.billcorea.jikgong.network.model.worker
 
 import com.billcorea.jikgong.network.model.common.*
+import com.google.gson.annotations.SerializedName
 
-/**
- * 노동자 관련 모델 (완전판)
- */
-
-// ============================================
-// 노동자 전체 데이터 모델
-// ============================================
+// ===== Worker 기본 데이터 (기존 유지) =====
 data class WorkerData(
-  // ===== 기본 정보 =====
   val id: String? = null,
   val loginId: String,
   val password: String? = null,
   val role: UserRole = UserRole.WORKER,
-
-  // ===== 개인 정보 =====
   val workerName: String,
   val birth: String,
   val gender: Gender,
   val nationality: String = "한국",
   val age: Int? = null,
   val profileImageUrl: String? = null,
-
-  // ===== 연락처 =====
   val phone: String,
   val email: String,
   val emergencyContact: String? = null,
   val emergencyContactName: String? = null,
-
-  // ===== 주소 정보 =====
   val address: String,
   val detailAddress: String? = null,
   val latitude: Double,
   val longitude: Double,
   val postalCode: String? = null,
-
-  // ===== 계좌 정보 =====
   val accountHolder: String,
   val account: String,
   val bank: String,
-
-  // ===== 자격/인증 =====
   val workerCardNumber: String? = null,
   val hasVisa: Boolean = false,
   val visaExpiryDate: String? = null,
   val certificates: List<Certificate> = emptyList(),
   val safetyEducation: SafetyEducation? = null,
   val driverLicense: DriverLicense? = null,
-
-  // ===== 경력 정보 =====
   val workExperienceRequest: List<WorkExperience>,
   val totalExperienceMonths: Int? = null,
   val mainJobType: JobType? = null,
-
-  // ===== 근무 조건 =====
   val preferredAreas: List<String> = emptyList(),
   val preferredJobTypes: List<JobType> = emptyList(),
   val desiredWage: WageInfo? = null,
   val availableStartDate: String? = null,
   val preferredWorkType: WorkType = WorkType.DAILY,
   val hasVehicle: Boolean = false,
-
-  // ===== 스카우트 정보 =====
   val isScoutRegistered: Boolean = false,
   val scoutProfile: ScoutProfile? = null,
-
-  // ===== 활동 이력 =====
   val totalWorkDays: Int = 0,
   val completedProjects: Int = 0,
   val ongoingProjects: Int = 0,
   val lastWorkDate: String? = null,
   val totalEarnings: Long = 0L,
-
-  // ===== 평가 정보 =====
   val rating: WorkerRating? = null,
-
-  // ===== 기술/능력 =====
   val skills: List<String> = emptyList(),
   val languages: List<Language> = emptyList(),
-
-  // ===== 건강/안전 =====
   val healthStatus: HealthStatus? = null,
   val hasHealthCertificate: Boolean = false,
   val healthCertificateDate: String? = null,
   val accidentHistory: List<AccidentRecord> = emptyList(),
-
-  // ===== 알림 설정 =====
   val deviceToken: String? = null,
   val isNotification: Boolean = true,
   val notificationSettings: NotificationSettings? = null,
-
-  // ===== 동의 정보 =====
   val privacyConsent: Boolean = true,
   val credentialLiabilityConsent: Boolean = true,
   val termsConsent: Boolean = true,
   val marketingConsent: Boolean = false,
-
-  // ===== 기타 =====
   val blacklistedCompanies: List<String> = emptyList(),
   val favoriteCompanies: List<String> = emptyList(),
   val memo: String? = null,
@@ -107,39 +74,7 @@ data class WorkerData(
   val updatedAt: String? = null
 )
 
-// ============================================
-// 경력 정보
-// ============================================
-data class WorkExperience(
-  val id: String? = null,
-  val tech: String,
-  val experienceMonths: Int,
-  val description: String? = null,
-  val companyName: String? = null,
-  val projectName: String? = null,
-  val startDate: String? = null,
-  val endDate: String? = null
-)
-
-// ============================================
-// 자격증 정보
-// ============================================
-data class Certificate(
-  val id: String? = null,
-  val name: String,
-  val issuer: String,
-  val issueDate: String,
-  val expiryDate: String? = null,
-  val certificateNumber: String,
-  val imageUrl: String? = null,
-  val verified: Boolean = false
-)
-
-// ============================================
-// WorkerAPI에서 사용되는 추가 모델들
-// ============================================
-
-// 등록 관련
+// ===== 등록 요청/응답 =====
 data class RegisterWorkerRequest(
   val loginId: String,
   val password: String,
@@ -180,58 +115,48 @@ data class RegisterWorkerData(
 data class RegisterWorkerErrorResponse(
   val code: String,
   val message: String,
-  val errors: List<FieldError>?
+  val errors: List<FieldError>? = null
 )
 
-data class FieldError(
-  val field: String,
-  val message: String
-)
-
-// 검증 관련
-data class WorkerVerification(
-  val idNumber: String,
-  val name: String,
-  val phone: String,
-  val verificationCode: String?
-)
-
-data class WorkerStatusUpdate(
-  val status: WorkerAccountStatus,
-  val reason: String?,
-  val effectiveDate: String?
-)
-
-enum class WorkerAccountStatus {
-  ACTIVE,
-  INACTIVE,
-  SUSPENDED,
-  VACATION,
-  DELETED
-}
-
-data class CertificateVerification(
-  val certificateId: String,
-  val certificateNumber: String,
-  val issuerCode: String
-)
-
-// 프로필 관련
+// ===== 추천 근로자 =====
 data class RecommendedWorker(
+  @SerializedName("worker")
   val worker: WorkerData,
+
+  @SerializedName("recommendationScore")
   val recommendationScore: Double,
+
+  @SerializedName("reasons")
   val reasons: List<String>,
+
+  @SerializedName("matchingFactors")
   val matchingFactors: Map<String, Double>
 )
 
+// ===== 근로자 프로필 =====
 data class WorkerProfile(
+  @SerializedName("workerId")
   val workerId: String,
+
+  @SerializedName("basicInfo")
   val basicInfo: BasicWorkerInfo,
+
+  @SerializedName("workInfo")
   val workInfo: WorkInfo,
+
+  @SerializedName("skills")
   val skills: List<Skill>,
+
+  @SerializedName("portfolio")
   val portfolio: List<PortfolioItem>,
+
+  @SerializedName("introduction")
   val introduction: String?,
+
+  @SerializedName("completedProjects")
   val completedProjects: Int,
+
+  @SerializedName("totalWorkDays")
   val totalWorkDays: Int
 )
 
@@ -276,214 +201,358 @@ data class PortfolioItem(
   val projectDate: String
 )
 
+// ===== 사진 업데이트 응답 =====
 data class PhotoUpdateResponse(
+  @SerializedName("photoUrl")
   val photoUrl: String,
+
+  @SerializedName("uploadedAt")
   val uploadedAt: String
 )
 
+// ===== 공개 프로필 =====
 data class PublicWorkerProfile(
+  @SerializedName("workerId")
   val workerId: String,
+
+  @SerializedName("name")
   val name: String,
+
+  @SerializedName("jobType")
   val jobType: JobType,
+
+  @SerializedName("experienceYears")
   val experienceYears: Int,
+
+  @SerializedName("rating")
   val rating: Double,
+
+  @SerializedName("completedProjects")
   val completedProjects: Int,
+
+  @SerializedName("introduction")
   val introduction: String?,
+
+  @SerializedName("skills")
   val skills: List<String>,
+
+  @SerializedName("certifications")
   val certifications: List<String>,
+
+  @SerializedName("isVerified")
   val isVerified: Boolean
 )
 
-// 스카우트 관련
-data class ScoutProfile(
-  val isPublic: Boolean,
-  val title: String,
-  val introduction: String,
-  val requiredBenefits: List<String> = emptyList(),
-  val desiredWage: Long,
-  val portfolioUrls: List<String> = emptyList(),
-  val availableImmediately: Boolean = false
-)
-
+// ===== 스카우트 프로필 데이터 =====
 data class ScoutProfileData(
+  @SerializedName("workerId")
   val workerId: String,
-  val worker: WorkerData,
-  val scoutProfile: ScoutProfile,
+
+  @SerializedName("isPublic")
+  val isPublic: Boolean,
+
+  @SerializedName("title")
+  val title: String,
+
+  @SerializedName("introduction")
+  val introduction: String,
+
+  @SerializedName("requiredBenefits")
+  val requiredBenefits: List<String>,
+
+  @SerializedName("preferredCompanySize")
+  val preferredCompanySize: String?,
+
+  @SerializedName("portfolioUrls")
+  val portfolioUrls: List<String>,
+
+  @SerializedName("viewCount")
   val viewCount: Int,
-  val contactCount: Int,
-  val lastActive: String
+
+  @SerializedName("contactCount")
+  val contactCount: Int
 )
 
-// 평가 관련
-data class WorkerRating(
-  val averageScore: Double,
-  val totalReviews: Int,
-  val attendanceRate: Double,
-  val punctualityRate: Double,
-  val reemploymentRate: Double,
-  val skillLevel: Int,
-  val teamworkScore: Double,
-  val safetyScore: Double
+// ===== 자격증 검증 =====
+data class CertificateVerification(
+  @SerializedName("certificateId")
+  val certificateId: String,
+
+  @SerializedName("certificateNumber")
+  val certificateNumber: String,
+
+  @SerializedName("issuerCode")
+  val issuerCode: String
 )
 
-data class WorkerReviewRequest(
+// ===== 근로자 활동 =====
+data class WorkerActivity(
+  @SerializedName("workerId")
+  val workerId: String,
+
+  @SerializedName("date")
+  val date: String,
+
+  @SerializedName("projectId")
   val projectId: String,
-  val rating: WorkerReviewRating,
-  val comment: String?,
-  val wouldWorkAgain: Boolean
+
+  @SerializedName("projectName")
+  val projectName: String,
+
+  @SerializedName("workHours")
+  val workHours: Double,
+
+  @SerializedName("wage")
+  val wage: Long,
+
+  @SerializedName("status")
+  val status: String
 )
 
-data class WorkerReviewRating(
-  val overall: Int,
-  val skill: Int,
-  val punctuality: Int,
-  val attitude: Int,
-  val communication: Int
+// ===== 근로자 리뷰 =====
+data class WorkerReviewRequest(
+  @SerializedName("projectId")
+  val projectId: String,
+
+  @SerializedName("rating")
+  val rating: Int,
+
+  @SerializedName("punctualityScore")
+  val punctualityScore: Int,
+
+  @SerializedName("skillScore")
+  val skillScore: Int,
+
+  @SerializedName("attitudeScore")
+  val attitudeScore: Int,
+
+  @SerializedName("safetyScore")
+  val safetyScore: Int,
+
+  @SerializedName("comment")
+  val comment: String
 )
 
+// ===== 근로자 성과 =====
 data class WorkerPerformance(
+  @SerializedName("workerId")
+  val workerId: String,
+
+  @SerializedName("period")
+  val period: String,
+
+  @SerializedName("attendanceRate")
   val attendanceRate: Double,
-  val punctualityRate: Double,
+
+  @SerializedName("completionRate")
   val completionRate: Double,
-  val reemploymentRate: Double,
-  val averageRating: Double,
-  val performanceTrend: String,
-  val monthlyPerformance: List<MonthlyPerformance>
+
+  @SerializedName("qualityScore")
+  val qualityScore: Double,
+
+  @SerializedName("safetyIncidents")
+  val safetyIncidents: Int,
+
+  @SerializedName("commendations")
+  val commendations: Int
 )
 
-data class MonthlyPerformance(
-  val month: String,
+// ===== 근로자 통계 =====
+data class WorkerStatistics(
+  @SerializedName("totalWorkDays")
+  val totalWorkDays: Int,
+
+  @SerializedName("totalProjects")
+  val totalProjects: Int,
+
+  @SerializedName("totalEarnings")
+  val totalEarnings: Long,
+
+  @SerializedName("averageDailyWage")
+  val averageDailyWage: Long,
+
+  @SerializedName("mostWorkedJobType")
+  val mostWorkedJobType: String,
+
+  @SerializedName("yearlyStats")
+  val yearlyStats: List<YearlyWorkerStats>
+)
+
+data class YearlyWorkerStats(
+  val year: Int,
   val workDays: Int,
-  val rating: Double,
+  val projects: Int,
   val earnings: Long
 )
 
-// 통계 관련
-data class WorkerStatistics(
-  val totalWorkDays: Int,
-  val totalProjects: Int,
-  val totalEarnings: Long,
-  val averageMonthlyEarnings: Long,
-  val topJobTypes: List<JobTypeStatistic>,
-  val topCompanies: List<CompanyStatistic>,
-  val yearlyTrend: List<YearlyStatistic>
-)
-
-data class JobTypeStatistic(
-  val jobType: JobType,
-  val projectCount: Int,
-  val totalDays: Int,
-  val totalEarnings: Long
-)
-
-data class CompanyStatistic(
-  val companyId: String,
-  val companyName: String,
-  val projectCount: Int,
-  val lastWorkDate: String
-)
-
-data class YearlyStatistic(
-  val year: Int,
-  val workDays: Int,
-  val earnings: Long,
-  val projectCount: Int
-)
-
+// ===== 수입 통계 =====
 data class IncomeStatistics(
-  val year: Int,
-  val month: Int?,
+  @SerializedName("period")
+  val period: String,
+
+  @SerializedName("totalIncome")
   val totalIncome: Long,
+
+  @SerializedName("regularIncome")
   val regularIncome: Long,
+
+  @SerializedName("overtimeIncome")
   val overtimeIncome: Long,
+
+  @SerializedName("bonusIncome")
   val bonusIncome: Long,
-  val taxDeduction: Long,
-  val netIncome: Long,
-  val dailyBreakdown: List<DailyIncome>?
+
+  @SerializedName("deductions")
+  val deductions: Long,
+
+  @SerializedName("netIncome")
+  val netIncome: Long
 )
 
-data class DailyIncome(
-  val date: String,
-  val projectId: String,
-  val amount: Long,
-  val hours: Double
-)
-
+// ===== 근무 이력 =====
 data class WorkHistory(
-  val id: String,
+  @SerializedName("projectId")
   val projectId: String,
+
+  @SerializedName("projectName")
   val projectName: String,
+
+  @SerializedName("companyName")
   val companyName: String,
-  val position: String,
+
+  @SerializedName("startDate")
   val startDate: String,
-  val endDate: String,
+
+  @SerializedName("endDate")
+  val endDate: String?,
+
+  @SerializedName("jobType")
+  val jobType: String,
+
+  @SerializedName("totalDays")
   val totalDays: Int,
+
+  @SerializedName("totalEarnings")
   val totalEarnings: Long,
-  val rating: Double?
+
+  @SerializedName("evaluation")
+  val evaluation: Double?
 )
 
-// 설정 관련
+// ===== 근로자 선호 설정 =====
 data class WorkerPreferences(
-  val preferredJobTypes: List<JobType>,
+  @SerializedName("workerId")
+  val workerId: String,
+
+  @SerializedName("preferredJobTypes")
+  val preferredJobTypes: List<String>,
+
+  @SerializedName("preferredLocations")
   val preferredLocations: List<String>,
-  val desiredWageRange: WageRange,
-  val workSchedule: WorkSchedulePreference,
-  val benefits: List<String>,
+
+  @SerializedName("minWage")
+  val minWage: Long,
+
+  @SerializedName("maxDistance")
+  val maxDistance: Int,
+
+  @SerializedName("workDays")
+  val workDays: List<String>,
+
+  @SerializedName("startTime")
+  val startTime: String,
+
+  @SerializedName("endTime")
+  val endTime: String,
+
+  @SerializedName("avoidCompanies")
   val avoidCompanies: List<String>
 )
 
-data class WorkSchedulePreference(
-  val preferredDays: List<String>,
-  val preferredStartTime: String,
-  val preferredEndTime: String,
-  val canWorkWeekends: Boolean,
-  val canWorkNights: Boolean,
-  val canWorkOvertime: Boolean
-)
-
-data class WageRange(
-  val min: Long,
-  val max: Long
-)
-
+// ===== 근로자 문서 =====
 data class WorkerDocument(
+  @SerializedName("id")
   val id: String,
+
+  @SerializedName("workerId")
   val workerId: String,
+
+  @SerializedName("type")
   val type: String,
+
+  @SerializedName("name")
   val name: String,
+
+  @SerializedName("url")
   val url: String,
-  val description: String?,
+
+  @SerializedName("uploadedAt")
   val uploadedAt: String,
-  val expiryDate: String?
+
+  @SerializedName("expiryDate")
+  val expiryDate: String?,
+
+  @SerializedName("verified")
+  val verified: Boolean
 )
 
-// 블랙리스트 관련
+// ===== 블랙리스트 관련 =====
 data class BlacklistStatus(
+  @SerializedName("isBlacklisted")
   val isBlacklisted: Boolean,
-  val blacklistedBy: List<BlacklistEntry>,
-  val totalReports: Int
-)
 
-data class BlacklistEntry(
-  val companyId: String,
-  val companyName: String,
-  val reason: String,
-  val date: String
+  @SerializedName("reason")
+  val reason: String?,
+
+  @SerializedName("blacklistedBy")
+  val blacklistedBy: String?,
+
+  @SerializedName("blacklistedAt")
+  val blacklistedAt: String?
 )
 
 data class BlacklistCheckResult(
+  @SerializedName("workerId")
   val workerId: String,
+
+  @SerializedName("isBlacklisted")
   val isBlacklisted: Boolean,
-  val blacklistCount: Int
+
+  @SerializedName("blacklistCount")
+  val blacklistCount: Int,
+
+  @SerializedName("companies")
+  val companies: List<String>
 )
 
-// 기타 클래스들
-data class SafetyEducation(
-  val completionDate: String,
-  val educationType: String,
+// ===== 기존 모델들 (유지) =====
+data class WorkExperience(
+  val id: String? = null,
+  val tech: String,
+  val experienceMonths: Int,
+  val description: String? = null,
+  val companyName: String? = null,
+  val projectName: String? = null,
+  val startDate: String? = null,
+  val endDate: String? = null
+)
+
+data class Certificate(
+  val id: String? = null,
+  val name: String,
+  val issuer: String,
+  val issueDate: String,
+  val expiryDate: String? = null,
   val certificateNumber: String,
+  val imageUrl: String? = null,
+  val verified: Boolean = false
+)
+
+data class SafetyEducation(
+  val completedDate: String,
   val expiryDate: String,
-  val institutor: String? = null
+  val certificateNumber: String,
+  val institution: String
 )
 
 data class DriverLicense(
@@ -552,12 +621,41 @@ data class NotificationSettings(
   val weekend: Boolean = true
 )
 
-data class WorkerActivity(
-  val workerId: String,
-  val date: String,
-  val projectId: String,
-  val projectName: String,
-  val workHours: Double,
-  val wage: Long,
-  val status: String
+data class WorkerRating(
+  val averageScore: Double,
+  val totalReviews: Int,
+  val punctualityScore: Double,
+  val skillScore: Double,
+  val attitudeScore: Double,
+  val safetyScore: Double
+)
+
+data class ScoutProfile(
+  val isPublic: Boolean,
+  val title: String,
+  val introduction: String,
+  val requiredBenefits: List<String> = emptyList(),
+  val preferredCompanySize: String? = null,
+  val portfolioUrls: List<String> = emptyList()
+)
+
+enum class WorkerAccountStatus {
+  ACTIVE,
+  INACTIVE,
+  SUSPENDED,
+  VACATION,
+  DELETED
+}
+
+data class WorkerVerification(
+  val idNumber: String,
+  val name: String,
+  val phone: String,
+  val verificationCode: String?
+)
+
+data class WorkerStatusUpdate(
+  val status: WorkerAccountStatus,
+  val reason: String?,
+  val effectiveDate: String?
 )
