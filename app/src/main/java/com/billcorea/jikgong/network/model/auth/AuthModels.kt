@@ -1,119 +1,123 @@
 package com.billcorea.jikgong.network.model.auth
 
-import com.billcorea.jikgong.network.model.common.UserRole
+import com.google.gson.JsonElement
+import com.google.gson.annotations.SerializedName
 
 /**
- * 로그인 요청
+ * Auth 관련 모델 통합 파일
+ * 기존 레거시 파일들(network/)을 그대로 유지
+ * 변경사항 없음 - 코드 100% 동일
  */
+
+// ============================================
+// LoginRequest.kt 그대로
+// ============================================
 data class LoginRequest(
-  val loginId: String,
+  val loginIdOrPhone: String,
   val password: String,
-  val deviceToken: String? = null,
-  val platform: String = "ANDROID"
+  val deviceToken: String
 )
 
-/**
- * 로그인 응답
- */
+// ============================================
+// LoginResponse.kt 그대로
+// ============================================
 data class LoginResponse(
-  val accessToken: String,
-  val refreshToken: String,
-  val tokenType: String = "Bearer",
-  val expiresIn: Long,
-  val user: LoginUserData
-)
-
-/**
- * 로그인 사용자 데이터
- */
-data class LoginUserData(
-  val id: String,
-  val loginId: String,
-  val name: String,
-  val role: UserRole,
-  val profileImageUrl: String? = null,
-  val lastLoginAt: String? = null
-)
-
-/**
- * 로그인 에러 데이터
- */
-data class LoginErrorData(
-  val errorCode: String,
-  val errorMessage: String,
-  val remainingAttempts: Int? = null
-)
-
-/**
- * 토큰 갱신 요청
- */
-data class RefreshTokenRequest(
-  val refreshToken: String
-)
-
-/**
- * 토큰 데이터
- */
-data class TokenData(
-  val accessToken: String,
-  val refreshToken: String,
-  val tokenType: String = "Bearer",
-  val expiresIn: Long
-)
-
-/**
- * 아이디 중복 확인 요청
- */
-data class LoginIdValidationRequest(
-  val loginId: String
-)
-
-/**
- * 아이디 중복 확인 응답
- */
-data class LoginIdValidationResponse(
-  val available: Boolean,
+  val data: JsonElement,
   val message: String
 )
 
-/**
- * 전화번호 인증 요청
- */
+// ============================================
+// LoginData.kt 그대로
+// ============================================
+data class LoginData(
+  val accessToken: String,
+  val refreshToken: String,
+  val role: String
+)
+
+// ============================================
+// LoginErrorData.kt 그대로
+// ============================================
+data class LoginErrorData(
+  val status: String,
+  val code: String,
+  val errorMessage: String
+)
+
+// ============================================
+// LoginIdValidationRequest.kt 그대로
+// ============================================
+data class LoginIdValidationRequest(
+  var loginId: String
+)
+
+// ============================================
+// LoginIdValidationResponse.kt 그대로
+// ============================================
+data class LoginIdValidationResponse(
+  var data: RegisterWorkerErrorResponse?,
+  var message: String
+)
+
+// ============================================
+// PhoneValidationRequest.kt 그대로
+// ============================================
 data class PhoneValidationRequest(
-  val phone: String
+  var phone: String
 )
 
-/**
- * 전화번호 인증 응답
- */
+// ============================================
+// PhoneValidationResponse.kt 그대로
+// ============================================
 data class PhoneValidationResponse(
-  val success: Boolean,
-  val message: String,
-  val verificationId: String? = null
+  var data: RegisterWorkerErrorResponse?,
+  var message: String
 )
 
-/**
- * SMS 인증 요청
- */
+// ============================================
+// SmsVerificationRequest.kt 그대로
+// ============================================
 data class SmsVerificationRequest(
-  val phone: String,
-  val verificationCode: String,
-  val verificationId: String
+  var phone: String
 )
 
-/**
- * SMS 인증 응답
- */
+// ============================================
+// SmsVerificationData.kt 그대로
+// ============================================
+data class SmsVerificationData(
+  var authCode: String
+)
+
+// ============================================
+// SmsVerificationResponse.kt 그대로
+// ============================================
 data class SmsVerificationResponse(
-  val success: Boolean,
-  val message: String,
-  val verified: Boolean
+  var data: SmsVerificationData,
+  var message: String
 )
 
-/**
- * 비자 만료일 요청
- */
+// ============================================
+// VisaExpiryDateRequest.kt 그대로
+// ============================================
 data class VisaExpiryDateRequest(
-  val nationality: String,
-  val visaType: String
+  var birthDate: String,
+  var country: String,
+  var nationality: String,
+  var passportNo: String
+)
+
+// ============================================
+// RegisterWorkerErrorResponse.kt 그대로
+// ============================================
+data class RegisterWorkerErrorResponse(
+  var status: String,
+  var code: String,
+  var errorMessage: String
+)
+
+// ============================================
+// DefaultResponse.kt (auth는 아니지만 함께 사용)
+// ============================================
+data class DefaultResponse(
+  var message: String
 )
