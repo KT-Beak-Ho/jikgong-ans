@@ -103,51 +103,10 @@ data class WorkerData(
   val updatedAt: String? = null
 )
 
-/**
- * 노동자 등록 요청 (RegisterWorker 대체)
- */
-data class RegisterWorkerRequest(
-  val loginId: String,
-  val password: String,
-  val phone: String,
-  val email: String,
-  val role: String = "WORKER",
-  val privacyConsent: Boolean,
-  val deviceToken: String,
-  val isNotification: Boolean,
-  val workerName: String,
-  val birth: String,
-  val gender: String,
-  val nationality: String,
-  val accountHolder: String,
-  val account: String,
-  val bank: String,
-  val workerCardNumber: String,
-  val hasVisa: Boolean,
-  val credentialLiabilityConsent: Boolean,
-  val workExperienceRequest: List<WorkExperience>,
-  val address: String,
-  val latitude: Double,
-  val longitude: Double
-)
 
-/**
- * 노동자 등록 응답
- */
-data class RegisterWorkerResponse(
-  val success: Boolean,
-  val message: String,
-  val workerId: String? = null
-)
 
-/**
- * 노동자 등록 에러 응답
- */
-data class RegisterWorkerErrorResponse(
-  val errorCode: String,
-  val errorMessage: String,
-  val fieldErrors: Map<String, String>? = null
-)
+
+
 
 /**
  * 경력 정보

@@ -1,7 +1,6 @@
 package com.billcorea.jikgong.network.model.auth
 
 import com.google.gson.JsonElement
-import com.google.gson.annotations.SerializedName
 
 /**
  * Auth 관련 모델 통합 파일
@@ -10,7 +9,7 @@ import com.google.gson.annotations.SerializedName
  */
 
 // ============================================
-// LoginRequest.kt 그대로
+// Login 관련
 // ============================================
 data class LoginRequest(
   val loginIdOrPhone: String,
@@ -18,26 +17,17 @@ data class LoginRequest(
   val deviceToken: String
 )
 
-// ============================================
-// LoginResponse.kt 그대로
-// ============================================
 data class LoginResponse(
   val data: JsonElement,
   val message: String
 )
 
-// ============================================
-// LoginData.kt 그대로
-// ============================================
 data class LoginData(
   val accessToken: String,
   val refreshToken: String,
   val role: String
 )
 
-// ============================================
-// LoginErrorData.kt 그대로
-// ============================================
 data class LoginErrorData(
   val status: String,
   val code: String,
@@ -45,59 +35,44 @@ data class LoginErrorData(
 )
 
 // ============================================
-// LoginIdValidationRequest.kt 그대로
+// Validation 관련
 // ============================================
 data class LoginIdValidationRequest(
   var loginId: String
 )
 
-// ============================================
-// LoginIdValidationResponse.kt 그대로
-// ============================================
 data class LoginIdValidationResponse(
   var data: RegisterWorkerErrorResponse?,
   var message: String
 )
 
-// ============================================
-// PhoneValidationRequest.kt 그대로
-// ============================================
 data class PhoneValidationRequest(
   var phone: String
 )
 
-// ============================================
-// PhoneValidationResponse.kt 그대로
-// ============================================
 data class PhoneValidationResponse(
   var data: RegisterWorkerErrorResponse?,
   var message: String
 )
 
 // ============================================
-// SmsVerificationRequest.kt 그대로
+// SMS 인증 관련
 // ============================================
 data class SmsVerificationRequest(
   var phone: String
 )
 
-// ============================================
-// SmsVerificationData.kt 그대로
-// ============================================
 data class SmsVerificationData(
   var authCode: String
 )
 
-// ============================================
-// SmsVerificationResponse.kt 그대로
-// ============================================
 data class SmsVerificationResponse(
   var data: SmsVerificationData,
   var message: String
 )
 
 // ============================================
-// VisaExpiryDateRequest.kt 그대로
+// 비자 관련
 // ============================================
 data class VisaExpiryDateRequest(
   var birthDate: String,
@@ -107,7 +82,7 @@ data class VisaExpiryDateRequest(
 )
 
 // ============================================
-// RegisterWorkerErrorResponse.kt 그대로
+// 에러 응답 (공통으로 사용)
 // ============================================
 data class RegisterWorkerErrorResponse(
   var status: String,
@@ -116,7 +91,7 @@ data class RegisterWorkerErrorResponse(
 )
 
 // ============================================
-// DefaultResponse.kt (auth는 아니지만 함께 사용)
+// 기본 응답
 // ============================================
 data class DefaultResponse(
   var message: String
