@@ -40,6 +40,14 @@ import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPag
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
 import com.billcorea.jikgong.presentation.company.auth.login.page1.CompanyLoginPage1Screen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.ProjectDetailScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.AttendanceCheckScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.CheckoutScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.ExistingJobScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.JobRegistrationScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.PaymentSummaryScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.TempSaveScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.WorkerInfoScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.WorkerManagementScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.screen.ProjectListScreen
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
@@ -256,6 +264,7 @@ class MainActivity : ComponentActivity() {
                   modifier = Modifier.padding(5.dp)
                 )
               }
+              /** ProjectListScreen 에서 프로젝트 관리 버튼 클릭시 사용하는 Router */
               composable(
                 route = ProjectDetailScreenDestination.route,
                 arguments = ProjectDetailScreenDestination.arguments
@@ -264,6 +273,72 @@ class MainActivity : ComponentActivity() {
                 ProjectDetailScreen(
                   navController = navController,
                   projectId = projectId,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              /** ProjectDetailScreen 에서 인력 관리 버튼 클릭시 사용하는 Router */
+              composable("worker_management/{workDayId}") { navBackStackEntry ->
+                val workDayId = navBackStackEntry.arguments?.getString("workDayId") ?: ""
+                WorkerManagementScreen(
+                  navController = navController,
+                  workDayId = workDayId,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              /** WorkerManagementScreen 에서 출근확정 근로자 정보 버튼 클릭시 사용하는 Router */
+              composable("worker_info/{workDayId}") { navBackStackEntry ->
+                val workDayId = navBackStackEntry.arguments?.getString("workDayId") ?: ""
+                WorkerInfoScreen(
+                  navController = navController,
+                  workDayId = workDayId,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              /** WorkerManagementScreen 에서 출근확인 버튼 클릭시 사용하는 Router */
+              composable("attendance_check/{workDayId}") { navBackStackEntry ->
+                val workDayId = navBackStackEntry.arguments?.getString("workDayId") ?: ""
+                AttendanceCheckScreen(
+                  navController = navController,
+                  workDayId = workDayId,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              /** WorkerManagementScreen 에서 퇴근확인 버튼 클릭시 사용하는 Router */
+              composable("checkout/{workDayId}") { navBackStackEntry ->
+                val workDayId = navBackStackEntry.arguments?.getString("workDayId") ?: ""
+                CheckoutScreen(
+                  navController = navController,
+                  workDayId = workDayId,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              /** WorkerManagementScreen 에서 지급내역서 보기 버튼 클릭시 사용하는 Router */
+              composable("payment_summary/{workDayId}") { navBackStackEntry ->
+                val workDayId = navBackStackEntry.arguments?.getString("workDayId") ?: ""
+                PaymentSummaryScreen(
+                  navController = navController,
+                  workDayId = workDayId,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              /** ProjectDetailScreen 에서 일자리 등록 버튼 클릭시 사용하는 Router */
+              composable("job_registration") {
+                JobRegistrationScreen(
+                  navController = navController,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              /** JobRegistrationScreen 에서 임시 버튼 클릭시 사용하는 Router */
+              composable("temp_save") {
+                TempSaveScreen(
+                  navController = navController,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              /** JobRegistrationScreen 에서 기존공고 이용 버튼 클릭시 사용하는 Router */
+              composable("existing_job") {
+                ExistingJobScreen(
+                  navController = navController,
                   modifier = Modifier.padding(5.dp)
                 )
               }

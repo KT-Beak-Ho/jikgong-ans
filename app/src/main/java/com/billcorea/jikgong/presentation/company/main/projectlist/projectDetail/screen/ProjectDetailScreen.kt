@@ -93,7 +93,6 @@ fun ProjectDetailScreen(
   val scope = rememberCoroutineScope()
   var showBottomSheet by remember { mutableStateOf(false) }
   var selectedWorkDay by remember { mutableStateOf<WorkDay?>(null) }
-  var showWorkerManagementDialog by remember { mutableStateOf(false) }
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
@@ -127,6 +126,28 @@ fun ProjectDetailScreen(
           containerColor = Color.White
         )
       )
+    },
+    floatingActionButton = {
+      ExtendedFloatingActionButton(
+        onClick = { 
+          navController.navigate("job_registration")
+        },
+        containerColor = appColorScheme.primary,
+        contentColor = Color.White,
+        modifier = Modifier.height(48.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Default.Add,
+          contentDescription = "일자리 등록",
+          modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+          text = "일자리 등록",
+          style = AppTypography.bodyMedium,
+          fontWeight = FontWeight.Medium
+        )
+      }
     }
   ) { innerPadding ->
     Column(
@@ -208,8 +229,7 @@ fun ProjectDetailScreen(
                 showBottomSheet = true
               },
               onWorkerManageClick = {
-                selectedWorkDay = workDay
-                showWorkerManagementDialog = true
+                navController.navigate("worker_management/${workDay.id}")
               }
             )
           }
@@ -317,341 +337,6 @@ fun ProjectDetailScreen(
         }
         
         Spacer(modifier = Modifier.height(32.dp))
-      }
-    }
-  }
-
-  // 인력 관리 Dialog (전체 화면)
-  if (showWorkerManagementDialog && selectedWorkDay != null) {
-    var selectedManagementTab by remember { mutableStateOf(0) }
-    var selectedDateIndex by remember { mutableStateOf(0) }
-    
-    // 모집 기간 파싱 (예: "2025-08-01 ~ 2025-08-07")
-    val dateRange = remember(selectedWorkDay) {
-      val dates = selectedWorkDay!!.recruitPeriod.split(" ~ ")
-      if (dates.size == 2) {
-        try {
-          val startDate = LocalDate.parse(dates[0])
-          val endDate = LocalDate.parse(dates[1])
-          var currentDate = startDate
-          val dateList = mutableListOf<LocalDate>()
-          while (!currentDate.isAfter(endDate)) {
-            dateList.add(currentDate)
-            currentDate = currentDate.plusDays(1)
-          }
-          dateList
-        } catch (e: Exception) {
-          listOf(selectedWorkDay!!.date)
-        }
-      } else {
-        listOf(selectedWorkDay!!.date)
-      }
-    }
-    
-    // 날짜별 색상 결정 함수
-    fun getDateColor(date: LocalDate, isSelected: Boolean): Color {
-      return when (date.dayOfWeek.value) {
-        6 -> Color(0xFF0066CC) // 토요일 - 파란색
-        7 -> Color(0xFFCC0000) // 일요일 - 빨간색
-        else -> if (isSelected) appColorScheme.primary else Color.Black // 평일 - 검정색
-      }
-    }
-    
-    // 8월 2일 확정인부 없음 예시를 위한 체크
-    fun hasConfirmedWorkers(date: LocalDate): Boolean {
-      // 8월 2일은 확정인부가 없다고 가정
-      if (date.monthValue == 8 && date.dayOfMonth == 2) {
-        return false
-      }
-      return selectedWorkDay!!.confirmed > 0
-    }
-    
-    ModalBottomSheet(
-      onDismissRequest = { 
-        showWorkerManagementDialog = false
-        selectedWorkDay = null
-      },
-      sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-      containerColor = Color.White,
-      modifier = Modifier.fillMaxSize(),
-      dragHandle = null // 드래그 핸들 제거
-    ) {
-      Column(
-        modifier = Modifier
-          .fillMaxSize()
-          .background(Color.White)
-      ) {
-        // 상단 헤더
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          // 제목
-          Text(
-            text = selectedWorkDay!!.title,
-            style = AppTypography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(1f)
-          )
-          // 닫기 버튼
-          IconButton(onClick = { 
-            scope.launch {
-              showWorkerManagementDialog = false
-              selectedWorkDay = null
-            }
-          }) {
-            Icon(
-              Icons.Default.Close,
-              contentDescription = "닫기",
-              tint = Color.Gray
-            )
-          }
-        }
-        
-        Divider(thickness = 1.dp, color = Color.LightGray)
-        
-        // 탭 (확정인부, 인부지원 현황)
-        TabRow(
-          selectedTabIndex = selectedManagementTab,
-          containerColor = Color.White,
-          modifier = Modifier.fillMaxWidth()
-        ) {
-          Tab(
-            selected = selectedManagementTab == 0,
-            onClick = { selectedManagementTab = 0 },
-            text = { Text("확정인부") }
-          )
-          Tab(
-            selected = selectedManagementTab == 1,
-            onClick = { selectedManagementTab = 1 },
-            text = { Text("인부지원 현황") }
-          )
-        }
-        
-        // 날짜 선택 탭 (스크롤 가능)
-        if (dateRange.size > 1) {
-          ScrollableTabRow(
-            selectedTabIndex = selectedDateIndex,
-            containerColor = Color.White,
-            edgePadding = 8.dp,
-            modifier = Modifier.fillMaxWidth()
-          ) {
-            dateRange.forEachIndexed { index, date ->
-              Tab(
-                selected = selectedDateIndex == index,
-                onClick = { selectedDateIndex = index },
-                text = { 
-                  Text(
-                    date.format(DateTimeFormatter.ofPattern("MM/dd")),
-                    style = AppTypography.bodySmall,
-                    fontWeight = if (selectedDateIndex == index) FontWeight.Bold else FontWeight.Normal,
-                    color = getDateColor(date, selectedDateIndex == index)
-                  )
-                }
-              )
-            }
-          }
-        }
-        
-        // 선택된 날짜 정보
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-        ) {
-          Text(
-            text = dateRange.getOrNull(selectedDateIndex)?.format(
-              DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")
-            ) ?: selectedWorkDay!!.date.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")),
-            style = AppTypography.bodyMedium,
-            fontWeight = FontWeight.Medium
-          )
-        }
-        
-        Divider(thickness = 0.5.dp, color = Color.LightGray)
-        
-        // 탭에 따른 내용 표시
-        LazyColumn(
-          modifier = Modifier
-            .fillMaxSize()
-            .weight(1f),
-          contentPadding = PaddingValues(16.dp),
-          verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-          when (selectedManagementTab) {
-            0 -> { // 확정인부 탭
-              val currentDate = dateRange.getOrNull(selectedDateIndex) ?: selectedWorkDay!!.date
-              
-              if (!hasConfirmedWorkers(currentDate)) {
-                // 확정인부가 없는 경우
-                item {
-                  Box(
-                    modifier = Modifier
-                      .fillMaxWidth()
-                      .padding(vertical = 48.dp),
-                    contentAlignment = Alignment.Center
-                  ) {
-                    Text(
-                      text = "확정된 인부가 없습니다",
-                      style = AppTypography.bodyLarge,
-                      color = Color.Gray
-                    )
-                  }
-                }
-              } else {
-                // 확정인부가 있는 경우 - 4개 카드 표시
-                item {
-                  // 출근 확정된 근로자 카드
-                  Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                  ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                      Text(
-                        "출근 확정된 근로자 ${selectedWorkDay!!.confirmed}명 확인하기",
-                        style = AppTypography.bodyMedium
-                      )
-                      Spacer(modifier = Modifier.height(12.dp))
-                      Button(
-                        onClick = { /* TODO */ },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(4.dp)
-                      ) {
-                        Text("출근확정 근로자 정보")
-                      }
-                    }
-                  }
-                }
-                
-                item {
-                  // 출근 여부 확인 카드
-                  Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                  ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                      Text(
-                        "근로자의 출근 여부 확인하기",
-                        style = AppTypography.bodyMedium
-                      )
-                      Spacer(modifier = Modifier.height(12.dp))
-                      Button(
-                        onClick = { /* TODO */ },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(4.dp)
-                      ) {
-                        Text("출근확인")
-                      }
-                    }
-                  }
-                }
-                
-                item {
-                  // 퇴근 여부 확인 카드
-                  Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                  ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                      Text(
-                        "근로자 퇴근여부 확인하기",
-                        style = AppTypography.bodyMedium
-                      )
-                      Spacer(modifier = Modifier.height(12.dp))
-                      Button(
-                        onClick = { /* TODO */ },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(4.dp)
-                      ) {
-                        Text("퇴근확인")
-                      }
-                    }
-                  }
-                }
-                
-                item {
-                  // 지급내역 확인 카드
-                  Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                  ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                      Text(
-                        "지급내역 확인하기",
-                        style = AppTypography.bodyMedium
-                      )
-                      Spacer(modifier = Modifier.height(12.dp))
-                      Button(
-                        onClick = { /* TODO */ },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(4.dp)
-                      ) {
-                        Text("지급내역서 보기")
-                      }
-                    }
-                  }
-                }
-                
-                // 자동 임금 지급 안내
-                item {
-                  Box(
-                    modifier = Modifier
-                      .fillMaxWidth()
-                      .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                  ) {
-                    Text(
-                      text = "18:00시까지 확인하지 않을경우 자동으로 임금이 지급됩니다.",
-                      style = AppTypography.bodySmall,
-                      color = Color(0xFFFF6B00) // 주황색
-                    )
-                  }
-                }
-              }
-            }
-            1 -> { // 인부지원 현황 탭
-              item {
-                Column(
-                  verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                  Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                  ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                      Text("지원자", fontSize = 14.sp, color = Color.Gray)
-                      Text(
-                        "${selectedWorkDay!!.applicants}명",
-                        style = AppTypography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                      )
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                      Text("확정자", fontSize = 14.sp, color = Color.Gray)
-                      Text(
-                        "${selectedWorkDay!!.confirmed}명",
-                        style = AppTypography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = appColorScheme.primary
-                      )
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     }
   }
