@@ -9,48 +9,45 @@ enum class ProjectPaymentStatus {
     PENDING,     // 지급 대기
     PROCESSING,  // 처리중
     COMPLETED,   // 지급 완료
-    FAILED       // 지급 실패
+    FAILED,      // 지급 실패
+    OVERDUE      // 연체
 }
 
-// 개별 작업자 결제 정보
-data class WorkerPaymentInfo(
-    val workerId: String,
-    val workerName: String,
-    val jobType: String,
-    val workDate: LocalDate,
-    val workHours: Double,
-    val hourlyWage: Int,
-    val totalAmount: Long,
-    val deductionAmount: Long = 0, // 공제액
-    val finalAmount: Long,         // 실지급액
-    val status: ProjectPaymentStatus,
-    val paymentDate: LocalDateTime? = null
-)
 
 // 프로젝트별 결제 정보
 data class ProjectPaymentData(
     val id: String,
     val projectTitle: String,
-    val projectLocation: String,
+    val projectId: String,
+    val company: String,
+    val location: String,
+    val workDate: LocalDate,
+    val status: ProjectPaymentStatus,
     val workers: List<WorkerPaymentInfo>,
     val totalAmount: Long,
-    val serviceFeeReduction: Long, // 서비스 이용으로 인한 수수료 절감액
-    val originalServiceFee: Long,  // 기존 수수료 (10%)
-    val currentServiceFee: Long,   // 현재 수수료 (5%)
-    val totalSavings: Long,        // 총 절감액
-    val status: ProjectPaymentStatus,
-    val workStartDate: LocalDate,
-    val workEndDate: LocalDate,
-    val notes: String = "",
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    val paidAmount: Long,
+    val pendingAmount: Long,
+    val createdAt: LocalDateTime,
+    val completedAt: LocalDateTime? = null
 ) {
+    // Nested data class for worker payment info
+    data class WorkerPaymentInfo(
+        val workerId: String,
+        val workerName: String,
+        val jobType: String,
+        val hoursWorked: Double,
+        val hourlyRate: Int,
+        val totalAmount: Long,
+        val isPaid: Boolean,
+        val paidAt: LocalDateTime? = null
+    )
     // 총 작업자 수
     val totalWorkers: Int
         get() = workers.size
 
     // 지급 완료된 작업자 수
     val completedWorkers: Int
-        get() = workers.count { it.status == ProjectPaymentStatus.COMPLETED }
+        get() = workers.count { it.isPaid }
 
     // 상태별 색상
     val statusColor: Color
@@ -59,24 +56,17 @@ data class ProjectPaymentData(
             ProjectPaymentStatus.PROCESSING -> Color(0xFF42A5F5)
             ProjectPaymentStatus.COMPLETED -> Color(0xFF66BB6A)
             ProjectPaymentStatus.FAILED -> Color(0xFFEF5350)
+            ProjectPaymentStatus.OVERDUE -> Color(0xFFD32F2F)
         }
-
-    // 절감률 계산
-    val savingsPercentage: Float
-        get() = if (originalServiceFee > 0) {
-            (totalSavings.toFloat() / originalServiceFee.toFloat()) * 100
-        } else 0f
 }
 
 // 프로젝트별 결제 통계
 data class ProjectPaymentSummary(
     val totalProjects: Int = 0,
+    val completedPayments: Int = 0,
+    val pendingPayments: Int = 0,
     val totalAmount: Long = 0L,
-    val pendingProjects: Int = 0,
+    val paidAmount: Long = 0L,
     val pendingAmount: Long = 0L,
-    val completedProjects: Int = 0,
-    val completedAmount: Long = 0L,
-    val monthlyTotal: Long = 0L,
-    val totalServiceFeeSavings: Long = 0L, // 총 수수료 절감액
-    val averageSavingsPerProject: Long = 0L // 프로젝트당 평균 절감액
+    val overdueCount: Int = 0
 )

@@ -29,10 +29,11 @@ import com.billcorea.jikgong.presentation.destinations.ProjectDetailScreenDestin
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.billcorea.jikgong.presentation.company.main.CompanyMockDataFactory
 import java.text.NumberFormat
 import java.util.*
 
-// 기존 paste.txt의 SimpleProject 데이터 클래스 사용
+// SimpleProject 데이터 클래스는 data.kt의 CompanyMockDataFactory.getSimpleProjects()에서 제공
 data class SimpleProject(
   val id: String,
   val title: String,
@@ -59,38 +60,9 @@ fun ProjectListScreen(
   var selectedTab by remember { mutableStateOf(0) }
   var showCreateDialog by remember { mutableStateOf(false) }
 
-  // 샘플 데이터 (기존 paste.txt의 mockProjects와 동일)
+  // 중앙화된 샘플 데이터 사용
   val projects = remember {
-    listOf(
-      SimpleProject(
-        id = "1",
-        title = "아파트 신축공사 철근 작업자 모집",
-        company = "대한건설(주)",
-        location = "서울시 강남구 역삼동",
-        category = "철근공",
-        status = "RECRUITING",
-        startDate = "2025-08-08",
-        endDate = "2025-09-20",
-        wage = 200000,
-        currentApplicants = 8,
-        maxApplicants = 15,
-        isUrgent = true
-      ),
-      SimpleProject(
-        id = "2",
-        title = "사무실 인테리어 목공 인력 모집",
-        company = "현대인테리어",
-        location = "서울시 종로구",
-        category = "목공",
-        status = "IN_PROGRESS",
-        startDate = "2025-08-10",
-        endDate = "2025-08-25",
-        wage = 180000,
-        currentApplicants = 12,
-        maxApplicants = 12,
-        isBookmarked = true
-      )
-    )
+    CompanyMockDataFactory.getSimpleProjects()
   }
 
   Scaffold(
@@ -154,17 +126,17 @@ fun ProjectListScreen(
         Tab(
           selected = selectedTab == 1,
           onClick = { selectedTab = 1 },
-          text = { Text("모집중 (1)") }
+          text = { Text("모집중 (${projects.count { it.status == "RECRUITING" }})") }
         )
         Tab(
           selected = selectedTab == 2,
           onClick = { selectedTab = 2 },
-          text = { Text("진행중 (1)") }
+          text = { Text("진행중 (${projects.count { it.status == "IN_PROGRESS" }})") }
         )
         Tab(
           selected = selectedTab == 3,
           onClick = { selectedTab = 3 },
-          text = { Text("완료 (0)") }
+          text = { Text("완료 (${projects.count { it.status == "COMPLETED" }})") }
         )
       }
 

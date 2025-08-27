@@ -68,7 +68,7 @@ fun ProjectPaymentSummaryCard(
                 }
 
                 Text(
-                    text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(summary.monthlyTotal)}원",
+                    text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(summary.totalAmount)}원",
                     style = AppTypography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -78,11 +78,7 @@ fun ProjectPaymentSummaryCard(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 절감 혜택 강조 섹션
-            SavingsBenefitSection(
-                totalSavings = summary.totalServiceFeeSavings,
-                averageSavingsPerProject = summary.averageSavingsPerProject
-            )
+            // 절감 혜택 강조 섹션 (service fee benefits removed from data structure)
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -94,7 +90,7 @@ fun ProjectPaymentSummaryCard(
                 // 지급 대기
                 SummaryStatItem(
                     title = "지급 대기",
-                    count = summary.pendingProjects,
+                    count = summary.pendingPayments,
                     amount = summary.pendingAmount,
                     icon = Icons.Default.Pending,
                     color = Color(0xFFFFA726),
@@ -104,8 +100,8 @@ fun ProjectPaymentSummaryCard(
                 // 지급 완료
                 SummaryStatItem(
                     title = "지급 완료",
-                    count = summary.completedProjects,
-                    amount = summary.completedAmount,
+                    count = summary.completedPayments,
+                    amount = summary.paidAmount,
                     icon = Icons.Default.CheckCircle,
                     color = Color(0xFF66BB6A),
                     modifier = Modifier.weight(1f)
@@ -128,11 +124,11 @@ fun ProjectPaymentSummaryCard(
                     modifier = Modifier.weight(1f)
                 )
 
-                // 월간 절감액
+                // 지급 완료액
                 SummaryStatItem(
-                    title = "월간 절감액",
+                    title = "지급 완료액",
                     count = null,
-                    amount = summary.totalServiceFeeSavings,
+                    amount = summary.paidAmount,
                     icon = Icons.Default.TrendingUp,
                     color = Color(0xFF4CAF50),
                     modifier = Modifier.weight(1f)
