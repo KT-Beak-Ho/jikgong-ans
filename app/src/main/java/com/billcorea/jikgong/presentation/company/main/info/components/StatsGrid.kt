@@ -16,8 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.billcorea.jikgong.network.CompanyStats
-import com.billcorea.jikgong.network.StatItem
+import com.billcorea.jikgong.network.models.CompanyStats
+import com.billcorea.jikgong.network.models.StatItem
 
 @Composable
 fun StatsGrid(

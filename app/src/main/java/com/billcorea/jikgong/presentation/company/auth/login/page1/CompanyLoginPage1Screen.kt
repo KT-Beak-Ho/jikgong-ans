@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.api.models.response.ApiResult
-import com.billcorea.jikgong.api.models.response.LoginResponse
+import com.billcorea.jikgong.network.common.ApiResult
+import com.billcorea.jikgong.network.auth.LoginResponse
 import com.billcorea.jikgong.api.repository.login.LoginRepository
 import com.billcorea.jikgong.presentation.common.components.KeyboardConstants
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton

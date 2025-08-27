@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.em
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.MainActivity
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.network.AddressFindRoadAddress
+import com.billcorea.jikgong.network.location.AddressFindRoadAddress
 import com.billcorea.jikgong.presentation.PageIndicator
 import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
@@ -374,7 +374,7 @@ fun JoinPage4(
                 val safeRoadAddress = roadAddress.filterNotNull()
                 itemsIndexed(safeRoadAddress) { index, item ->
                     DisplayAddress(item, doSetCenterPosition = {
-                        viewModel._respAddress.value = item.addressName
+                        viewModel._respAddress.value = item.address_name
                         viewModel._geoCoding.value = "${item.y},${item.x}"
                         lat = item.x
                         lon = item.y
@@ -404,25 +404,25 @@ fun DisplayAddress(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = item.addressName,
+                text = item.address_name,
                 lineHeight = 1.25.em,
                 style = AppTypography.titleMedium,
             )
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = item.roadName,
+                    text = item.road_name,
                     style = AppTypography.bodyMedium,
                 )
-                if (item.buildingName.isNotEmpty()) {
+                if (item.building_name.isNotEmpty()) {
                     Spacer(modifier = Modifier.padding(3.dp))
                     Text(
-                        text = String.format("(%s)", item.buildingName),
+                        text = String.format("(%s)", item.building_name),
                         style = AppTypography.bodyMedium,
                     )
                 }
                 Spacer(modifier = Modifier.padding(3.dp))
                 Text(
-                    text = item.zoneNo,
+                    text = item.zone_no,
                     style = AppTypography.bodyLarge,
                 )
             }

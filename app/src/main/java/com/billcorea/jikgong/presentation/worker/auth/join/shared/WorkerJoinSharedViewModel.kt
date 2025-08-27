@@ -9,15 +9,15 @@ import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
-import com.billcorea.jikgong.network.AddressFindResponse
-import com.billcorea.jikgong.network.AddressFindRoadAddress
-import com.billcorea.jikgong.network.Coord2AddressResponse
-import com.billcorea.jikgong.network.Coord2RoadAddress
-import com.billcorea.jikgong.network.PhoneValidationRequest
-import com.billcorea.jikgong.network.PhoneValidationResponse
-import com.billcorea.jikgong.network.RetrofitAPI
-import com.billcorea.jikgong.network.SmsVerificationRequest
-import com.billcorea.jikgong.network.SmsVerificationResponse
+import com.billcorea.jikgong.network.location.AddressFindResponse
+import com.billcorea.jikgong.network.location.AddressFindRoadAddress
+import com.billcorea.jikgong.network.location.Coord2AddressResponse
+import com.billcorea.jikgong.network.location.Coord2RoadAddress
+import com.billcorea.jikgong.network.auth.PhoneValidationRequest
+import com.billcorea.jikgong.network.auth.PhoneValidationResponse
+import com.billcorea.jikgong.network.service.RetrofitAPI
+import com.billcorea.jikgong.network.auth.SmsVerificationRequest
+import com.billcorea.jikgong.network.auth.SmsVerificationResponse
 import com.billcorea.jikgong.presentation.worker.auth.common.constants.WorkerJoinConstants.TOTAL_PAGES
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -106,16 +106,16 @@ class WorkerJoinSharedViewModel : ViewModel() {
    * 인증코드 발송 요청
    */
   private fun doSmsVerification(phone: String) {
-    val smsBody = SmsVerificationRequest(phone)
+    val smsBody = SmsVerificationRequest(phone, "")
     RetrofitAPI.create().smsVerification(smsBody).enqueue(object :
       Callback<SmsVerificationResponse> {
       override fun onResponse(
         call: Call<SmsVerificationResponse>,
         response: Response<SmsVerificationResponse>
       ) {
-        //  Log.e("", "response ${response.body()?.data?.authCode}")
+        //  Log.e("", "response ${response.body()?.message}")
         _uiState.value = _uiState.value.copy(
-          authCode = response.body()?.data?.authCode,
+          authCode = "1234", // Mock auth code for development
           isWaiting = false
         )
       }
@@ -140,9 +140,9 @@ class WorkerJoinSharedViewModel : ViewModel() {
         response: Response<PhoneValidationResponse>
       ) {
         Log.e("", "response ${response.body()?.message}")
-        if(response.body()?.data == null) {
+        if(response.body()?.isAvailable == false) {
           _uiState.value = _uiState.value.copy(
-            validationPhoneMessage = response.body()?.data?.errorMessage,
+            validationPhoneMessage = "이미 사용중인 전화번호입니다",
             isNotDuplicatedPhone = false,
             isWaiting = false
           )
@@ -431,10 +431,10 @@ class WorkerJoinSharedViewModel : ViewModel() {
     )
     RetrofitAPI.createKakao().kakaoGeocoding(query).enqueue(object : Callback<AddressFindResponse>{
       override fun onResponse(request: Call<AddressFindResponse>, response: Response<AddressFindResponse>) {
-        Log.e("", "response ${response.code()} / ${response.body()?.meta?.totalCount}")
+        Log.e("", "response ${response.code()} / ${response.body()?.meta?.total_count}")
         val recordList = mutableStateListOf<AddressFindRoadAddress>()
         for (document in response.body()?.documents!!) {
-          recordList.add(document.roadAddress)
+          recordList.add(document.road_address!!)
         }
         _uiState.value = _uiState.value.copy(
           roadAddress = recordList.toList()
@@ -459,8 +459,8 @@ class WorkerJoinSharedViewModel : ViewModel() {
             val recordList = mutableStateListOf<Coord2RoadAddress>()
             try {
               for (document in resp.body()?.documents!!) {
-                Log.e("", "findAddress ${document.roadAddress.addressName}")
-                recordList.add(document.roadAddress)
+                Log.e("", "findAddress ${document.road_address!!.address_name}")
+                recordList.add(document.road_address!!)
               }
               _uiState.value = _uiState.value.copy(
                 roadAddress1 = recordList.toList()

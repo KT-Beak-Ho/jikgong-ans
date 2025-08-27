@@ -23,9 +23,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
-import com.billcorea.jikgong.presentation.company.main.scout.data.Worker
-import com.billcorea.jikgong.presentation.company.main.scout.data.Proposal
-import com.billcorea.jikgong.presentation.company.main.scout.data.ProposalStatus
+import com.billcorea.jikgong.network.models.Worker
+import com.billcorea.jikgong.network.models.Proposal
+import com.billcorea.jikgong.network.models.ProposalStatus
 import com.billcorea.jikgong.presentation.company.main.scout.pages.WorkerListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.ProposalListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.LocationSettingPage
@@ -123,13 +123,13 @@ fun CompanyScoutMainScreen(
     }
 
     // 노동자 상세 바텀시트
-    if (uiState.selectedWorker != null) {
+    uiState.selectedWorker?.let { selectedWorker ->
         WorkerDetailBottomSheetContent(
-            worker = uiState.selectedWorker!!,
+            worker = selectedWorker,
             onDismiss = { viewModel.dismissWorkerDetail() },
             onScoutConfirm = { wage, message ->
                 viewModel.confirmScoutProposal(
-                    worker = uiState.selectedWorker!!,
+                    worker = selectedWorker,
                     wage = wage,
                     message = message
                 )

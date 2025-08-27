@@ -64,7 +64,7 @@ import androidx.navigation.compose.rememberNavController
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.datepicker.WheelDatePicker
-import com.billcorea.jikgong.network.VisaExpiryDateRequest
+import com.billcorea.jikgong.network.auth.VisaExpiryDateRequest
 import com.billcorea.jikgong.presentation.PageIndicator
 import com.billcorea.jikgong.presentation.destinations.JoinPage3Destination
 import com.billcorea.jikgong.ui.theme.AppTypography
@@ -138,7 +138,7 @@ fun JoinPage2 (
 
 
     fun doCheckPassportNumber() {
-        viewModel.doVisaExpiryDate(VisaExpiryDateRequest("", "", "", passportNo))
+        viewModel.doVisaExpiryDate(VisaExpiryDateRequest(0L, passportNo))
         if (expiryDate?.isNotEmpty() == true) {
             MaterialDialog(context).show {
                 icon(R.drawable.ic_launcher_v1_foreground)

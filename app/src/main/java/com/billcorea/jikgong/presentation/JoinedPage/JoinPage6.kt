@@ -62,7 +62,7 @@ import androidx.compose.ui.unit.em
 import androidx.navigation.compose.rememberNavController
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.network.WorkExperience
+import com.billcorea.jikgong.network.auth.WorkExperience
 import com.billcorea.jikgong.presentation.PageIndicator
 import com.billcorea.jikgong.presentation.destinations.JikgongAppDestination
 import com.billcorea.jikgong.ui.theme.AppTypography

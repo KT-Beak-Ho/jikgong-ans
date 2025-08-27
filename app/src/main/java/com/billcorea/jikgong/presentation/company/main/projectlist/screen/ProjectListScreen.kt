@@ -29,26 +29,10 @@ import com.billcorea.jikgong.presentation.destinations.ProjectDetailScreenDestin
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.billcorea.jikgong.presentation.company.main.CompanyMockDataFactory
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.network.models.SimpleProject
 import java.text.NumberFormat
 import java.util.*
-
-// SimpleProject 데이터 클래스는 data.kt의 CompanyMockDataFactory.getSimpleProjects()에서 제공
-data class SimpleProject(
-  val id: String,
-  val title: String,
-  val company: String,
-  val location: String,
-  val category: String,
-  val status: String,
-  val startDate: String,
-  val endDate: String,
-  val wage: Int,
-  val currentApplicants: Int,
-  val maxApplicants: Int,
-  val isUrgent: Boolean = false,
-  val isBookmarked: Boolean = false
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination

@@ -17,8 +17,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentSampleData
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentSummary
+import androidx.compose.ui.unit.sp
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.network.models.ProjectPaymentSummary
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -45,40 +46,55 @@ fun ProjectPaymentSummaryCard(
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
-            // 헤더 - 제목과 이번 달 총액
+            // 헤더 - 제목만
+            Text(
+                text = "임금 관리 현황",
+                style = AppTypography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = appColorScheme.onPrimaryContainer
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = "이번 달 지급액",
+                style = AppTypography.bodyMedium,
+                color = appColorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+            )
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            // 금액 표시
+            Text(
+                text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(summary.totalAmount)}원",
+                style = AppTypography.headlineLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = appColorScheme.primary
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // 절약 금액 표시 (10%)
+            val savedAmount = (summary.totalAmount * 0.1).toLong()
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = "임금 관리 현황",
-                        style = AppTypography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = appColorScheme.onPrimaryContainer
-                    )
-
-                    Text(
-                        text = "이번 달 지급액",
-                        style = AppTypography.bodyMedium,
-                        color = appColorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                    )
-                }
-
                 Text(
-                    text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(summary.totalAmount)}원",
-                    style = AppTypography.headlineMedium.copy(
+                    text = "수수료 절약",
+                    style = AppTypography.bodySmall,
+                    color = Color(0xFF4CAF50)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "+${NumberFormat.getNumberInstance(Locale.KOREA).format(savedAmount)}원",
+                    style = AppTypography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
-                    color = appColorScheme.primary
+                    color = Color(0xFF4CAF50)
                 )
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // 절감 혜택 강조 섹션 (service fee benefits removed from data structure)
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -207,6 +223,77 @@ private fun SavingsBenefitSection(
 }
 
 @Composable
+private fun TossStyleStatItem(
+    title: String,
+    count: Int?,
+    amount: Long,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(100.dp), // 토스 스타일 높이
+        shape = RoundedCornerShape(16.dp),
+        color = androidx.compose.ui.graphics.Color.White,
+        shadowElevation = 0.5.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            width = 0.5.dp,
+            color = androidx.compose.ui.graphics.Color(0xFFE5E7EB)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // 상단: 제목
+            Text(
+                text = title,
+                style = AppTypography.bodyMedium.copy(
+                    fontWeight = FontWeight.Medium,
+                    letterSpacing = (-0.2).sp
+                ),
+                color = androidx.compose.ui.graphics.Color(0xFF6B7280),
+                maxLines = 1
+            )
+            
+            // 하단: 수치 정보
+            Column {
+                if (count != null) {
+                    Text(
+                        text = "${count}건",
+                        style = AppTypography.titleMedium.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = (-0.3).sp
+                        ),
+                        color = androidx.compose.ui.graphics.Color(0xFF1A1A1A)
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                }
+                
+                Text(
+                    text = if (amount >= 10000000) {
+                        "${String.format("%.1f", amount / 10000000.0)}억원"
+                    } else if (amount >= 10000) {
+                        "${String.format("%.0f", amount / 10000.0)}만원"
+                    } else {
+                        "${NumberFormat.getNumberInstance(Locale.KOREA).format(amount)}원"
+                    },
+                    style = AppTypography.bodyLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = (-0.2).sp
+                    ),
+                    color = color,
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun SummaryStatItem(
     title: String,
     count: Int?,
@@ -216,34 +303,37 @@ private fun SummaryStatItem(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier.height(120.dp), // 고정 높이로 모든 상자 크기 동일하게
         shape = RoundedCornerShape(12.dp),
         color = appColorScheme.surface,
         shadowElevation = 2.dp
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp), // 패딩 약간 축소
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly // 수직 간격 균등 배치
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = title,
                 tint = color,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(20.dp)
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = title,
-                style = AppTypography.labelMedium,
+                style = AppTypography.labelLarge.copy(
+                    fontWeight = FontWeight.Medium
+                ),
                 color = appColorScheme.onSurfaceVariant
             )
 
             if (count != null) {
                 Text(
                     text = "${count}건",
-                    style = AppTypography.titleMedium.copy(
+                    style = AppTypography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
                     ),
                     color = appColorScheme.onSurface
@@ -252,8 +342,8 @@ private fun SummaryStatItem(
 
             Text(
                 text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(amount)}원",
-                style = AppTypography.bodyMedium.copy(
-                    fontWeight = FontWeight.Medium
+                style = AppTypography.bodyLarge.copy(
+                    fontWeight = FontWeight.SemiBold
                 ),
                 color = color
             )
@@ -266,7 +356,7 @@ private fun SummaryStatItem(
 fun ProjectPaymentSummaryCardPreview() {
     Jikgong1111Theme {
         ProjectPaymentSummaryCard(
-            summary = ProjectPaymentSampleData.getSampleProjectPaymentSummary(),
+            summary = CompanyMockDataFactory.getProjectPaymentSummary(),
             modifier = Modifier.padding(16.dp)
         )
     }

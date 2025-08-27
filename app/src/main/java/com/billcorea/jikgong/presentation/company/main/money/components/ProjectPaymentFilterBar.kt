@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentStatus
+import com.billcorea.jikgong.network.models.ProjectPaymentStatus
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -73,31 +73,26 @@ fun ProjectPaymentFilterBar(
                 FilterChip(
                     onClick = { onStatusSelected(status) },
                     label = {
-                        Text(
-                            text = label,
-                            style = AppTypography.labelMedium.copy(
-                                fontWeight = if (selectedStatus == status) {
-                                    FontWeight.Bold
-                                } else {
-                                    FontWeight.Normal
-                                }
-                            )
-                        )
-                    },
-                    selected = selectedStatus == status,
-                    trailingIcon = if (selectedStatus == status && status != null) {
-                        {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "필터 제거",
-                                modifier = Modifier.size(16.dp)
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = androidx.compose.ui.Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                style = AppTypography.labelMedium.copy(
+                                    fontWeight = if (selectedStatus == status) {
+                                        FontWeight.Bold
+                                    } else {
+                                        FontWeight.Normal
+                                    }
+                                )
                             )
                         }
-                    } else null,
+                    },
+                    selected = selectedStatus == status,
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = appColorScheme.primary,
-                        selectedLabelColor = appColorScheme.onPrimary,
-                        selectedTrailingIconColor = appColorScheme.onPrimary
+                        selectedLabelColor = appColorScheme.onPrimary
                     ),
                     border = FilterChipDefaults.filterChipBorder(
                         enabled = true,

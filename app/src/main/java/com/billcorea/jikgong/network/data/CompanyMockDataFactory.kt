@@ -1,18 +1,6 @@
-package com.billcorea.jikgong.presentation.company.main
+package com.billcorea.jikgong.network.data
 
-import com.billcorea.jikgong.network.CompanyData
-import com.billcorea.jikgong.network.CompanyType
-import com.billcorea.jikgong.network.CompanyStatus
-import com.billcorea.jikgong.network.NotificationInfo
-import com.billcorea.jikgong.network.CompanyStats
-import com.billcorea.jikgong.network.StatItem
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentData
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentStatus
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentSummary
-import com.billcorea.jikgong.presentation.company.main.scout.data.Worker
-import com.billcorea.jikgong.presentation.company.main.scout.data.Proposal
-import com.billcorea.jikgong.presentation.company.main.scout.data.ProposalStatus
-import com.billcorea.jikgong.presentation.company.main.projectlist.screen.SimpleProject
+import com.billcorea.jikgong.network.models.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -325,7 +313,10 @@ object CompanyMockDataFactory {
                 introduction = baseWorker.introduction,
                 desiredWage = baseWorker.dailyWage,
                 isAvailable = baseWorker.isAvailable,
-                completedProjects = baseWorker.completedProjects
+                completedProjects = baseWorker.completedProjects,
+                hourlyWage = baseWorker.hourlyWage,
+                dailyWage = baseWorker.dailyWage,
+                location = baseWorker.location
             )
         }
     }
@@ -659,5 +650,65 @@ object CompanyMockDataFactory {
      */
     fun getProjectsByStatus(status: String): List<BaseProject> {
         return baseProjects.filter { it.status == status }
+    }
+
+    // ==================== Payment 관련 샘플 데이터 ====================
+    
+    fun getSampleWorkerInfos(): List<WorkerInfo> {
+        return baseWorkers.map { baseWorker ->
+            WorkerInfo(
+                id = baseWorker.id,
+                name = baseWorker.name,
+                phone = "010-${(1000..9999).random()}-${(1000..9999).random()}",
+                jobType = baseWorker.primaryJobType,
+                experienceLevel = when {
+                    baseWorker.experience >= 10 -> "전문"
+                    baseWorker.experience >= 5 -> "숙련"
+                    else -> "초급"
+                }
+            )
+        }
+    }
+
+    fun getSamplePayments(): List<PaymentData> {
+        val workers = getSampleWorkerInfos()
+        val today = java.time.LocalDate.now()
+
+        return listOf(
+            PaymentData(
+                id = "payment1",
+                projectId = "project_001",
+                projectTitle = "강남구 아파트 신축공사",
+                worker = workers[0],
+                workDate = today.minusDays(1),
+                startTime = "08:00",
+                endTime = "18:00",
+                totalHours = 9.0,
+                wageType = WageType.DAILY,
+                wagePerHour = 16000,
+                totalWage = 150000L,
+                deductions = 7500L,
+                finalAmount = 142500L,
+                status = PaymentStatus.PENDING,
+                notes = "정상 근무 완료"
+            )
+        )
+    }
+
+    fun getSamplePaymentSummary(): PaymentSummary {
+        val payments = getSamplePayments()
+        val pending = payments.filter { it.status == PaymentStatus.PENDING }
+        val completed = payments.filter { it.status == PaymentStatus.COMPLETED }
+
+        return PaymentSummary(
+            totalPayments = payments.size,
+            totalAmount = payments.sumOf { it.finalAmount },
+            pendingCount = pending.size,
+            pendingAmount = pending.sumOf { it.finalAmount },
+            completedCount = completed.size,
+            completedAmount = completed.sumOf { it.finalAmount },
+            monthlyTotal = 15000000L,
+            weeklyTotal = 3500000L
+        )
     }
 }

@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.network.AddressFindRoadAddress
+import com.billcorea.jikgong.network.location.AddressFindRoadAddress
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage3ScreenDestination
@@ -312,7 +312,7 @@ fun WorkerJoinPage4Screen(
             // 업데이트 함수
             // uiState.respAddress = item.addressName
             // viewModel._geoCoding.value = "${item.y},${item.x}"
-            workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateAddress(item.addressName))
+            workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateAddress(item.address_name))
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateLat((item.x).toDouble()))
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateLon((item.y).toDouble()))
             // Log.e("", "geoCoding=${viewModel._geoCoding.value}")
@@ -344,25 +344,25 @@ fun DisplayAddress(
       verticalArrangement = Arrangement.Center
     ) {
       Text(
-        text = item.addressName,
+        text = item.address_name,
         lineHeight = 1.25.em,
         style = AppTypography.titleMedium,
       )
       Row(modifier = Modifier.fillMaxWidth()) {
         Text(
-          text = item.roadName,
+          text = item.road_name,
           style = AppTypography.bodyMedium,
         )
-        if (item.buildingName.isNotEmpty()) {
+        if (item.building_name.isNotEmpty()) {
           Spacer(modifier = Modifier.padding(3.dp))
           Text(
-            text = String.format("(%s)", item.buildingName),
+            text = String.format("(%s)", item.building_name),
             style = AppTypography.bodyMedium,
           )
         }
         Spacer(modifier = Modifier.padding(3.dp))
         Text(
-          text = item.zoneNo,
+          text = item.zone_no,
           style = AppTypography.bodyLarge,
         )
       }

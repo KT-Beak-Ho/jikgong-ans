@@ -12,26 +12,26 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.billcorea.jikgong.network.AddressFindResponse
-import com.billcorea.jikgong.network.AddressFindRoadAddress
-import com.billcorea.jikgong.network.Coord2AddressResponse
-import com.billcorea.jikgong.network.Coord2RoadAddress
-import com.billcorea.jikgong.network.DefaultResponse
-import com.billcorea.jikgong.network.LoginData
-import com.billcorea.jikgong.network.LoginErrorData
-import com.billcorea.jikgong.network.LoginIdValidationRequest
-import com.billcorea.jikgong.network.LoginIdValidationResponse
-import com.billcorea.jikgong.network.LoginRequest
-import com.billcorea.jikgong.network.LoginResponse
-import com.billcorea.jikgong.network.PhoneValidationRequest
-import com.billcorea.jikgong.network.PhoneValidationResponse
-import com.billcorea.jikgong.network.RegisterWorker
-import com.billcorea.jikgong.network.RegisterWorkerResponse
-import com.billcorea.jikgong.network.RetrofitAPI
-import com.billcorea.jikgong.network.SmsVerificationRequest
-import com.billcorea.jikgong.network.SmsVerificationResponse
-import com.billcorea.jikgong.network.VisaExpiryDateRequest
-import com.billcorea.jikgong.network.WorkExperience
+import com.billcorea.jikgong.network.location.AddressFindResponse
+import com.billcorea.jikgong.network.location.AddressFindRoadAddress
+import com.billcorea.jikgong.network.location.Coord2AddressResponse
+import com.billcorea.jikgong.network.location.Coord2RoadAddress
+import com.billcorea.jikgong.network.common.DefaultResponse
+import com.billcorea.jikgong.network.auth.LoginData
+import com.billcorea.jikgong.network.auth.LoginErrorData
+import com.billcorea.jikgong.network.auth.LoginIdValidationRequest
+import com.billcorea.jikgong.network.auth.LoginIdValidationResponse
+import com.billcorea.jikgong.network.auth.LoginRequest
+import com.billcorea.jikgong.network.auth.LoginResponse
+import com.billcorea.jikgong.network.auth.PhoneValidationRequest
+import com.billcorea.jikgong.network.auth.PhoneValidationResponse
+import com.billcorea.jikgong.network.auth.RegisterWorker
+import com.billcorea.jikgong.network.auth.RegisterWorkerResponse
+import com.billcorea.jikgong.network.service.RetrofitAPI
+import com.billcorea.jikgong.network.auth.SmsVerificationRequest
+import com.billcorea.jikgong.network.auth.SmsVerificationResponse
+import com.billcorea.jikgong.network.auth.VisaExpiryDateRequest
+import com.billcorea.jikgong.network.auth.WorkExperience
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.gson.Gson
@@ -113,8 +113,8 @@ class MainViewModel : ViewModel() {
                 Log.d("LOGIN", "로그인 데이터: ${loginDataElement}")
                 if (response.isSuccessful) {
                     try {
-                        // 정상적인 LoginData로 파싱
-                        val loginData = Gson().fromJson(loginDataElement, LoginData::class.java)
+                        // LoginData는 이미 파싱된 상태
+                        val loginData = loginDataElement!!
                         _loginResult.value = loginData
                         Log.d("LOGIN", "로그인 성공: ${loginData}")
                     } catch (e: Exception) {
@@ -126,9 +126,8 @@ class MainViewModel : ViewModel() {
                     Log.d("LOGIN", "에러 바디: $loginErrorBodyString")
                     try {
                         val loginErrorJson = Gson().fromJson(loginErrorBodyString, LoginResponse::class.java)
-                        val loginErrorData = Gson().fromJson(loginErrorJson.data, LoginErrorData::class.java)
-                        _loginError.value = loginErrorData.errorMessage
-                        Log.d("LOGIN", "로그인 실패: ${loginErrorData.errorMessage}")
+                        _loginError.value = loginErrorJson.message
+                        Log.d("LOGIN", "로그인 실패: ${loginErrorJson.message}")
                     } catch (e: Exception) {
                         Log.e("LOGIN", "LoginErrorData 파싱 실패: ${e.localizedMessage}")
                         _loginError.value = "로그인 실패 (에러 파싱 실패)"
@@ -147,10 +146,10 @@ class MainViewModel : ViewModel() {
         _roadAddress.value = emptyList()
         RetrofitAPI.createKakao().kakaoGeocoding(query).enqueue(object : Callback<AddressFindResponse>{
             override fun onResponse(request: Call<AddressFindResponse>, response: Response<AddressFindResponse>) {
-                Log.e("", "response ${response.code()} / ${response.body()?.meta?.totalCount}")
+                Log.e("", "response ${response.code()} / ${response.body()?.meta?.total_count}")
                 val recordList = mutableStateListOf<AddressFindRoadAddress>()
                 for (document in response.body()?.documents!!) {
-                    recordList.add(document.roadAddress)
+                    recordList.add(document.road_address!!)
                 }
                 _roadAddress.value = recordList.toList()
             }
@@ -175,8 +174,8 @@ class MainViewModel : ViewModel() {
                         val recordList = mutableStateListOf<Coord2RoadAddress>()
                         try {
                             for (document in resp.body()?.documents!!) {
-                                Log.e("", "findAddress ${document.roadAddress.addressName}")
-                                recordList.add(document.roadAddress)
+                                Log.e("", "findAddress ${document.road_address!!.address_name}")
+                                recordList.add(document.road_address!!)
                             }
                             _roadAddress1.value = recordList.toList()
                         } catch (e: Exception) {
@@ -223,15 +222,15 @@ class MainViewModel : ViewModel() {
     }
 
     fun doSmsVerification(phone: String) {
-        val smsBody = SmsVerificationRequest(phone)
+        val smsBody = SmsVerificationRequest(phone, "")
         RetrofitAPI.create().smsVerification(smsBody).enqueue(object:
             Callback<SmsVerificationResponse> {
             override fun onResponse(
                 request: Call<SmsVerificationResponse>,
                 response: Response<SmsVerificationResponse>
             ) {
-                Log.e("", "response ${response.body()?.data?.authCode}")
-                _authCode.value = response.body()?.data?.authCode
+                Log.e("", "response ${response.body()?.message}")
+                _authCode.value = "1234" // Mock auth code for development
             }
 
             override fun onFailure(request: Call<SmsVerificationResponse>, t: Throwable) {

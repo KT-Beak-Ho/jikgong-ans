@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.network.Coord2RoadAddress
+import com.billcorea.jikgong.network.location.Coord2RoadAddress
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -307,7 +307,7 @@ fun KakaoMapView(
                         DisplayRoadAddress(roadAddress1[0])
                         TextButton(
                             onClick = {
-                                viewModel._respAddress.value = roadAddress1[0].addressName
+                                viewModel._respAddress.value = roadAddress1[0].address_name
                                 viewModel._roadAddress1.value = emptyList()
                                 navigator.navigateUp()
                             },
@@ -332,7 +332,7 @@ fun KakaoMapView(
 
 @Composable
 fun DisplayRoadAddress(item: Coord2RoadAddress) {
-    Log.e("", "display ${item.addressName}/${item.zoneNo}")
+    Log.e("", "display ${item.address_name}/${item.zone_no}")
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -340,11 +340,11 @@ fun DisplayRoadAddress(item: Coord2RoadAddress) {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (item.addressName.isNotEmpty()) {
-            Text(text = item.addressName, style = AppTypography.bodyMedium)
+        if (item.address_name.isNotEmpty()) {
+            Text(text = item.address_name, style = AppTypography.bodyMedium)
         }
-        if (item.zoneNo.isNotEmpty()) {
-            Text(text = String.format("(%s)", item.zoneNo), style = AppTypography.bodyMedium)
+        if (item.zone_no.isNotEmpty()) {
+            Text(text = String.format("(%s)", item.zone_no), style = AppTypography.bodyMedium)
         }
     }
 }
