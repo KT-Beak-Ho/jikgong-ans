@@ -288,7 +288,8 @@ class MainActivity : ComponentActivity() {
               }
               composable(CompanyInfoScreenDestination.route) {
                 CompanyInfoScreen(
-                  navigator = navigator
+                  navigator = navigator,
+                  navController = navController
                 )
               }
               /** ProjectListScreen 에서 프로젝트 관리 버튼 클릭시 사용하는 Router */
