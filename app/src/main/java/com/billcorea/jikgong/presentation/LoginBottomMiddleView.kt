@@ -1,8 +1,6 @@
 package com.billcorea.jikgong.presentation
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,19 +30,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
+import com.billcorea.jikgong.presentation.destinations.CompanyLoginPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
@@ -77,7 +72,8 @@ fun LoginBottomMiddleView(
           x = (-132.5).dp,
           y = 17.dp
         )
-        .wrapContentHeight(align = Alignment.CenterVertically))
+        .wrapContentHeight(align = Alignment.CenterVertically)
+    )
     Image(
       painter = painterResource(id = R.drawable.ic_line_1px),
       contentDescription = "Line_1px",
@@ -89,15 +85,17 @@ fun LoginBottomMiddleView(
           y = 210.dp
         )
         .requiredWidth(width = 375.dp)
-        .requiredHeight(height = 1.dp))
-    IconButton(onClick = {
-      doCloseBottom()
-    }, modifier = Modifier
-      .align(alignment = Alignment.TopStart)
-      .offset(
-        x = 327.dp,
-        y = 16.dp
-      )
+        .requiredHeight(height = 1.dp)
+    )
+    IconButton(
+      onClick = {
+        doCloseBottom()
+      }, modifier = Modifier
+        .align(alignment = Alignment.TopStart)
+        .offset(
+          x = 327.dp,
+          y = 16.dp
+        )
     ) {
       Icon(
         imageVector = Icons.Rounded.Close,
@@ -116,7 +114,8 @@ fun LoginBottomMiddleView(
           x = 211.dp,
           y = 80.dp
         )
-        .wrapContentHeight(align = Alignment.CenterVertically))
+        .wrapContentHeight(align = Alignment.CenterVertically)
+    )
     Text(
       text = stringResource(R.string.findWorker),
       color = MaterialTheme.colorScheme.onSurface,
@@ -128,7 +127,8 @@ fun LoginBottomMiddleView(
           x = 211.dp,
           y = 254.dp
         )
-        .wrapContentHeight(align = Alignment.CenterVertically))
+        .wrapContentHeight(align = Alignment.CenterVertically)
+    )
     TextButton(
       onClick = {
         doLoginPerson()
@@ -205,20 +205,19 @@ fun LoginBottomMiddleViewPreview() {
   val navController = rememberNavController()
   val navigator = navController.toDestinationsNavigator()
   var showBottomSheet by remember { mutableStateOf(false) }
-  val sheetState = rememberModalBottomSheetState( skipPartiallyExpanded = false)
+  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
   val screenHeight = config.screenHeightDp
 
   ModalBottomSheet(
     onDismissRequest = {
       showBottomSheet = false
-    }
-    , sheetState = sheetState
-    , modifier = Modifier.height((screenHeight * .5).dp) // .8
+    }, sheetState = sheetState, modifier = Modifier.height((screenHeight * .5).dp) // .8
   ) {
 
-    LoginBottomMiddleView(modifier = Modifier
-      .fillMaxWidth()
-      .padding(5.dp),
+    LoginBottomMiddleView(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(5.dp),
       doCloseBottom = {
         //showBottomSheet = false
       },
@@ -227,7 +226,7 @@ fun LoginBottomMiddleViewPreview() {
         navigator.navigate(WorkerLoginPageDestination)
       },
       doLoginCorp = {
-
+        navigator.navigate(CompanyLoginPage1ScreenDestination)
       }
     )
   }

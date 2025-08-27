@@ -39,10 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
+import com.billcorea.jikgong.presentation.destinations.CompanyLoginPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
-import com.billcorea.jikgong.presentation.destinations.CompanyLoginScreenDestination
 
 @Composable
 fun LoginBottomMiddleView(
@@ -223,7 +223,7 @@ fun LoginBottomMiddleViewPreview() {
             },
             doLoginCorp = {
                 //showLoginBottomSheet = false
-                navigator.navigate(CompanyLoginScreenDestination)
+                navigator.navigate(CompanyLoginPage1ScreenDestination)
             }
         )
     }

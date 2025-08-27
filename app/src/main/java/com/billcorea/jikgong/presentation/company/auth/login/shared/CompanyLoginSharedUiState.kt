@@ -4,6 +4,7 @@ data class CompanyLoginSharedUiState (
   /** Page 1: 로그인 */
   val id: String = "",         //  로그인 ID
   val password: String = "",   //  로그인 PWD
+  val deviceToken: String ="", //  Device 토큰
 
   /** 공통 상태 */
   val currentPage: Int = 1,
