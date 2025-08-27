@@ -27,12 +27,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.presentation.JikgongApp
-import com.billcorea.jikgong.presentation.JoinPage1
-import com.billcorea.jikgong.presentation.JoinPage2
-import com.billcorea.jikgong.presentation.JoinPage3
-import com.billcorea.jikgong.presentation.JoinPage4
-import com.billcorea.jikgong.presentation.JoinPage5
-import com.billcorea.jikgong.presentation.JoinPage6
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage1
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage2
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage3
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage4
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage5
+import com.billcorea.jikgong.presentation.JoinedPage.JoinPage6
 import com.billcorea.jikgong.presentation.KakaoMapView
 import com.billcorea.jikgong.presentation.SplashScreen
 import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPage1Screen
@@ -97,6 +97,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.kakao.vectormap.KakaoMapSdk
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+
+import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
 
