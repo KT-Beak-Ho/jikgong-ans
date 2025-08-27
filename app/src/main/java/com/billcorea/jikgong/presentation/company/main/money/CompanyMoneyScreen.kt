@@ -26,12 +26,16 @@ import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import com.ramcosta.composedestinations.annotation.Destination
+import androidx.navigation.NavController
+import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
 
-// @Destination 어노테이션 제거 - 바텀 네비게이션에서 composable()로 직접 호출됨
+@Destination
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompanyMoneyScreen(
     navigator: DestinationsNavigator,
+    navController: NavController,
     modifier: Modifier = Modifier,
     showBottomBar: Boolean = true
 ) {
@@ -79,7 +83,15 @@ fun CompanyMoneyScreen(
     }
 
     Scaffold(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        bottomBar = {
+            if (showBottomBar) {
+                CompanyBottomBar(
+                    navController = navController,
+                    currentRoute = "company_money_screen"
+                )
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -276,6 +288,7 @@ fun CompanyMoneyScreenWithDataPreview() {
     Jikgong1111Theme {
         CompanyMoneyScreen(
             navigator = navigator,
+            navController = navController,
             showBottomBar = false
         )
     }

@@ -61,6 +61,7 @@ internal object CompanyInfoFormatter {
 @Composable
 fun CompanyInfoScreen(
   navigator: DestinationsNavigator,
+  navController: NavController,
   viewModel: CompanyInfoViewModel = koinViewModel()
 ) {
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -68,7 +69,7 @@ fun CompanyInfoScreen(
 
   CompanyInfoContent(
     navigator = navigator,
-    navController = navigator as? NavController,  // 안전한 캐스팅
+    navController = navController,
     uiState = uiState,
     companyData = companyData,
     onRefresh = viewModel::refresh,
@@ -82,7 +83,7 @@ fun CompanyInfoScreen(
 @Composable
 internal fun CompanyInfoContent(
   navigator: DestinationsNavigator,
-  navController: NavController? = null,
+  navController: NavController,
   uiState: CompanyInfoUiState,
   companyData: CompanyData,
   onRefresh: () -> Unit,
@@ -95,21 +96,11 @@ internal fun CompanyInfoContent(
 
   Scaffold(
     bottomBar = {
-      // Preview에서도 BottomBar를 표시하기 위한 처리
       if (showBottomBar) {
-        if (navController != null) {
-          CompanyBottomBar(
-            navController = navController,
-            currentRoute = "company/info"
-          )
-        } else {
-          // Preview용 NavController 생성
-          val previewNavController = rememberNavController()
-          CompanyBottomBar(
-            navController = previewNavController,
-            currentRoute = "company/info"
-          )
-        }
+        CompanyBottomBar(
+          navController = navController,
+          currentRoute = "company_info_screen"
+        )
       }
     },
     containerColor = Color.White
@@ -276,7 +267,7 @@ fun CompanyInfoScreenFullPreview() {
 
     CompanyInfoContent(
       navigator = navigator,
-      navController = null,  // Preview에서는 null이지만 내부에서 생성
+      navController = navController,
       uiState = CompanyInfoUiState(
         isRefreshing = false,
         error = null
@@ -306,7 +297,7 @@ fun CompanyInfoScreenPreview() {
 
     CompanyInfoContent(
       navigator = navigator,
-      navController = null,
+      navController = navController,
       uiState = CompanyInfoUiState(
         isRefreshing = false,
         error = null
@@ -336,7 +327,7 @@ fun CompanyInfoScreenLoadingPreview() {
 
     CompanyInfoContent(
       navigator = navigator,
-      navController = null,
+      navController = navController,
       uiState = CompanyInfoUiState(
         isRefreshing = true,
         error = null
@@ -366,7 +357,7 @@ fun CompanyInfoScreenWithNotificationsPreview() {
 
     CompanyInfoContent(
       navigator = navigator,
-      navController = null,
+      navController = navController,
       uiState = CompanyInfoUiState(
         isRefreshing = false,
         error = null
@@ -501,7 +492,7 @@ fun CompanyBottomBarPreview() {
   Jikgong1111Theme {
     CompanyBottomBar(
       navController = rememberNavController(),
-      currentRoute = "company/info"
+      currentRoute = "company_info_screen"
     )
   }
 }

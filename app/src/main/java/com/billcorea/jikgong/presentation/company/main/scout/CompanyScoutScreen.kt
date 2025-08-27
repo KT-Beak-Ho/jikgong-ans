@@ -70,7 +70,7 @@ fun CompanyScoutMainScreen(
         bottomBar = {
             CompanyBottomBar(
                 navController = navController,
-                currentRoute = "company/scout"
+                currentRoute = "company_scout_main"
             )
         },
         containerColor = Color(0xFFF7F8FA) // 토스 배경색
@@ -604,7 +604,7 @@ private fun CompanyScoutMainScreenPreview(
             val mockNavController = rememberNavController()
             CompanyBottomBar(
                 navController = mockNavController,
-                currentRoute = "company/scout"
+                currentRoute = "company_scout_main"
             )
         },
         containerColor = Color(0xFFF7F8FA)

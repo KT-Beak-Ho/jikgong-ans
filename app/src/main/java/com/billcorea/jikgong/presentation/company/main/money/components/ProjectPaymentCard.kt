@@ -68,7 +68,7 @@ fun ProjectPaymentCard(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = projectPayment.projectLocation,
+                        text = projectPayment.location,
                         style = AppTypography.bodyLarge,
                         color = appColorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -127,32 +127,11 @@ fun ProjectPaymentCard(
                 }
             }
 
-            // 작업 완료 메시지
-            if (projectPayment.notes.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    color = appColorScheme.primaryContainer.copy(alpha = 0.3f)
-                ) {
-                    Text(
-                        text = projectPayment.notes,
-                        style = AppTypography.bodyMedium,
-                        color = appColorScheme.onSurface,
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
-            }
+            // 작업 완료 메시지 (notes field removed from data structure)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 직직직 혜택 강조 카드
-            JikgongBenefitHighlightCard(
-                originalServiceFee = projectPayment.originalServiceFee,
-                currentServiceFee = projectPayment.currentServiceFee,
-                totalSavings = projectPayment.totalSavings,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // 직직직 혜택 강조 카드 (service fee benefits removed from data structure)
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -180,12 +159,7 @@ fun ProjectPaymentCard(
                         thickness = 1.dp
                     )
 
-                    // 상세 혜택 정보
-                    DetailedBenefitCard(
-                        originalServiceFee = projectPayment.originalServiceFee,
-                        currentServiceFee = projectPayment.currentServiceFee,
-                        totalSavings = projectPayment.totalSavings
-                    )
+                    // 상세 혜택 정보 (service fee benefits removed from data structure)
 
                     Spacer(modifier = Modifier.height(20.dp))
 
@@ -440,7 +414,7 @@ private fun ComparisonItem(
 
 @Composable
 private fun WorkerPaymentItem(
-    worker: com.billcorea.jikgong.presentation.company.main.money.data.WorkerPaymentInfo,
+    worker: com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentData.WorkerPaymentInfo,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -467,7 +441,7 @@ private fun WorkerPaymentItem(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "${worker.jobType} • ${worker.workHours}시간 근무",
+                    text = "${worker.jobType} • ${worker.hoursWorked}시간 근무",
                     style = AppTypography.bodySmall,
                     color = appColorScheme.onSurfaceVariant
                 )
@@ -475,7 +449,7 @@ private fun WorkerPaymentItem(
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(worker.finalAmount)}원",
+                    text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(worker.totalAmount)}원",
                     style = AppTypography.titleSmall.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -487,28 +461,21 @@ private fun WorkerPaymentItem(
                 // 개별 상태 표시
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = when (worker.status) {
-                        ProjectPaymentStatus.PENDING -> androidx.compose.ui.graphics.Color(0xFFFFA726).copy(alpha = 0.15f)
-                        ProjectPaymentStatus.PROCESSING -> appColorScheme.primary.copy(alpha = 0.15f)
-                        ProjectPaymentStatus.COMPLETED -> androidx.compose.ui.graphics.Color(0xFF4CAF50).copy(alpha = 0.15f)
-                        ProjectPaymentStatus.FAILED -> appColorScheme.error.copy(alpha = 0.15f)
+                    color = if (worker.isPaid) {
+                        androidx.compose.ui.graphics.Color(0xFF4CAF50).copy(alpha = 0.15f)
+                    } else {
+                        androidx.compose.ui.graphics.Color(0xFFFFA726).copy(alpha = 0.15f)
                     }
                 ) {
                     Text(
-                        text = when (worker.status) {
-                            ProjectPaymentStatus.PENDING -> "대기"
-                            ProjectPaymentStatus.PROCESSING -> "처리중"
-                            ProjectPaymentStatus.COMPLETED -> "완료"
-                            ProjectPaymentStatus.FAILED -> "실패"
-                        },
+                        text = if (worker.isPaid) "완료" else "대기",
                         style = AppTypography.labelSmall.copy(
                             fontWeight = FontWeight.Medium
                         ),
-                        color = when (worker.status) {
-                            ProjectPaymentStatus.PENDING -> androidx.compose.ui.graphics.Color(0xFFFFA726)
-                            ProjectPaymentStatus.PROCESSING -> appColorScheme.primary
-                            ProjectPaymentStatus.COMPLETED -> androidx.compose.ui.graphics.Color(0xFF4CAF50)
-                            ProjectPaymentStatus.FAILED -> appColorScheme.error
+                        color = if (worker.isPaid) {
+                            androidx.compose.ui.graphics.Color(0xFF4CAF50)
+                        } else {
+                            androidx.compose.ui.graphics.Color(0xFFFFA726)
                         },
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
