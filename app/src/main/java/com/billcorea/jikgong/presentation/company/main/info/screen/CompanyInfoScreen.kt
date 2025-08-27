@@ -100,14 +100,14 @@ internal fun CompanyInfoContent(
         if (navController != null) {
           CompanyBottomBar(
             navController = navController,
-            currentRoute = "company/info"
+            currentRoute = "company_info_screen"
           )
         } else {
           // Preview용 NavController 생성
           val previewNavController = rememberNavController()
           CompanyBottomBar(
             navController = previewNavController,
-            currentRoute = "company/info"
+            currentRoute = "company_info_screen"
           )
         }
       }
@@ -501,7 +501,7 @@ fun CompanyBottomBarPreview() {
   Jikgong1111Theme {
     CompanyBottomBar(
       navController = rememberNavController(),
-      currentRoute = "company/info"
+      currentRoute = "company_info_screen"
     )
   }
 }

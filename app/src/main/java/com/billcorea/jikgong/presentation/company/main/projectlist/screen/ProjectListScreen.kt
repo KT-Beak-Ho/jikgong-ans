@@ -98,7 +98,7 @@ fun ProjectListScreen(
     bottomBar = {
       CompanyBottomBar(
         navController = navController,
-        currentRoute = "company/projectlist"
+        currentRoute = "project_list_screen"
       )
     },
     floatingActionButton = {

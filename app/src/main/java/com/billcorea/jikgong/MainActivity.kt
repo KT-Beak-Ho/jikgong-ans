@@ -49,7 +49,13 @@ import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.WorkerInfoScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.WorkerManagementScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.screen.ProjectListScreen
+import com.billcorea.jikgong.presentation.company.main.scout.CompanyScoutMainScreen
+import com.billcorea.jikgong.presentation.company.main.money.CompanyMoneyScreen
+import com.billcorea.jikgong.presentation.company.main.info.screen.CompanyInfoScreen
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.CompanyScoutMainScreenDestination
+import com.billcorea.jikgong.presentation.destinations.CompanyMoneyScreenDestination
+import com.billcorea.jikgong.presentation.destinations.CompanyInfoScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyLoginPage1ScreenDestination
@@ -264,6 +270,25 @@ class MainActivity : ComponentActivity() {
                 ProjectListScreen(
                   navController = navController,
                   modifier = Modifier.padding(5.dp)
+                )
+              }
+              composable(CompanyScoutMainScreenDestination.route) {
+                CompanyScoutMainScreen(
+                  navigator = navigator,
+                  navController = navController,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              composable(CompanyMoneyScreenDestination.route) {
+                CompanyMoneyScreen(
+                  navigator = navigator,
+                  navController = navController,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              composable(CompanyInfoScreenDestination.route) {
+                CompanyInfoScreen(
+                  navigator = navigator
                 )
               }
               /** ProjectListScreen 에서 프로젝트 관리 버튼 클릭시 사용하는 Router */
