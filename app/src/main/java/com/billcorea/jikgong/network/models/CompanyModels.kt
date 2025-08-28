@@ -1,7 +1,5 @@
 package com.billcorea.jikgong.network.models
 
-import androidx.compose.ui.graphics.Color
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 // ==================== 회사 기본 정보 ====================

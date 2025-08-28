@@ -24,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 
 // 확정 근로자 데이터
 data class ConfirmedWorker(
@@ -61,25 +62,9 @@ fun WorkerInfoScreen(
   Scaffold(
     modifier = modifier.fillMaxSize(),
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = "출근확정 근로자 정보",
-            style = AppTypography.titleLarge,
-            fontWeight = FontWeight.Bold
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { navController.popBackStack() }) {
-            Icon(
-              Icons.Default.ArrowBack,
-              contentDescription = "뒤로가기"
-            )
-          }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = Color.White
-        )
+      BackNavigationTopBar(
+        title = "출근확정 근로자 정보",
+        onBackClick = { navController.popBackStack() }
       )
     }
   ) { innerPadding ->
@@ -109,7 +94,7 @@ fun WorkerInfoScreen(
             text = "${confirmedWorkers.size}명",
             style = AppTypography.bodyMedium,
             fontWeight = FontWeight.Bold,
-            color = appColorScheme.primary
+            color = Color(0xFF4B7BFF)
           )
         }
       }
@@ -159,14 +144,14 @@ private fun WorkerCard(
         modifier = Modifier
           .size(48.dp)
           .clip(CircleShape)
-          .background(appColorScheme.primary.copy(alpha = 0.1f)),
+          .background(Color(0xFF4B7BFF).copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center
       ) {
         Icon(
           Icons.Default.Person,
           contentDescription = null,
           modifier = Modifier.size(28.dp),
-          tint = appColorScheme.primary
+          tint = Color(0xFF4B7BFF)
         )
       }
       

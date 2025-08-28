@@ -312,7 +312,7 @@ fun WorkerJoinPage4Screen(
             // 업데이트 함수
             // uiState.respAddress = item.addressName
             // viewModel._geoCoding.value = "${item.y},${item.x}"
-            workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateAddress(item.address_name))
+            workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateAddress(item.addressName))
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateLat((item.x).toDouble()))
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateLon((item.y).toDouble()))
             // Log.e("", "geoCoding=${viewModel._geoCoding.value}")
@@ -344,25 +344,25 @@ fun DisplayAddress(
       verticalArrangement = Arrangement.Center
     ) {
       Text(
-        text = item.address_name,
+        text = item.addressName,
         lineHeight = 1.25.em,
         style = AppTypography.titleMedium,
       )
       Row(modifier = Modifier.fillMaxWidth()) {
         Text(
-          text = item.road_name,
+          text = item.roadName,
           style = AppTypography.bodyMedium,
         )
-        if (item.building_name.isNotEmpty()) {
+        if (item.buildingName.isNotEmpty()) {
           Spacer(modifier = Modifier.padding(3.dp))
           Text(
-            text = String.format("(%s)", item.building_name),
+            text = String.format("(%s)", item.buildingName),
             style = AppTypography.bodyMedium,
           )
         }
         Spacer(modifier = Modifier.padding(3.dp))
         Text(
-          text = item.zone_no,
+          text = item.zoneNo,
           style = AppTypography.bodyLarge,
         )
       }

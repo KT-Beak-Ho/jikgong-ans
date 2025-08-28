@@ -38,7 +38,7 @@ fun ProjectPaymentCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = appColorScheme.surface
+            containerColor = androidx.compose.ui.graphics.Color(0xFFFBFCFF)
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 3.dp

@@ -73,21 +73,17 @@ fun ProjectPaymentFilterBar(
                 FilterChip(
                     onClick = { onStatusSelected(status) },
                     label = {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = androidx.compose.ui.Alignment.Center
-                        ) {
-                            Text(
-                                text = label,
-                                style = AppTypography.labelMedium.copy(
-                                    fontWeight = if (selectedStatus == status) {
-                                        FontWeight.Bold
-                                    } else {
-                                        FontWeight.Normal
-                                    }
-                                )
-                            )
-                        }
+                        Text(
+                            text = label,
+                            style = AppTypography.labelMedium.copy(
+                                fontWeight = if (selectedStatus == status) {
+                                    FontWeight.Bold
+                                } else {
+                                    FontWeight.Normal
+                                }
+                            ),
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
                     },
                     selected = selectedStatus == status,
                     colors = FilterChipDefaults.filterChipColors(
@@ -104,7 +100,9 @@ fun ProjectPaymentFilterBar(
                         }
                     ),
                     shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier.defaultMinSize(minWidth = 80.dp)
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 80.dp)
+                        .wrapContentSize(androidx.compose.ui.Alignment.Center)
                 )
             }
         }

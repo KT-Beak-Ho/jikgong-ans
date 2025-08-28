@@ -431,10 +431,10 @@ class WorkerJoinSharedViewModel : ViewModel() {
     )
     RetrofitAPI.createKakao().kakaoGeocoding(query).enqueue(object : Callback<AddressFindResponse>{
       override fun onResponse(request: Call<AddressFindResponse>, response: Response<AddressFindResponse>) {
-        Log.e("", "response ${response.code()} / ${response.body()?.meta?.total_count}")
+        Log.e("", "response ${response.code()} / ${response.body()?.meta?.totalCount}")
         val recordList = mutableStateListOf<AddressFindRoadAddress>()
         for (document in response.body()?.documents!!) {
-          recordList.add(document.road_address!!)
+          recordList.add(document.roadAddress!!)
         }
         _uiState.value = _uiState.value.copy(
           roadAddress = recordList.toList()
@@ -459,8 +459,8 @@ class WorkerJoinSharedViewModel : ViewModel() {
             val recordList = mutableStateListOf<Coord2RoadAddress>()
             try {
               for (document in resp.body()?.documents!!) {
-                Log.e("", "findAddress ${document.road_address!!.address_name}")
-                recordList.add(document.road_address!!)
+                Log.e("", "findAddress ${document.roadAddress!!.addressName}")
+                recordList.add(document.roadAddress!!)
               }
               _uiState.value = _uiState.value.copy(
                 roadAddress1 = recordList.toList()

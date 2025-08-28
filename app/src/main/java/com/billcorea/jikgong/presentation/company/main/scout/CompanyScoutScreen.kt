@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
+import com.billcorea.jikgong.presentation.company.main.common.ScoutTopBar
 import com.billcorea.jikgong.network.models.Worker
 import com.billcorea.jikgong.network.models.Proposal
 import com.billcorea.jikgong.network.models.ProposalStatus
@@ -51,10 +52,40 @@ fun CompanyScoutMainScreen(
         modifier = modifier,
         topBar = {
             Column {
-                // 토스 스타일 헤더
-                TossStyleHeader(
-                    currentLocation = uiState.currentLocation
+                // 통일된 상단바
+                ScoutTopBar(
+                    title = "스카웃",
+                    onSettingsClick = {
+                        // TODO: 설정 화면으로 이동
+                    }
                 )
+
+                // 현재 위치 표시
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.White,
+                    shadowElevation = 0.dp
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp, vertical = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = "위치",
+                            modifier = Modifier.size(16.dp),
+                            tint = Color(0xFF4B7BFF)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = uiState.currentLocation,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Black
+                        )
+                    }
+                }
+
 
                 // 탭 바
                 ScoutTabBarExtended(
@@ -586,9 +617,40 @@ private fun CompanyScoutMainScreenPreview(
     Scaffold(
         topBar = {
             Column {
-                TossStyleHeader(
-                    currentLocation = "서울특별시 강남구"
+                ScoutTopBar(
+                    title = "스카웃",
+                    onSettingsClick = {
+                        // TODO: 설정 화면으로 이동
+                    }
                 )
+
+                // 현재 위치 표시
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.White,
+                    shadowElevation = 0.dp
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp, vertical = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = "위치",
+                            modifier = Modifier.size(16.dp),
+                            tint = Color(0xFF4B7BFF)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "현재 위치",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Black
+                        )
+                    }
+                }
+
+
                 ScoutTabBarExtended(
                     selectedTab = pagerState.currentPage,
                     onTabSelected = { index ->

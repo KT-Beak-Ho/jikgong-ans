@@ -35,7 +35,7 @@ fun ProjectPaymentSummaryCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = appColorScheme.primaryContainer
+            containerColor = androidx.compose.ui.graphics.Color(0xFFFBFCFF)
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 4.dp
@@ -48,53 +48,34 @@ fun ProjectPaymentSummaryCard(
         ) {
             // 헤더 - 제목만
             Text(
-                text = "임금 관리 현황",
+                text = "직직직으로 절약한 금액",
                 style = AppTypography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold
                 ),
-                color = appColorScheme.onPrimaryContainer
+                color = androidx.compose.ui.graphics.Color(0xFF1A1D29)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
+            // 총 절약 금액을 메인으로 크게 표시
             Text(
-                text = "이번 달 지급액",
-                style = AppTypography.bodyMedium,
-                color = appColorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-            )
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            // 금액 표시
-            Text(
-                text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(summary.totalAmount)}원",
-                style = AppTypography.headlineLarge.copy(
-                    fontWeight = FontWeight.Bold
+                text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(summary.totalSavingsAmount)}원",
+                style = AppTypography.displaySmall.copy(
+                    fontWeight = FontWeight.ExtraBold
                 ),
-                color = appColorScheme.primary
+                color = Color(0xFF4CAF50)
             )
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // 절약 금액 표시 (10%)
-            val savedAmount = (summary.totalAmount * 0.1).toLong()
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "수수료 절약",
-                    style = AppTypography.bodySmall,
-                    color = Color(0xFF4CAF50)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "+${NumberFormat.getNumberInstance(Locale.KOREA).format(savedAmount)}원",
-                    style = AppTypography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = Color(0xFF4CAF50)
-                )
-            }
+            // 절약 설명
+            Text(
+                text = "기존 중개업체 대비 수수료 절약",
+                style = AppTypography.bodyMedium.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                color = androidx.compose.ui.graphics.Color(0xFF6B7280)
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -140,11 +121,11 @@ fun ProjectPaymentSummaryCard(
                     modifier = Modifier.weight(1f)
                 )
 
-                // 지급 완료액
-                SummaryStatItem(
+                // 지급 완료액 (이번달 절약 금액 포함)
+                SummaryStatItemWithSavings(
                     title = "지급 완료액",
-                    count = null,
                     amount = summary.paidAmount,
+                    monthlySavings = summary.monthlySavingsAmount,
                     icon = Icons.Default.TrendingUp,
                     color = Color(0xFF4CAF50),
                     modifier = Modifier.weight(1f)
@@ -294,6 +275,61 @@ private fun TossStyleStatItem(
 }
 
 @Composable
+private fun SummaryStatItemWithSavings(
+    title: String,
+    amount: Long,
+    monthlySavings: Long,
+    icon: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.height(120.dp), // 고정 높이로 모든 상자 크기 동일하게
+        shape = RoundedCornerShape(12.dp),
+        color = androidx.compose.ui.graphics.Color(0xFFF1F3F9),
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp), // 패딩 약간 축소
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly // 수직 간격 균등 배치
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = color,
+                modifier = Modifier.size(20.dp)
+            )
+
+            Text(
+                text = title,
+                style = AppTypography.labelLarge.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                color = appColorScheme.onSurfaceVariant
+            )
+
+            Text(
+                text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(amount)}원",
+                style = AppTypography.bodyLarge.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = color
+            )
+            
+            // 이번달 절약 금액 표시
+            Text(
+                text = "이달 절약 +${NumberFormat.getNumberInstance(Locale.KOREA).format(monthlySavings)}원",
+                style = AppTypography.labelSmall,
+                color = Color(0xFF4CAF50)
+            )
+        }
+    }
+}
+
+@Composable
 private fun SummaryStatItem(
     title: String,
     count: Int?,
@@ -305,7 +341,7 @@ private fun SummaryStatItem(
     Surface(
         modifier = modifier.height(120.dp), // 고정 높이로 모든 상자 크기 동일하게
         shape = RoundedCornerShape(12.dp),
-        color = appColorScheme.surface,
+        color = androidx.compose.ui.graphics.Color(0xFFF1F3F9),
         shadowElevation = 2.dp
     ) {
         Column(

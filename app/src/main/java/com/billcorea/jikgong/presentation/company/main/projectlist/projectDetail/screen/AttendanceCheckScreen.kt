@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 
 // 출근 체크용 근로자 데이터
 data class AttendanceWorker(
@@ -62,25 +63,9 @@ fun AttendanceCheckScreen(
   Scaffold(
     modifier = modifier.fillMaxSize(),
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = "출근확인",
-            style = AppTypography.titleLarge,
-            fontWeight = FontWeight.Bold
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { navController.popBackStack() }) {
-            Icon(
-              Icons.Default.ArrowBack,
-              contentDescription = "뒤로가기"
-            )
-          }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = Color.White
-        )
+      BackNavigationTopBar(
+        title = "출근확인",
+        onBackClick = { navController.popBackStack() }
       )
     }
   ) { innerPadding ->

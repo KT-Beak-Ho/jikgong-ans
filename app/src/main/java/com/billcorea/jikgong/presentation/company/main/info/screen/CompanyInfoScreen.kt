@@ -25,6 +25,7 @@ import com.billcorea.jikgong.network.models.CompanyStatus
 import com.billcorea.jikgong.network.models.NotificationInfo
 import com.billcorea.jikgong.network.models.StatItem
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
+import com.billcorea.jikgong.presentation.company.main.common.InfoTopBar
 import com.billcorea.jikgong.presentation.company.main.info.components.HeaderSection
 import com.billcorea.jikgong.presentation.company.main.info.components.SavingsCard
 import com.billcorea.jikgong.presentation.company.main.info.components.StatsGrid
@@ -95,6 +96,16 @@ internal fun CompanyInfoContent(
   val pullToRefreshState = rememberPullToRefreshState()
 
   Scaffold(
+    topBar = {
+      InfoTopBar(
+        title = companyData.name,
+        notificationCount = companyData.notifications.unreadCount,
+        onNotificationClick = onClearNotifications,
+        onSettingsClick = {
+          // TODO: 설정 화면으로 이동
+        }
+      )
+    },
     bottomBar = {
       if (showBottomBar) {
         CompanyBottomBar(
@@ -121,11 +132,6 @@ internal fun CompanyInfoContent(
         verticalArrangement = Arrangement.spacedBy(0.dp),
         contentPadding = PaddingValues(bottom = 16.dp)  // 컨텐츠 하단 패딩
       ) {
-        // 헤더
-        item {
-          HeaderSection(companyData = companyData)
-        }
-
         // 절약 카드
         item {
           Spacer(modifier = Modifier.height(20.dp))

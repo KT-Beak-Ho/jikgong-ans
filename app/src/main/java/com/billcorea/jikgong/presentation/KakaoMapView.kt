@@ -307,7 +307,7 @@ fun KakaoMapView(
                         DisplayRoadAddress(roadAddress1[0])
                         TextButton(
                             onClick = {
-                                viewModel._respAddress.value = roadAddress1[0].address_name
+                                viewModel._respAddress.value = roadAddress1[0].addressName
                                 viewModel._roadAddress1.value = emptyList()
                                 navigator.navigateUp()
                             },
@@ -332,7 +332,7 @@ fun KakaoMapView(
 
 @Composable
 fun DisplayRoadAddress(item: Coord2RoadAddress) {
-    Log.e("", "display ${item.address_name}/${item.zone_no}")
+    Log.e("", "display ${item.addressName}/${item.zoneNo}")
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -340,11 +340,11 @@ fun DisplayRoadAddress(item: Coord2RoadAddress) {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (item.address_name.isNotEmpty()) {
-            Text(text = item.address_name, style = AppTypography.bodyMedium)
+        if (item.addressName.isNotEmpty()) {
+            Text(text = item.addressName, style = AppTypography.bodyMedium)
         }
-        if (item.zone_no.isNotEmpty()) {
-            Text(text = String.format("(%s)", item.zone_no), style = AppTypography.bodyMedium)
+        if (item.zoneNo.isNotEmpty()) {
+            Text(text = String.format("(%s)", item.zoneNo), style = AppTypography.bodyMedium)
         }
     }
 }

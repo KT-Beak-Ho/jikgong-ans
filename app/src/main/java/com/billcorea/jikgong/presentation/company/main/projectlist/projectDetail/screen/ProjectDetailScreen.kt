@@ -28,6 +28,7 @@ import com.billcorea.jikgong.network.models.SimpleProject
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -97,34 +98,9 @@ fun ProjectDetailScreen(
   Scaffold(
     modifier = modifier.fillMaxSize(),
     topBar = {
-      TopAppBar(
-        title = {
-          Column {
-            Text(
-              text = project.title,
-              style = AppTypography.titleMedium,
-              fontWeight = FontWeight.Bold,
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis
-            )
-            Text(
-              text = project.location,
-              style = AppTypography.bodySmall,
-              color = Color.Gray
-            )
-          }
-        },
-        navigationIcon = {
-          IconButton(onClick = { navController.popBackStack() }) {
-            Icon(
-              Icons.Default.ArrowBack,
-              contentDescription = "뒤로가기"
-            )
-          }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = Color.White
-        )
+      BackNavigationTopBar(
+        title = project.title,
+        onBackClick = { navController.popBackStack() }
       )
     },
     floatingActionButton = {

@@ -400,7 +400,9 @@ object CompanyMockDataFactory {
             totalAmount = 15750000L,
             paidAmount = 9450000L,
             pendingAmount = 6300000L,
-            overdueCount = 0
+            overdueCount = 0,
+            totalSavingsAmount = 5420000L, // 직직직 사용하면서 총 절약한 금액
+            monthlySavingsAmount = 850000L // 이번달 절약한 금액
         )
     }
 
@@ -412,7 +414,9 @@ object CompanyMockDataFactory {
             totalAmount = 0L,
             paidAmount = 0L,
             pendingAmount = 0L,
-            overdueCount = 0
+            overdueCount = 0,
+            totalSavingsAmount = 0L,
+            monthlySavingsAmount = 0L
         )
     }
 

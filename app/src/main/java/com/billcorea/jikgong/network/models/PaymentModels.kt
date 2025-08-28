@@ -154,7 +154,9 @@ data class ProjectPaymentSummary(
     val totalAmount: Long = 0L,
     val paidAmount: Long = 0L,
     val pendingAmount: Long = 0L,
-    val overdueCount: Int = 0
+    val overdueCount: Int = 0,
+    val totalSavingsAmount: Long = 0L, // 직직직 사용하면서 총 절약한 금액
+    val monthlySavingsAmount: Long = 0L // 이번달 절약한 금액
 )
 
 // ==================== 필터 옵션 ====================

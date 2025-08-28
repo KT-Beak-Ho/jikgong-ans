@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.presentation.company.main.common.CompanyTopBar
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.model.*
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.repository.ProjectCreateRepositoryImpl
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.viewmodel.ProjectCreateViewModel
@@ -64,21 +65,15 @@ fun ProjectCreateScreen(
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            "새 프로젝트 등록",
-            fontWeight = FontWeight.Bold
-          )
-        },
-        navigationIcon = {
+      CompanyTopBar(
+        title = "새 프로젝트 등록",
+        showBackButton = true,
+        onBackClick = { navController.popBackStack() },
+        actions = {
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(Icons.Default.Close, contentDescription = "닫기")
           }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = Color.White
-        )
+        }
       )
     },
     bottomBar = {

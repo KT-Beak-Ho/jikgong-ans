@@ -30,6 +30,7 @@ import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import androidx.navigation.NavController
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
+import com.billcorea.jikgong.presentation.company.main.common.SearchableTopBar
 
 @Destination
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,7 +86,7 @@ fun CompanyMoneyScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = androidx.compose.ui.graphics.Color.White, // 배경색을 흰색으로 변경
+        containerColor = androidx.compose.ui.graphics.Color(0xFFF7F8FA), // 파란색 배경으로 변경
         bottomBar = {
             if (showBottomBar) {
                 CompanyBottomBar(
@@ -101,31 +102,11 @@ fun CompanyMoneyScreen(
                 .padding(innerPadding)
         ) {
             // 상단바
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "임금 관리",
-                        style = AppTypography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            // TODO: 검색 기능 구현
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "검색"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = androidx.compose.ui.graphics.Color.White,
-                    titleContentColor = appColorScheme.onSurface
-                )
+            SearchableTopBar(
+                title = "임금 관리",
+                onSearchClick = {
+                    // TODO: 검색 기능 구현
+                }
             )
 
             // 메인 컨텐츠
@@ -210,7 +191,7 @@ private fun ScrollableContentWithScrollbar(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(end = if (canScroll) 12.dp else 0.dp), // 스크롤바 공간 확보
-            verticalArrangement = Arrangement.spacedBy(8.dp), // 간격 조정
+            verticalArrangement = Arrangement.spacedBy(16.dp), // 카드 간격 증가
             contentPadding = PaddingValues(
                 start = 20.dp, // 토스 스타일 패딩
                 end = 20.dp,

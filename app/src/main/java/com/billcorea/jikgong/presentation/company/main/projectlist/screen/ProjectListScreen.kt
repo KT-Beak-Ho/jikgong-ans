@@ -24,6 +24,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
+import com.billcorea.jikgong.presentation.company.main.common.SimpleCompanyTopBar
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.screen.ProjectCreateDialog
 import com.billcorea.jikgong.presentation.destinations.ProjectDetailScreenDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
@@ -84,18 +85,7 @@ fun ProjectListScreen(
         .background(Color(0xFFF8F9FA))
     ) {
       // 상단 제목
-      TopAppBar(
-        title = {
-          Text(
-            text = "프로젝트 목록",
-            style = AppTypography.titleLarge,
-            fontWeight = FontWeight.Bold
-          )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = Color.White
-        )
-      )
+      SimpleCompanyTopBar(title = "프로젝트 목록")
 
       // 탭
       TabRow(

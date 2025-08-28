@@ -374,7 +374,7 @@ fun JoinPage4(
                 val safeRoadAddress = roadAddress.filterNotNull()
                 itemsIndexed(safeRoadAddress) { index, item ->
                     DisplayAddress(item, doSetCenterPosition = {
-                        viewModel._respAddress.value = item.address_name
+                        viewModel._respAddress.value = item.addressName
                         viewModel._geoCoding.value = "${item.y},${item.x}"
                         lat = item.x
                         lon = item.y
@@ -404,25 +404,25 @@ fun DisplayAddress(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = item.address_name,
+                text = item.addressName,
                 lineHeight = 1.25.em,
                 style = AppTypography.titleMedium,
             )
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = item.road_name,
+                    text = item.roadName,
                     style = AppTypography.bodyMedium,
                 )
-                if (item.building_name.isNotEmpty()) {
+                if (item.buildingName.isNotEmpty()) {
                     Spacer(modifier = Modifier.padding(3.dp))
                     Text(
-                        text = String.format("(%s)", item.building_name),
+                        text = String.format("(%s)", item.buildingName),
                         style = AppTypography.bodyMedium,
                     )
                 }
                 Spacer(modifier = Modifier.padding(3.dp))
                 Text(
-                    text = item.zone_no,
+                    text = item.zoneNo,
                     style = AppTypography.bodyLarge,
                 )
             }
