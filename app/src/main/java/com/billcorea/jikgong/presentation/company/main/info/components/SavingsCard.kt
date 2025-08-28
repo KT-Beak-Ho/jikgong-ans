@@ -41,7 +41,7 @@ fun SavingsCard(
       .shadow(
         elevation = 12.dp,
         shape = RoundedCornerShape(20.dp),
-        spotColor = Color(0x337C3AED)
+        spotColor = Color(0x334B7BFF)
       )
       .animateContentSize(),
     shape = RoundedCornerShape(20.dp),
@@ -53,9 +53,9 @@ fun SavingsCard(
         .background(
           Brush.linearGradient(
             colors = listOf(
-              Color(0xFF7C3AED),
-              Color(0xFF8B5CF6),
-              Color(0xFF9333EA)
+              Color(0xFF4B7BFF),
+              Color(0xFF5B87FF),
+              Color(0xFF6B93FF)
             )
           )
         )

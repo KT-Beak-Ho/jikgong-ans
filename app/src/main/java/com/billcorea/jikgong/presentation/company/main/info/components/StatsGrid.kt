@@ -85,8 +85,8 @@ private fun StatCard(
             width = 1.5.dp,
             brush = Brush.linearGradient(
               colors = listOf(
-                Color(0x337C3AED),
-                Color(0x338B5CF6)
+                Color(0x334B7BFF),
+                Color(0x335B87FF)
               )
             ),
             shape = RoundedCornerShape(16.dp)
@@ -132,8 +132,8 @@ private fun StatCard(
                   Modifier.background(
                     Brush.linearGradient(
                       colors = listOf(
-                        Color(0xFF7C3AED),
-                        Color(0xFF8B5CF6)
+                        Color(0xFF4B7BFF),
+                        Color(0xFF5B87FF)
                       )
                     )
                   )
@@ -152,7 +152,7 @@ private fun StatCard(
           fontSize = 12.sp,
           fontWeight = FontWeight.SemiBold,
           color = if (stat.isActive) {
-            Color(0xFF7C3AED)
+            Color(0xFF4B7BFF)
           } else {
             Color(0xFF10B981)
           }

@@ -68,8 +68,8 @@ fun HeaderSection(
                   .background(
                     Brush.horizontalGradient(
                       colors = listOf(
-                        Color(0xFF7C3AED),
-                        Color(0xFF8B5CF6)
+                        Color(0xFF4B7BFF),
+                        Color(0xFF5B87FF)
                       )
                     )
                   )

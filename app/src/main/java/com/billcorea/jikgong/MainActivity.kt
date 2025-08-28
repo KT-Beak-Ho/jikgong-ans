@@ -43,7 +43,7 @@ import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.AttendanceCheckScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.CheckoutScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.ExistingJobScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.JobRegistrationScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.screen.JobCreationScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.PaymentSummaryScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.TempSaveScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.WorkerInfoScreen
@@ -351,9 +351,8 @@ class MainActivity : ComponentActivity() {
               }
               /** ProjectDetailScreen 에서 일자리 등록 버튼 클릭시 사용하는 Router */
               composable("job_registration") {
-                JobRegistrationScreen(
-                  navController = navController,
-                  modifier = Modifier.padding(5.dp)
+                JobCreationScreen(
+                  onNavigateBack = { navController.popBackStack() }
                 )
               }
               /** JobRegistrationScreen 에서 임시 버튼 클릭시 사용하는 Router */

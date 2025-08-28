@@ -307,6 +307,7 @@ fun WorkerJoinPage6Screen(
         modifier = Modifier.fillMaxHeight()
       ) {
         JobSelectList(
+          selectedJobs = setOf(), // 기존 단일 선택 방식이므로 빈 Set으로 시작
           doJobSelect = { jobCode ->
             Log.e("", "jobCode = $jobCode")
             val jobName = workerJoinViewModel.getJobNameByCode(jobCode)

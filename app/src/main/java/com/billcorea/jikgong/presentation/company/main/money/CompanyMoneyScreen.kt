@@ -75,13 +75,24 @@ fun CompanyMoneyScreen(
 
     var selectedStatus by remember { mutableStateOf<ProjectPaymentStatus?>(null) }
 
-    // 필터링된 프로젝트 목록
+    // 필터링 및 정렬된 프로젝트 목록
     val filteredProjects = remember(selectedStatus) {
-        if (selectedStatus == null) {
+        val filtered = if (selectedStatus == null) {
             projectPayments
         } else {
             projectPayments.filter { it.status == selectedStatus }
         }
+        
+        // 우선순위에 따른 정렬: 지급 대기 > 처리중 > 연체 > 지급 실패 > 지급 완료
+        filtered.sortedWith(compareBy<com.billcorea.jikgong.network.models.ProjectPaymentData> { project ->
+            when (project.status) {
+                ProjectPaymentStatus.PENDING -> 1    // 지급 대기 (최우선)
+                ProjectPaymentStatus.PROCESSING -> 2  // 처리중
+                ProjectPaymentStatus.OVERDUE -> 3     // 연체
+                ProjectPaymentStatus.FAILED -> 4      // 지급 실패
+                ProjectPaymentStatus.COMPLETED -> 5   // 지급 완료 (마지막)
+            }
+        }.thenByDescending { it.createdAt }) // 같은 상태 내에서는 최신 순으로 정렬
     }
 
     Scaffold(
