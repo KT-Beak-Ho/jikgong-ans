@@ -343,6 +343,63 @@ fun WorkerJoinPage2Screen(
           }
         }
       }
+      item {
+        LabelText(
+          mainText = stringResource(R.string.nationality),
+          appendText = "*",
+          appendTextColor = colorResource(R.color.secondary_B)
+        )
+
+        Spacer(modifier = Modifier.padding(5.dp))
+
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          TextButton(
+            onClick = {
+              workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateNationality("KOREAN"))
+              focusManager.clearFocus()
+            },
+            modifier = Modifier
+              .weight(1f)
+              .border(
+                width = if (uiState.nationality == "KOREAN") 3.dp else 1.dp,
+                color = if (uiState.nationality == "KOREAN") appColorScheme.primary else appColorScheme.outline
+              )
+              .focusRequester(focusRequester)
+          ) {
+            Text(
+              text = stringResource(R.string.local),
+              style = AppTypography.bodyMedium.copy(
+                color = if (uiState.gender == "KOREAN") appColorScheme.primary else appColorScheme.outline
+              ),
+              modifier = Modifier.padding(6.dp)
+            )
+          }
+
+          TextButton(
+            onClick = {
+              workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateNationality("FOREIGN"))
+              focusManager.clearFocus()
+            },
+            modifier = Modifier
+              .weight(1f)
+              .border(
+                width = if (uiState.nationality == "FOREIGN") 3.dp else 1.dp,
+                color = if (uiState.nationality == "FOREIGN") appColorScheme.primary else appColorScheme.outline
+              )
+          ) {
+            Text(
+              text = stringResource(R.string.foreigner),
+              style = AppTypography.bodyMedium.copy(
+                color = if (uiState.nationality == "FOREIGN") appColorScheme.primary else appColorScheme.outline
+              ),
+              modifier = Modifier.padding(6.dp)
+            )
+          }
+        }
+      }
     }
   }
   if (showBottomSheet) {

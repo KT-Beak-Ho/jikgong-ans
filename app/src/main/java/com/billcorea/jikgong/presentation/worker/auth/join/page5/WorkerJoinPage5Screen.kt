@@ -470,6 +470,7 @@ fun WorkerJoinPage5Screen(
             onClick = {
               workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateShowLaterDialog(false))
               workerJoinViewModel.onEvent(WorkerJoinSharedEvent.NextPage)
+              //navigator.navigate(WorkerJoinPage6ScreenDestination)
             }
           ) {
             Text(stringResource(R.string.OK))
