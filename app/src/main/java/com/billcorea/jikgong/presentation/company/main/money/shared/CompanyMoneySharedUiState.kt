@@ -1,9 +1,9 @@
 package com.billcorea.jikgong.presentation.company.main.money.shared
 
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentData
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentFilter
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentStatus
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentSummary
+import com.billcorea.jikgong.network.models.PaymentData
+import com.billcorea.jikgong.network.models.PaymentFilter
+import com.billcorea.jikgong.network.models.PaymentStatus
+import com.billcorea.jikgong.network.models.PaymentSummary
 
 data class CompanyMoneySharedUiState(
     // 데이터

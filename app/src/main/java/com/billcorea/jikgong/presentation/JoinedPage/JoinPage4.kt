@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.em
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.MainActivity
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.network.AddressFindRoadAddress
+import com.billcorea.jikgong.network.location.AddressFindRoadAddress
 import com.billcorea.jikgong.presentation.PageIndicator
 import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
 import com.billcorea.jikgong.presentation.destinations.KakaoMapViewDestination

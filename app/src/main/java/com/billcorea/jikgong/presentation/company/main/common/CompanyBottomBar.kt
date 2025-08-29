@@ -25,25 +25,25 @@ enum class CompanyBottomNavItem(
   val unselectedIcon: ImageVector
 ) {
   PROJECTS(
-    route = "company/projectlist",
+    route = "project_list_screen",
     title = "프로젝트 목록",
     selectedIcon = Icons.Filled.Work,
     unselectedIcon = Icons.Outlined.Work
   ),
   SCOUT(
-    route = "company/scout",
+    route = "company_scout_main",
     title = "인력 스카우트",
     selectedIcon = Icons.Filled.PersonSearch,
     unselectedIcon = Icons.Outlined.PersonSearch
   ),
   MONEY(
-    route = "company/money",
+    route = "company_money_screen",
     title = "자금 관리",
     selectedIcon = Icons.Filled.AccountBalance,
     unselectedIcon = Icons.Outlined.AccountBalance
   ),
   INFO(
-    route = "company/info",
+    route = "company_info_screen",
     title = "사업자 정보",
     selectedIcon = Icons.Filled.Person,
     unselectedIcon = Icons.Outlined.Person
@@ -108,7 +108,7 @@ private fun CompanyBottomBarPreview() {
   com.billcorea.jikgong.ui.theme.Jikgong1111Theme {
     CompanyBottomBar(
       navController = rememberNavController(),
-      currentRoute = "company/projectlist"
+      currentRoute = "project_list_screen"
     )
   }
 }

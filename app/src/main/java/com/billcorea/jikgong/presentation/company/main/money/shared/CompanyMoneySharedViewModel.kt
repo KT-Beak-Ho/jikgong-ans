@@ -2,9 +2,9 @@ package com.billcorea.jikgong.presentation.company.main.money.shared
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentData
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentSampleData
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentStatus
+import com.billcorea.jikgong.network.models.PaymentData
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.network.models.PaymentStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,8 +29,8 @@ class CompanyMoneySharedViewModel : ViewModel() {
 
             try {
                 // 실제로는 API 호출
-                val payments = PaymentSampleData.getSamplePayments()
-                val summary = PaymentSampleData.getSamplePaymentSummary()
+                val payments = CompanyMockDataFactory.getSamplePayments()
+                val summary = CompanyMockDataFactory.getSamplePaymentSummary()
 
                 _uiState.value = _uiState.value.copy(
                     payments = payments,

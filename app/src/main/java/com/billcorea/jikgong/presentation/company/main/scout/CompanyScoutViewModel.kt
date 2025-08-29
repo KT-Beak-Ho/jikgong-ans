@@ -2,7 +2,10 @@ package com.billcorea.jikgong.presentation.company.main.scout
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.billcorea.jikgong.presentation.company.main.scout.data.*
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.network.models.Worker
+import com.billcorea.jikgong.network.models.Proposal
+import com.billcorea.jikgong.network.models.ProposalStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +15,7 @@ import java.time.LocalDateTime
 
 class CompanyScoutViewModel : ViewModel() {
 
-  private val repository = ScoutRepository()
+  // CompanyMockDataFactory를 직접 사용
 
   private val _uiState = MutableStateFlow(ScoutUiState())
   val uiState: StateFlow<ScoutUiState> = _uiState.asStateFlow()
@@ -28,8 +31,8 @@ class CompanyScoutViewModel : ViewModel() {
       // 위치 권한 확인 후 주변 노동자 로드
       delay(1000) // 네트워크 요청 시뮬레이션
 
-      val workers = repository.getNearbyWorkers()
-      val proposals = repository.getMyProposals()
+      val workers = CompanyMockDataFactory.getScoutWorkers()
+      val proposals = CompanyMockDataFactory.getScoutProposals()
 
       _uiState.value = _uiState.value.copy(
         workers = workers,
@@ -44,7 +47,7 @@ class CompanyScoutViewModel : ViewModel() {
       _uiState.value = _uiState.value.copy(isRefreshing = true)
       delay(1000)
 
-      val workers = repository.getNearbyWorkers()
+      val workers = CompanyMockDataFactory.getScoutWorkers()
       _uiState.value = _uiState.value.copy(
         workers = workers,
         isRefreshing = false
@@ -57,7 +60,7 @@ class CompanyScoutViewModel : ViewModel() {
       _uiState.value = _uiState.value.copy(isRefreshing = true)
       delay(1000)
 
-      val proposals = repository.getMyProposals()
+      val proposals = CompanyMockDataFactory.getScoutProposals()
       _uiState.value = _uiState.value.copy(
         proposals = proposals,
         isRefreshing = false
@@ -94,8 +97,8 @@ class CompanyScoutViewModel : ViewModel() {
         rejectReason = null
       )
 
-      // 리포지토리에 저장
-      repository.sendProposal(proposal)
+      // 제안 전송 (실제로는 API 호출)
+      // CompanyMockDataFactory는 샘플 데이터만 제공하므로 여기서는 주석 처리
 
       // UI 업데이트
       val updatedProposals = _uiState.value.proposals + proposal

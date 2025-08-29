@@ -15,8 +15,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.billcorea.jikgong.presentation.company.main.scout.components.ProposalCard
 import com.billcorea.jikgong.presentation.company.main.scout.components.EmptyState
-import com.billcorea.jikgong.presentation.company.main.scout.data.Proposal
-import com.billcorea.jikgong.presentation.company.main.scout.data.ProposalStatus
+import com.billcorea.jikgong.network.models.Proposal
+import com.billcorea.jikgong.network.models.ProposalStatus
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import java.time.LocalDateTime
 

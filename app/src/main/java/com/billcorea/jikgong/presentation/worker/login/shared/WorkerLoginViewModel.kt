@@ -2,11 +2,11 @@ package com.billcorea.jikgong.presentation.worker.login.shared
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.billcorea.jikgong.network.LoginData
-import com.billcorea.jikgong.network.LoginErrorData
-import com.billcorea.jikgong.network.LoginRequest
-import com.billcorea.jikgong.network.RetrofitAPI
-import com.billcorea.jikgong.network.LoginResponse
+import com.billcorea.jikgong.network.auth.LoginData
+import com.billcorea.jikgong.network.auth.LoginErrorData
+import com.billcorea.jikgong.network.auth.LoginRequest
+import com.billcorea.jikgong.network.service.RetrofitAPI
+import com.billcorea.jikgong.network.auth.LoginResponse
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants.TOTAL_PAGES
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -105,14 +105,14 @@ class WorkerLoginViewModel : ViewModel() {
                 val loginDataElement = loginResponse?.data
                 if (response.isSuccessful) {
                     try {
-                        // 정상적인 LoginData로 파싱
-                        val loginData = Gson().fromJson(loginDataElement, LoginData::class.java)
-                        WorkerLoginSharedEvent.updateLoginToken(loginData.accessToken, loginData.refreshToken)
-                        WorkerLoginSharedEvent.updateRole(loginData.role)
+                        // LoginData는 이미 파싱된 상태
+                        val loginData = loginDataElement!!
+                        onEvent(WorkerLoginSharedEvent.updateLoginToken(loginData.accessToken, loginData.refreshToken))
+                        onEvent(WorkerLoginSharedEvent.updateRole(loginData.userRole))
                         Log.d("LOGIN", "로그인 성공: ${loginData}")
-                        WorkerLoginSharedEvent.toProjectListPage
+                        onEvent(WorkerLoginSharedEvent.toProjectListPage)
                     } catch (e: Exception) {
-                        WorkerLoginSharedEvent.updateErrorMessage("로그인 실패")
+                        onEvent(WorkerLoginSharedEvent.updateErrorMessage("로그인 실패"))
                     }
 
                 } else {
@@ -120,11 +120,10 @@ class WorkerLoginViewModel : ViewModel() {
 
                     try {
                         val loginErrorJson = Gson().fromJson(loginErrorBodyString, LoginResponse::class.java)
-                        val loginErrorData = Gson().fromJson(loginErrorJson.data, LoginErrorData::class.java)
-                        WorkerLoginSharedEvent.updateErrorMessage(loginErrorData.errorMessage)
+                        onEvent(WorkerLoginSharedEvent.updateErrorMessage(loginErrorJson.message))
                     } catch (e: Exception) {
                         Log.e("LOGIN", "LoginErrorData 파싱 실패: ${e.localizedMessage}")
-                        WorkerLoginSharedEvent.updateErrorMessage("로그인 실패 (에러 파싱 실패)")
+                        onEvent(WorkerLoginSharedEvent.updateErrorMessage("로그인 실패 (에러 파싱 실패)"))
                     }
                 }
             }

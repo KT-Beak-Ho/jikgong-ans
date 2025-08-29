@@ -17,8 +17,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentSampleData
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentSummary
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.network.models.PaymentSummary
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -185,7 +185,7 @@ private fun SummaryItem(
 fun PaymentSummaryCardPreview() {
     Jikgong1111Theme {
         PaymentSummaryCard(
-            summary = PaymentSampleData.getSamplePaymentSummary(),
+            summary = CompanyMockDataFactory.getSamplePaymentSummary(),
             modifier = Modifier.padding(16.dp)
         )
     }

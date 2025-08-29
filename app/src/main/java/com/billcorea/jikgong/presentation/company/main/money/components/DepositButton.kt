@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentStatus
+import com.billcorea.jikgong.network.models.ProjectPaymentStatus
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -83,6 +84,17 @@ fun DepositButton(
                 backgroundColor = Color(0xFFEF5350),
                 contentColor = Color.White,
                 icon = Icons.Default.Refresh,
+                enabled = true,
+                showAmount = true
+            )
+        }
+        ProjectPaymentStatus.OVERDUE -> {
+            ButtonConfig(
+                text = "연체 임금 지급",
+                subText = "지급 기한이 지났습니다 - 즉시 처리 필요",
+                backgroundColor = Color(0xFFD32F2F),
+                contentColor = Color.White,
+                icon = Icons.Default.Warning,
                 enabled = true,
                 showAmount = true
             )

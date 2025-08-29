@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.network.WorkExperience
+import com.billcorea.jikgong.network.auth.WorkExperience
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.LabelText
@@ -307,6 +307,7 @@ fun WorkerJoinPage6Screen(
         modifier = Modifier.fillMaxHeight()
       ) {
         JobSelectList(
+          selectedJobs = setOf(), // 기존 단일 선택 방식이므로 빈 Set으로 시작
           doJobSelect = { jobCode ->
             Log.e("", "jobCode = $jobCode")
             val jobName = workerJoinViewModel.getJobNameByCode(jobCode)

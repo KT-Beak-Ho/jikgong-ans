@@ -22,31 +22,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ramcosta.composedestinations.annotation.Destination
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
+import com.billcorea.jikgong.presentation.company.main.common.SimpleCompanyTopBar
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.screen.ProjectCreateDialog
+import com.billcorea.jikgong.presentation.destinations.ProjectDetailScreenDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.network.models.SimpleProject
 import java.text.NumberFormat
 import java.util.*
 
-// 기존 paste.txt의 SimpleProject 데이터 클래스 사용
-data class SimpleProject(
-  val id: String,
-  val title: String,
-  val company: String,
-  val location: String,
-  val category: String,
-  val status: String,
-  val startDate: String,
-  val endDate: String,
-  val wage: Int,
-  val currentApplicants: Int,
-  val maxApplicants: Int,
-  val isUrgent: Boolean = false,
-  val isBookmarked: Boolean = false
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
+@Destination
 @Composable
 fun ProjectListScreen(
   navController: NavController,
@@ -55,46 +45,20 @@ fun ProjectListScreen(
   var selectedTab by remember { mutableStateOf(0) }
   var showCreateDialog by remember { mutableStateOf(false) }
 
-  // 샘플 데이터 (기존 paste.txt의 mockProjects와 동일)
+  // 중앙화된 샘플 데이터 사용
   val projects = remember {
-    listOf(
-      SimpleProject(
-        id = "1",
-        title = "아파트 신축공사 철근 작업자 모집",
-        company = "대한건설(주)",
-        location = "서울시 강남구 역삼동",
-        category = "철근공",
-        status = "RECRUITING",
-        startDate = "2025-08-08",
-        endDate = "2025-09-20",
-        wage = 200000,
-        currentApplicants = 8,
-        maxApplicants = 15,
-        isUrgent = true
-      ),
-      SimpleProject(
-        id = "2",
-        title = "사무실 인테리어 목공 인력 모집",
-        company = "현대인테리어",
-        location = "서울시 종로구",
-        category = "목공",
-        status = "IN_PROGRESS",
-        startDate = "2025-08-10",
-        endDate = "2025-08-25",
-        wage = 180000,
-        currentApplicants = 12,
-        maxApplicants = 12,
-        isBookmarked = true
-      )
-    )
+    CompanyMockDataFactory.getSimpleProjects()
   }
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
+    topBar = {
+      SimpleCompanyTopBar(title = "프로젝트 목록")
+    },
     bottomBar = {
       CompanyBottomBar(
         navController = navController,
-        currentRoute = "company/projectlist"
+        currentRoute = "project_list_screen"
       )
     },
     floatingActionButton = {
@@ -123,21 +87,12 @@ fun ProjectListScreen(
         .padding(innerPadding)
         .background(Color(0xFFF8F9FA))
     ) {
-      // 상단 제목
-      TopAppBar(
-        title = {
-          Text(
-            text = "프로젝트 목록",
-            style = AppTypography.titleLarge,
-            fontWeight = FontWeight.Bold
-          )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = Color.White
-        )
-      )
-
       // 탭
+      val recruitingCount = projects.count { it.status == "RECRUITING" }
+      val inProgressCount = projects.count { it.status == "IN_PROGRESS" }
+      val completedCount = projects.count { it.status == "COMPLETED" }
+      val totalCount = recruitingCount + inProgressCount + completedCount
+
       TabRow(
         selectedTabIndex = selectedTab,
         containerColor = Color.White
@@ -145,22 +100,22 @@ fun ProjectListScreen(
         Tab(
           selected = selectedTab == 0,
           onClick = { selectedTab = 0 },
-          text = { Text("전체 (${projects.size})") }
+          text = { Text("전체 ($totalCount)") }
         )
         Tab(
           selected = selectedTab == 1,
           onClick = { selectedTab = 1 },
-          text = { Text("모집중 (1)") }
+          text = { Text("모집중 ($recruitingCount)") }
         )
         Tab(
           selected = selectedTab == 2,
           onClick = { selectedTab = 2 },
-          text = { Text("진행중 (1)") }
+          text = { Text("진행중 ($inProgressCount)") }
         )
         Tab(
           selected = selectedTab == 3,
           onClick = { selectedTab = 3 },
-          text = { Text("완료 (0)") }
+          text = { Text("완료 ($completedCount)") }
         )
       }
 
@@ -189,7 +144,7 @@ fun ProjectListScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-              text = "총 ${projects.count { it.status == "RECRUITING" }}개",
+              text = "총 ${recruitingCount}개",
               style = AppTypography.titleMedium,
               fontWeight = FontWeight.Bold,
               color = appColorScheme.primary
@@ -215,8 +170,9 @@ fun ProjectListScreen(
           ProjectCard(
             project = project,
             onClick = {
-              navController.navigate("company/projectdetail/${project.id}")
-            }
+              navController.navigate(ProjectDetailScreenDestination(projectId = project.id).route)
+            },
+            navController = navController
           )
         }
       }
@@ -225,35 +181,9 @@ fun ProjectListScreen(
 
   // 프로젝트 생성 다이얼로그
   if (showCreateDialog) {
-    AlertDialog(
-      onDismissRequest = { showCreateDialog = false },
-      title = {
-        Text(
-          text = "프로젝트 등록",
-          style = AppTypography.titleLarge,
-          fontWeight = FontWeight.Bold
-        )
-      },
-      text = {
-        Text(
-          text = "새로운 프로젝트를 등록하시겠습니까?",
-          style = AppTypography.bodyMedium
-        )
-      },
-      confirmButton = {
-        TextButton(
-          onClick = {
-            showCreateDialog = false
-            navController.navigate("company/projectcreate")
-          }
-        ) {
-          Text("등록하기", color = appColorScheme.primary)
-        }
-      },
-      dismissButton = {
-        TextButton(onClick = { showCreateDialog = false }) {
-          Text("취소")
-        }
+    ProjectCreateDialog(
+      onDismiss = { showCreateDialog = false },
+      onConfirm = { projectData -> showCreateDialog = false
       }
     )
   }
@@ -262,7 +192,8 @@ fun ProjectListScreen(
 @Composable
 private fun ProjectCard(
   project: SimpleProject,
-  onClick: () -> Unit
+  onClick: () -> Unit,
+  navController: NavController
 ) {
   Card(
     modifier = Modifier
@@ -373,8 +304,6 @@ private fun ProjectCard(
         )
       }
 
-      Spacer(modifier = Modifier.height(12.dp))
-
       // 모집 현황 프로그레스
       Column {
         Row(
@@ -416,6 +345,26 @@ private fun ProjectCard(
           },
           trackColor = Color(0xFFE0E0E0)
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+          onClick = { 
+            navController.navigate(ProjectDetailScreenDestination(projectId = project.id).route)
+          },
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp),
+          colors = ButtonDefaults.buttonColors(
+            containerColor = appColorScheme.primary
+          ),
+          shape = RoundedCornerShape(8.dp)
+        ) {
+          Text(
+            text = "프로젝트 관리",
+            style = AppTypography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = Color.White
+          )
+        }
       }
     }
   }

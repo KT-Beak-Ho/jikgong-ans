@@ -1,6 +1,6 @@
 package com.billcorea.jikgong.presentation.worker.auth.join.shared
 
-import com.billcorea.jikgong.network.WorkExperience
+import com.billcorea.jikgong.network.auth.WorkExperience
 
 sealed class WorkerJoinSharedEvent {
   // Page 1 이벤트
