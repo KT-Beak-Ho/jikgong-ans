@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation.JoinedPage
+package com.billcorea.jikgong.presentation.JoinedPageLegacy
 
 import android.content.Context
 import android.net.Uri

@@ -39,12 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-
-import com.billcorea.jikgong.presentation.destinations.JoinPage1Destination
-import com.billcorea.jikgong.presentation.destinations.JoinPage2Destination
-import com.billcorea.jikgong.presentation.destinations.JoinPage4Destination
-import com.billcorea.jikgong.presentation.destinations.JoinPage5Destination
-import com.billcorea.jikgong.presentation.destinations.JoinPage6Destination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyLoginPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
