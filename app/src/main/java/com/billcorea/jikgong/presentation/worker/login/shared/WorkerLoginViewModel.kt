@@ -2,11 +2,11 @@ package com.billcorea.jikgong.presentation.worker.login.shared
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.billcorea.jikgong.network.auth.LoginData
-import com.billcorea.jikgong.network.auth.LoginErrorData
-import com.billcorea.jikgong.network.auth.LoginRequest
+import com.billcorea.jikgong.api.models.auth.LoginData
+import com.billcorea.jikgong.api.models.auth.LoginErrorData
+import com.billcorea.jikgong.api.models.auth.LoginRequest
 import com.billcorea.jikgong.network.service.RetrofitAPI
-import com.billcorea.jikgong.network.auth.LoginResponse
+import com.billcorea.jikgong.api.models.auth.LoginResponse
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants.TOTAL_PAGES
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow

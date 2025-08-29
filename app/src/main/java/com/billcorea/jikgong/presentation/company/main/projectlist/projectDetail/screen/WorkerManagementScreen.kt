@@ -334,7 +334,7 @@ fun WorkerManagementScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
                       onClick = { 
-                        navController.navigate("attendance_check/${workDay.id}")
+                        navController.navigate("attendance_check/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
                       shape = RoundedCornerShape(4.dp)
@@ -361,7 +361,7 @@ fun WorkerManagementScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
                       onClick = { 
-                        navController.navigate("checkout/${workDay.id}")
+                        navController.navigate("checkout/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
                       shape = RoundedCornerShape(4.dp)
@@ -388,7 +388,7 @@ fun WorkerManagementScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
                       onClick = { 
-                        navController.navigate("payment_summary/${workDay.id}")
+                        navController.navigate("payment_summary/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
                       shape = RoundedCornerShape(4.dp)

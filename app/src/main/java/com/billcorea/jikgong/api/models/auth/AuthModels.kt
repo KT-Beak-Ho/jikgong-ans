@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.network.auth
+package com.billcorea.jikgong.api.models.auth
 
 import com.google.gson.annotations.SerializedName
 
@@ -11,7 +11,6 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    // val success: Boolean,
     val message: String,
     val data: LoginData?
 )
@@ -24,10 +23,10 @@ data class LoginData(
 )
 
 data class LoginErrorData(
-    val code: String,
-    val message: String,
-    val details: Map<String, String>? = null
+    val errorCode: String,
+    val errorMessage: String
 )
+
 
 // ==================== 회원가입 관련 ====================
 
@@ -67,11 +66,6 @@ data class RegisterWorkerResponse(
     val data: Any?
 )
 
-data class RegisterWorkerErrorResponse(
-    val success: Boolean,
-    val message: String,
-    val errors: Map<String, String>
-)
 
 // ==================== SMS 인증 관련 ====================
 
@@ -102,17 +96,17 @@ data class SmsVerificationRequest(
 )
 
 data class SmsVerificationResponse(
+    @SerializedName("success")
     val success: Boolean,
-    val data: SmsVerificationData?,
+    @SerializedName("message")
     val message: String,
-    // val isVerified: Boolean
+    @SerializedName("verificationId")
+    val verificationId: String?,
+    @SerializedName("data")
+    val data: SmsVerificationData?
 )
 
 data class SmsVerificationData(
-    /* val phone: String,
-    val code: String,
-    val expiresAt: Long,
-    val isVerified: Boolean = false */
     val authCode: String
 )
 
@@ -123,10 +117,8 @@ data class PhoneValidationRequest(
 )
 
 data class PhoneValidationResponse(
-    //val success: Boolean,
     val data: PhoneVerificationData?,
     val message: String
-    //val isAvailable: Boolean
 )
 
 data class PhoneVerificationData(
@@ -152,9 +144,7 @@ data class LoginIdValidationRequest(
 )
 
 data class LoginIdValidationResponse(
-    val success: Boolean,
-    val message: String,
-    val isAvailable: Boolean
+    var message: String
 )
 
 // ==================== 비자 만료일 관련 ====================
@@ -163,3 +153,4 @@ data class VisaExpiryDateRequest(
     val userId: Long,
     val expiryDate: String
 )
+

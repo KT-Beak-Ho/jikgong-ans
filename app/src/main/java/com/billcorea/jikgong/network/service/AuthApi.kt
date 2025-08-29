@@ -1,6 +1,6 @@
 package com.billcorea.jikgong.network.service
 
-import com.billcorea.jikgong.network.auth.*
+import com.billcorea.jikgong.api.models.auth.*
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST

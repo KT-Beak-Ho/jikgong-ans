@@ -3,7 +3,7 @@ package com.billcorea.jikgong.network.service
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import com.billcorea.jikgong.BuildConfig
-import com.billcorea.jikgong.network.auth.*
+import com.billcorea.jikgong.api.models.auth.*
 import com.billcorea.jikgong.network.location.*
 import com.billcorea.jikgong.network.common.DefaultResponse
 import com.google.gson.Gson

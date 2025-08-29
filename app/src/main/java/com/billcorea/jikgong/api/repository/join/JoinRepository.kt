@@ -1,10 +1,10 @@
 package com.billcorea.jikgong.api.repository.join
 
-import com.billcorea.jikgong.api.models.response.ApiResult
-import com.billcorea.jikgong.api.models.response.EmailValidationResponse
-import com.billcorea.jikgong.api.models.response.LoginIdValidationResponse
-import com.billcorea.jikgong.api.models.response.PhoneValidationResponse
-import com.billcorea.jikgong.api.models.response.SmsVerificationResponse
+import com.billcorea.jikgong.network.common.ApiResult
+import com.billcorea.jikgong.api.models.auth.EmailValidationResponse
+import com.billcorea.jikgong.api.models.auth.LoginIdValidationResponse
+import com.billcorea.jikgong.api.models.auth.PhoneValidationResponse
+import com.billcorea.jikgong.api.models.auth.SmsVerificationResponse
 
 /**
  * API 함수 이름 정의
