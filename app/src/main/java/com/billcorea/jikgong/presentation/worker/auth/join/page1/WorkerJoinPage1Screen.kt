@@ -159,7 +159,7 @@ fun WorkerJoinPage1Screen(
           workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdatePhoneNumber(it))
         },
       )
-      Spacer(modifier = Modifier.padding(5.dp))
+      Spacer(modifier = Modifier.padding(7.dp))
 
       //  인증번호 받기 버튼
       CommonButton(
@@ -172,6 +172,7 @@ fun WorkerJoinPage1Screen(
         modifier = Modifier.fillMaxWidth()  // 전체 너비 사용
       )
 
+      Spacer(modifier = Modifier.padding(8.dp))
 
       //  인증번호 입력 섹션 (조건부 표시)
       if (uiState.isSecurityStepActive) {

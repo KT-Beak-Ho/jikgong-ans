@@ -82,7 +82,6 @@ fun WorkerJoinPage6Screen(
   var showBottomSheet by remember { mutableStateOf(false) }
   val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
   val focusManager = LocalFocusManager.current
-  val focusRequester = remember { FocusRequester() }
   val config = LocalConfiguration.current
   val screenWidth = config.screenWidthDp
 
@@ -207,11 +206,11 @@ fun WorkerJoinPage6Screen(
             labelMainText = "년",
             labelAppendText = "",
             labelAppendTextColor = colorResource(R.color.secondary_B),
-            placeholder = "0",
+            placeholder = "",
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             modifier = Modifier
               .width((screenWidth * .44).dp),
-              // .padding(WindowInsets.navigationBars.asPaddingValues()),
+            // .padding(WindowInsets.navigationBars.asPaddingValues()),
             onChange = { newValue ->
               if (newValue.all { it.isDigit() } && newValue.length <= 2) {
                 workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateYearInput(newValue))
@@ -222,11 +221,11 @@ fun WorkerJoinPage6Screen(
           CommonTextInput(
             value = uiState.monthInput,
             labelMainText = "월",
-            placeholder = "0",
+            placeholder = "",
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             modifier = Modifier
               .width((screenWidth * .44).dp),
-              // .padding(WindowInsets.navigationBars.asPaddingValues()),
+            // .padding(WindowInsets.navigationBars.asPaddingValues()),
             onChange = { newValue ->
               if (newValue.all { it.isDigit() } && newValue.length <= 2) {
                 workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateMonthInput(newValue))
@@ -246,7 +245,7 @@ fun WorkerJoinPage6Screen(
               workerJoinViewModel.onEvent(
                 WorkerJoinSharedEvent.AddWorkExperience(
                   WorkExperience(
-                    tech = uiState.selectedJobName,
+                    tech = uiState.selectedJobCode,
                     experienceMonths = totalMonths
                   )
                 )
@@ -307,7 +306,7 @@ fun WorkerJoinPage6Screen(
         modifier = Modifier.fillMaxHeight()
       ) {
         JobSelectList(
-          selectedJobs = setOf(), // 기존 단일 선택 방식이므로 빈 Set으로 시작
+          selectedJobs = setOf(),
           doJobSelect = { jobCode ->
             Log.e("", "jobCode = $jobCode")
             val jobName = workerJoinViewModel.getJobNameByCode(jobCode)

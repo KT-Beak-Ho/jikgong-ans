@@ -6,6 +6,7 @@ import com.billcorea.jikgong.network.auth.WorkExperience
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+
 data class WorkerJoinSharedUiState(
   // Page 1: 전화 번호 인증 및 중복 확인
   val phoneNumber: String = "",               //  전화번호
@@ -57,7 +58,7 @@ data class WorkerJoinSharedUiState(
   val yearInput: String = "",
   val monthInput: String = "",
   val workExperienceList: List<WorkExperience> = emptyList(),
-  val isRegistrationInProgress: Boolean = false,
+  val isRegistrationSuccess: Boolean = false,
 
   // 공통 상태
   val currentPage: Int = 1,
@@ -65,11 +66,11 @@ data class WorkerJoinSharedUiState(
   val validationErrors: Map<String, String> = emptyMap(),
 
   ) {
-    // 각 페이지 별 완료 상태 확인
-    val isPage1Complete: Boolean
+  // 각 페이지 별 완료 상태 확인
+  val isPage1Complete: Boolean
     get() = isPhoneVerified
 
-    val isPage2Complete: Boolean
+  val isPage2Complete: Boolean
     get() = name.isNotEmpty() &&
       id.isNotEmpty() &&
       email.isNotEmpty() &&
@@ -78,27 +79,33 @@ data class WorkerJoinSharedUiState(
       birthday.isNotEmpty() &&
       nationality.isNotEmpty()
 
-    val isPage3Complete: Boolean
+  val isPage3Complete: Boolean
     get() = accountName.isNotEmpty() &&
       bankName.isNotEmpty() &&
       accountNumber.isNotEmpty()
 
-    val isPage4Complete: Boolean
+  val isPage4Complete: Boolean
     get() = addressName.isNotEmpty() &&
       address.isNotEmpty() &&
       roadAddress.isNotEmpty() &&
       lat != 0.0 &&
       lon != 0.0
 
-    val isPage5Complete: Boolean
-      get() = educationCertificateUri.isNotEmpty() ||
-        workerCardUri.isNotEmpty()
+  val isPage5Complete: Boolean
+    get() = educationCertificateUri.isNotEmpty() ||
+      workerCardUri.isNotEmpty()
 
-    val isPage5LaterComplete: Boolean
-      get() = educationCertificateUri.isEmpty() &&
-        workerCardUri.isEmpty()
+  val isPage5LaterComplete: Boolean
+    get() = educationCertificateUri.isEmpty() &&
+      workerCardUri.isEmpty()
 
-    // 전체 완료 상태
-    val isAllDataComplete: Boolean
-    get() = isPage1Complete && isPage2Complete && isPage3Complete && isPage4Complete && (isPage5Complete || isPage5LaterComplete)
+  val isPage6Complete: Boolean
+    get() = workExperienceList.isNotEmpty()
+
+  val isPage6LaterComplete: Boolean
+    get() = workExperienceList.isEmpty()
+
+  // 전체 완료 상태
+  val isAllDataComplete: Boolean
+    get() = isPage1Complete && isPage2Complete && isPage3Complete && isPage4Complete && (isPage5Complete || isPage5LaterComplete) && (isPage6Complete || isPage6LaterComplete)
 }

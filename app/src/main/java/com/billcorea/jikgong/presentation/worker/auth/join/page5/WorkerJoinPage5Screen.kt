@@ -39,6 +39,9 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -95,7 +98,7 @@ fun WorkerJoinPage5Screen(
   // var currentPhotoPath by remember { mutableStateOf("") } -> uiState.currentPhotoPath
   // var takePicType by remember { mutableStateOf("") } -> uiState.takePicType
   // var isGrantCamera by remember { mutableStateOf(false) } -> uiState.isGrantCamera
-
+  var isGrantCamera by remember { mutableStateOf(false) }
   val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
   // 갤러리 런처
@@ -301,10 +304,12 @@ fun WorkerJoinPage5Screen(
         FeatureThatRequiresCameraPermission(
           doResult = {
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateIsGrantCamera(it))
+            isGrantCamera = it
+            Log.e("", "${uiState.isGrantCamera}")
           }
         )
 
-        if (uiState.isGrantCamera) {
+        if (isGrantCamera) {
           if (uiState.educationCertificateUri.isNotEmpty()) {
             // 이미지가 있을 때
             Card(
@@ -372,10 +377,11 @@ fun WorkerJoinPage5Screen(
         FeatureThatRequiresCameraPermission(
           doResult = {
             workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateIsGrantCamera(it))
+            isGrantCamera = it
           }
         )
 
-        if (uiState.isGrantCamera) {
+        if (isGrantCamera) {
           if (uiState.workerCardUri.isNotEmpty()) {
             // 이미지가 있을 때
             Card(
@@ -464,6 +470,7 @@ fun WorkerJoinPage5Screen(
             onClick = {
               workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateShowLaterDialog(false))
               workerJoinViewModel.onEvent(WorkerJoinSharedEvent.NextPage)
+              //navigator.navigate(WorkerJoinPage6ScreenDestination)
             }
           ) {
             Text(stringResource(R.string.OK))
