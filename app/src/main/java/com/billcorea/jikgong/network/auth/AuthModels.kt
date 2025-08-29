@@ -1,5 +1,7 @@
 package com.billcorea.jikgong.network.auth
 
+import com.google.gson.annotations.SerializedName
+
 // ==================== 로그인 관련 ====================
 
 data class LoginRequest(
@@ -9,7 +11,7 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    val success: Boolean,
+    // val success: Boolean,
     val message: String,
     val data: LoginData?
 )
@@ -100,6 +102,7 @@ data class SmsVerificationRequest(
 )
 
 data class SmsVerificationResponse(
+    val success: Boolean,
     val data: SmsVerificationData?,
     val message: String,
     // val isVerified: Boolean
@@ -130,6 +133,16 @@ data class PhoneVerificationData(
     val state: String,
     val code: String,
     val errorMessage: String
+)
+
+// ==================== Email 검증 관련 ====================
+
+data class EmailValidationRequest(
+    val loginId: String
+)
+
+data class EmailValidationResponse(
+    var message: String
 )
 
 // ==================== 로그인 ID 검증 관련 ====================
