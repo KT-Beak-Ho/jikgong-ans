@@ -52,6 +52,9 @@ fun ProjectListScreen(
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
+    topBar = {
+      SimpleCompanyTopBar(title = "프로젝트 목록")
+    },
     bottomBar = {
       CompanyBottomBar(
         navController = navController,
@@ -84,10 +87,12 @@ fun ProjectListScreen(
         .padding(innerPadding)
         .background(Color(0xFFF8F9FA))
     ) {
-      // 상단 제목
-      SimpleCompanyTopBar(title = "프로젝트 목록")
-
       // 탭
+      val recruitingCount = projects.count { it.status == "RECRUITING" }
+      val inProgressCount = projects.count { it.status == "IN_PROGRESS" }
+      val completedCount = projects.count { it.status == "COMPLETED" }
+      val totalCount = recruitingCount + inProgressCount + completedCount
+
       TabRow(
         selectedTabIndex = selectedTab,
         containerColor = Color.White
@@ -95,22 +100,22 @@ fun ProjectListScreen(
         Tab(
           selected = selectedTab == 0,
           onClick = { selectedTab = 0 },
-          text = { Text("전체 (${projects.size})") }
+          text = { Text("전체 ($totalCount)") }
         )
         Tab(
           selected = selectedTab == 1,
           onClick = { selectedTab = 1 },
-          text = { Text("모집중 (${projects.count { it.status == "RECRUITING" }})") }
+          text = { Text("모집중 ($recruitingCount)") }
         )
         Tab(
           selected = selectedTab == 2,
           onClick = { selectedTab = 2 },
-          text = { Text("진행중 (${projects.count { it.status == "IN_PROGRESS" }})") }
+          text = { Text("진행중 ($inProgressCount)") }
         )
         Tab(
           selected = selectedTab == 3,
           onClick = { selectedTab = 3 },
-          text = { Text("완료 (${projects.count { it.status == "COMPLETED" }})") }
+          text = { Text("완료 ($completedCount)") }
         )
       }
 
@@ -139,7 +144,7 @@ fun ProjectListScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-              text = "총 ${projects.count { it.status == "RECRUITING" }}개",
+              text = "총 ${recruitingCount}개",
               style = AppTypography.titleMedium,
               fontWeight = FontWeight.Bold,
               color = appColorScheme.primary
@@ -298,8 +303,6 @@ private fun ProjectCard(
           text = "${project.startDate} ~ ${project.endDate}"
         )
       }
-
-      Spacer(modifier = Modifier.height(12.dp))
 
       // 모집 현황 프로그레스
       Column {

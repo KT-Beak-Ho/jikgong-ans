@@ -95,3 +95,42 @@ data class ProposalResponse(
     val proposalId: String?,
     val message: String
 )
+
+// ==================== 확정 근로자 관련 ====================
+
+data class ConfirmedWorker(
+    val id: String,
+    val name: String,
+    val age: Int,
+    val gender: String, // "남", "여"
+    val experience: Int, // 경력 년수
+    val attendanceRate: Int, // 출석률 (0-100)
+    val totalWorkDays: Int, // 총 출역 회수
+    val phoneNumber: String,
+    val jobType: String? = null, // 추가된 직종 정보
+    val skill: String? = null, // 기술 수준 (초급, 중급, 고급)
+    val workPreference: String? = null, // 작업 선호도 (실내, 실외, 혼합)
+    val certifications: List<String> = emptyList(), // 보유 자격증
+    val distance: Double = 0.0, // 현장까지 거리 (km)
+    val rating: Float = 0.0f, // 평점 (0.0~5.0)
+    val lastWorkDate: String? = null // 마지막 근무일
+)
+
+data class ApplicantWorker(
+    val id: String,
+    val name: String,
+    val age: Int,
+    val gender: String, // "남", "여"
+    val experience: Int, // 경력 년수
+    val attendanceRate: Int, // 출석률 (0-100)
+    val totalWorkDays: Int, // 총 출역 회수
+    val phoneNumber: String,
+    val jobType: String? = null, // 직종 정보
+    val skill: String? = null, // 기술 수준 (초급, 중급, 고급)
+    val workPreference: String? = null, // 작업 선호도 (실내, 실외, 혼합)
+    val certifications: List<String> = emptyList(), // 보유 자격증
+    val distance: Double = 0.0, // 현장까지 거리 (km)
+    val rating: Float = 0.0f, // 평점 (0.0~5.0)
+    val lastWorkDate: String? = null, // 마지막 근무일
+    val isSelected: Boolean = false
+)

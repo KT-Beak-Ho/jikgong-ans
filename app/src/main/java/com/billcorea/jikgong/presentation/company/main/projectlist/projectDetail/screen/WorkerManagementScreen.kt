@@ -26,21 +26,13 @@ import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopB
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.network.models.ConfirmedWorker
+import com.billcorea.jikgong.network.models.ApplicantWorker
+import com.billcorea.jikgong.network.models.WorkDay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
-// 지원자 데이터
-data class ApplicantWorker(
-  val id: String,
-  val name: String,
-  val age: Int,
-  val gender: String, // "남", "여"
-  val experience: Int, // 경력 년수
-  val attendanceRate: Int, // 출석률 (0-100)
-  val totalWorkDays: Int, // 총 출역 회수
-  val phoneNumber: String,
-  val isSelected: Boolean = false
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +46,7 @@ fun WorkerManagementScreen(
     WorkDay(
       id = workDayId,
       title = "보통인부 15명 모집",
-      date = LocalDate.now(),
+      date = LocalDate.parse("2025-08-01"), // 데이터 범위 내 기본 날짜로 변경
       startTime = "08:00",
       endTime = "18:00",
       recruitPeriod = "2025-08-01 ~ 2025-08-07",
@@ -65,31 +57,22 @@ fun WorkerManagementScreen(
     )
   }
   
-  var selectedManagementTab by remember { mutableStateOf(0) }
-  var selectedDateIndex by remember { mutableStateOf(0) }
+  var selectedManagementTab by remember { mutableIntStateOf(0) }
+  var selectedDateIndex by remember { mutableIntStateOf(0) }
   
-  // 지원자 상태 관리
-  val applicantsByDate = remember {
-    mapOf(
-      LocalDate.parse("2025-08-01") to listOf(
-        ApplicantWorker("1", "홍길동", 28, "남", 3, 85, 15, "010-1111-2222"),
-        ApplicantWorker("2", "김영희", 32, "여", 5, 92, 22, "010-2222-3333"),
-        ApplicantWorker("3", "박철수", 29, "남", 2, 78, 12, "010-3333-4444")
-      ),
-      LocalDate.parse("2025-08-02") to listOf(
-        ApplicantWorker("4", "이민수", 35, "남", 7, 88, 28, "010-4444-5555"),
-        ApplicantWorker("5", "정수현", 27, "여", 4, 95, 18, "010-5555-6666"),
-        ApplicantWorker("9", "강민호", 30, "남", 6, 82, 25, "010-6666-7777"),
-        ApplicantWorker("10", "송유진", 26, "여", 2, 89, 10, "010-7777-8888"),
-        ApplicantWorker("11", "김태준", 33, "남", 8, 76, 32, "010-8888-9999"),
-        ApplicantWorker("12", "이소영", 29, "여", 3, 93, 16, "010-9999-0000"),
-        ApplicantWorker("13", "박지훈", 31, "남", 5, 87, 20, "010-0000-1111")
-      ),
-      LocalDate.parse("2025-08-03") to emptyList(),
-      LocalDate.parse("2025-08-04") to listOf(
-        ApplicantWorker("6", "최하나", 31, "여", 4, 90, 19, "010-1122-3344")
-      )
-    )
+  // 확정 근로자 데이터 (날짜별) - 매번 새로 로드하여 최신 데이터 보장
+  val confirmedWorkersByDate = CompanyMockDataFactory.getConfirmedWorkersByDate().mapKeys { 
+    LocalDate.parse(it.key) 
+  }
+
+  // 지원자 상태 관리 - 매번 새로 로드하여 최신 데이터 보장
+  val applicantsByDate = CompanyMockDataFactory.getApplicantWorkersByDate().mapKeys { 
+    LocalDate.parse(it.key) 
+  }
+  
+  // 데이터 일관성 테스트 (한 번만 실행)
+  LaunchedEffect(Unit) {
+    CompanyMockDataFactory.testDataConsistency()
   }
   
   var selectedApplicants by remember { mutableStateOf<List<ApplicantWorker>>(emptyList()) }
@@ -110,13 +93,16 @@ fun WorkerManagementScreen(
           currentDate = currentDate.plusDays(1)
         }
         dateList
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         listOf(workDay.date)
       }
     } else {
       listOf(workDay.date)
     }
   }
+  
+  // 현재 선택된 날짜
+  val currentDate = dateRange.getOrNull(selectedDateIndex) ?: workDay.date
   
   // 날짜별 색상 결정 함수
   fun getDateColor(date: LocalDate, isSelected: Boolean): Color {
@@ -127,13 +113,31 @@ fun WorkerManagementScreen(
     }
   }
   
-  // 8월 2일 확정인부 없음 예시를 위한 체크
+  // 날짜별 확정인부 체크
   fun hasConfirmedWorkers(date: LocalDate): Boolean {
-    // 8월 2일은 확정인부가 없다고 가정
-    if (date.monthValue == 8 && date.dayOfMonth == 2) {
-      return false
-    }
-    return workDay.confirmed > 0
+    return (confirmedWorkersByDate[date] ?: emptyList()).isNotEmpty()
+  }
+  
+  // 날짜별 확정인부 수 계산
+  fun getConfirmedWorkersCount(date: LocalDate): Int {
+    return (confirmedWorkersByDate[date] ?: emptyList()).size
+  }
+  
+  // 디버깅: 현재 데이터 상태 확인
+  LaunchedEffect(selectedDateIndex, selectedManagementTab) {
+    println("=== WorkerManagementScreen Debug ===")
+    println("selectedDateIndex: $selectedDateIndex")
+    println("selectedManagementTab: $selectedManagementTab")
+    println("currentDate: $currentDate")
+    println("dateRange: ${dateRange.map { it.toString() }}")
+    println("dateRange size: ${dateRange.size}")
+    println("confirmedWorkers count: ${getConfirmedWorkersCount(currentDate)}")
+    println("confirmedWorkers names: ${(confirmedWorkersByDate[currentDate] ?: emptyList()).map { it.name }}")
+    println("applicants count: ${(applicantsByDate[currentDate] ?: emptyList()).size}")
+    println("all confirmed dates: ${confirmedWorkersByDate.keys.sorted()}")
+    println("all applicant dates: ${applicantsByDate.keys.sorted()}")
+    println("navigation will pass: ${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
+    println("===================================")
   }
 
   Scaffold(
@@ -160,13 +164,25 @@ fun WorkerManagementScreen(
       ) {
         Tab(
           selected = selectedManagementTab == 0,
-          onClick = { selectedManagementTab = 0 },
-          text = { Text("확정인부") }
+          onClick = { 
+            selectedManagementTab = 0
+            selectedApplicants = emptyList() // 탭 변경 시 선택 초기화
+          },
+          text = { 
+            val confirmedCount = getConfirmedWorkersCount(currentDate)
+            Text("확정인부 ($confirmedCount)")
+          }
         )
         Tab(
           selected = selectedManagementTab == 1,
-          onClick = { selectedManagementTab = 1 },
-          text = { Text("인부지원 현황") }
+          onClick = { 
+            selectedManagementTab = 1
+            selectedApplicants = emptyList() // 탭 변경 시 선택 초기화
+          },
+          text = { 
+            val applicantCount = (applicantsByDate[currentDate] ?: emptyList()).size
+            Text("인부지원 현황 ($applicantCount)")
+          }
         )
       }
       
@@ -181,7 +197,10 @@ fun WorkerManagementScreen(
           dateRange.forEachIndexed { index, date ->
             Tab(
               selected = selectedDateIndex == index,
-              onClick = { selectedDateIndex = index },
+              onClick = { 
+                selectedDateIndex = index
+                selectedApplicants = emptyList() // 날짜 변경 시 선택 초기화
+              },
               text = { 
                 val applicantsForDate = applicantsByDate[date] ?: emptyList()
                 val hasApplicants = applicantsForDate.isNotEmpty()
@@ -232,7 +251,7 @@ fun WorkerManagementScreen(
         )
       }
       
-      Divider(thickness = 0.5.dp, color = Color.LightGray)
+      HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
       
       // 탭에 따른 내용 표시
       LazyColumn(
@@ -244,8 +263,6 @@ fun WorkerManagementScreen(
       ) {
         when (selectedManagementTab) {
           0 -> { // 확정인부 탭
-            val currentDate = dateRange.getOrNull(selectedDateIndex) ?: workDay.date
-            
             if (!hasConfirmedWorkers(currentDate)) {
               // 확정인부가 없는 경우
               item {
@@ -255,11 +272,21 @@ fun WorkerManagementScreen(
                     .padding(vertical = 48.dp),
                   contentAlignment = Alignment.Center
                 ) {
-                  Text(
-                    text = "확정된 인부가 없습니다",
-                    style = AppTypography.bodyLarge,
-                    color = Color.Gray
-                  )
+                  Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                  ) {
+                    Text(
+                      text = "${currentDate.format(DateTimeFormatter.ofPattern("MM월 dd일"))}에 확정된 인부가 없습니다",
+                      style = AppTypography.bodyLarge,
+                      color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                      text = "다른 날짜를 선택하거나 인부지원 현황을 확인해보세요",
+                      style = AppTypography.bodySmall,
+                      color = Color.Gray
+                    )
+                  }
                 }
               }
             } else {
@@ -274,13 +301,13 @@ fun WorkerManagementScreen(
                 ) {
                   Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                      "출근 확정된 근로자 ${workDay.confirmed}명 확인하기",
+                      "출근 확정된 근로자 ${getConfirmedWorkersCount(currentDate)}명 확인하기",
                       style = AppTypography.bodyMedium
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
                       onClick = { 
-                        navController.navigate("worker_info/${workDay.id}")
+                        navController.navigate("worker_info/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
                       shape = RoundedCornerShape(4.dp)
@@ -372,25 +399,9 @@ fun WorkerManagementScreen(
                 }
               }
               
-              // 자동 임금 지급 안내
-              item {
-                Box(
-                  modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                  contentAlignment = Alignment.Center
-                ) {
-                  Text(
-                    text = "18:00시까지 확인하지 않을경우 자동으로 임금이 지급됩니다.",
-                    style = AppTypography.bodySmall,
-                    color = Color(0xFFFF6B00) // 주황색
-                  )
-                }
-              }
             }
           }
           1 -> { // 인부지원 현황 탭
-            val currentDate = dateRange.getOrNull(selectedDateIndex) ?: workDay.date
             val applicantsForCurrentDate = applicantsByDate[currentDate] ?: emptyList()
             
             if (applicantsForCurrentDate.isEmpty()) {
@@ -402,11 +413,21 @@ fun WorkerManagementScreen(
                     .padding(vertical = 48.dp),
                   contentAlignment = Alignment.Center
                 ) {
-                  Text(
-                    text = "지원한 인부가 없습니다",
-                    style = AppTypography.bodyLarge,
-                    color = Color.Gray
-                  )
+                  Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                  ) {
+                    Text(
+                      text = "${currentDate.format(DateTimeFormatter.ofPattern("MM월 dd일"))}에 지원한 인부가 없습니다",
+                      style = AppTypography.bodyLarge,
+                      color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                      text = "다른 날짜를 선택해보세요",
+                      style = AppTypography.bodySmall,
+                      color = Color.Gray
+                    )
+                  }
                 }
               }
             } else {
@@ -584,12 +605,38 @@ private fun ApplicantCard(
         
         Spacer(modifier = Modifier.height(4.dp))
         
-        // 기본 정보
+        // 기본 정보 (직종과 기술 수준 포함)
         Text(
-          text = "만 ${applicant.age}세 • ${applicant.gender} • 경력 ${applicant.experience}년",
+          text = "${applicant.jobType ?: "일반"} (${applicant.skill ?: "중급"}) • 만 ${applicant.age}세 • ${applicant.gender} • 경력 ${applicant.experience}년",
           style = AppTypography.bodyMedium,
           color = Color.Gray
         )
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        // 평점과 거리 정보
+        Row(
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = "⭐ ${String.format("%.1f", applicant.rating)}",
+            style = AppTypography.bodySmall,
+            color = Color(0xFFFF9800)
+          )
+          Spacer(modifier = Modifier.width(8.dp))
+          Text(
+            text = "📍 ${String.format("%.1f", applicant.distance)}km",
+            style = AppTypography.bodySmall,
+            color = Color.Gray
+          )
+          Spacer(modifier = Modifier.width(8.dp))
+          Text(
+            text = applicant.workPreference ?: "혼합",
+            style = AppTypography.bodySmall,
+            color = Color(0xFF4B7BFF),
+            fontWeight = FontWeight.Medium
+          )
+        }
         
         Spacer(modifier = Modifier.height(4.dp))
         
@@ -599,6 +646,17 @@ private fun ApplicantCard(
           style = AppTypography.bodySmall,
           color = Color.Gray
         )
+        
+        // 자격증 정보 (있을 경우만 표시)
+        if (applicant.certifications.isNotEmpty()) {
+          Spacer(modifier = Modifier.height(2.dp))
+          Text(
+            text = "🏆 ${applicant.certifications.joinToString(", ")}",
+            style = AppTypography.bodySmall,
+            color = Color(0xFF4CAF50),
+            fontWeight = FontWeight.Medium
+          )
+        }
       }
     }
   }
@@ -684,7 +742,7 @@ private fun ApplicantActionDialog(
           
           // 마지막 항목이 아닐 때만 구분선 추가
           if (index < selectedApplicants.size - 1) {
-            Divider(
+            HorizontalDivider(
               modifier = Modifier.padding(vertical = 6.dp),
               color = Color.Gray.copy(alpha = 0.3f), // 더 진한 색으로 변경
               thickness = 1.dp // 두께도 증가
@@ -693,7 +751,7 @@ private fun ApplicantActionDialog(
         }
         
         Spacer(modifier = Modifier.height(16.dp))
-        Divider()
+        HorizontalDivider()
         Spacer(modifier = Modifier.height(16.dp))
         
         // 확인 문구 (가운데 정렬)

@@ -98,6 +98,14 @@ fun CompanyMoneyScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = androidx.compose.ui.graphics.Color(0xFFF7F8FA), // 파란색 배경으로 변경
+        topBar = {
+            SearchableTopBar(
+                title = "임금 관리",
+                onSearchClick = {
+                    // TODO: 검색 기능 구현
+                }
+            )
+        },
         bottomBar = {
             if (showBottomBar) {
                 CompanyBottomBar(
@@ -112,14 +120,6 @@ fun CompanyMoneyScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // 상단바
-            SearchableTopBar(
-                title = "임금 관리",
-                onSearchClick = {
-                    // TODO: 검색 기능 구현
-                }
-            )
-
             // 메인 컨텐츠
             if (projectPayments.isEmpty()) {
                 // 빈 상태

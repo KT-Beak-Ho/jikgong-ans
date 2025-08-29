@@ -1,5 +1,7 @@
 package com.billcorea.jikgong.network.models
 
+import java.time.LocalDate
+
 // ==================== 프로젝트 기본 정보 ====================
 
 data class SimpleProject(
@@ -38,3 +40,18 @@ enum class ProjectCategory(val displayName: String) {
     FACTORY("공장 건설"),
     SUBWAY("지하철 공사")
 }
+
+// ==================== 일자별 작업 데이터 ====================
+
+data class WorkDay(
+  val id: String,
+  val title: String, // 모집 제목
+  val date: LocalDate,
+  val startTime: String,
+  val endTime: String,
+  val recruitPeriod: String,
+  val applicants: Int,
+  val confirmed: Int,
+  val maxWorkers: Int,
+  val status: String // "IN_PROGRESS", "UPCOMING", "COMPLETED"
+)

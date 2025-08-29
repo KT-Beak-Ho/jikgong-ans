@@ -25,45 +25,61 @@ import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
-
-// 확정 근로자 데이터
-data class ConfirmedWorker(
-  val id: String,
-  val name: String,
-  val age: Int,
-  val gender: String, // "남", "여"
-  val experience: Int, // 경력 년수
-  val attendanceRate: Int, // 출석률 (0-100)
-  val totalWorkDays: Int, // 총 출역 회수
-  val phoneNumber: String
-)
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.network.models.ConfirmedWorker
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkerInfoScreen(
   navController: NavController,
   workDayId: String,
+  selectedDate: String? = null,
   modifier: Modifier = Modifier
 ) {
-  // 샘플 확정 근로자 데이터
-  val confirmedWorkers = remember {
-    listOf(
-      ConfirmedWorker("1", "김철수", 30, "남", 5, 95, 24, "010-1234-5678"),
-      ConfirmedWorker("2", "이영희", 28, "여", 3, 88, 18, "010-2345-6789"),
-      ConfirmedWorker("3", "박민수", 35, "남", 8, 92, 35, "010-3456-7890"),
-      ConfirmedWorker("4", "정수연", 25, "여", 2, 85, 12, "010-4567-8901"),
-      ConfirmedWorker("5", "최동현", 42, "남", 12, 98, 48, "010-5678-9012"),
-      ConfirmedWorker("6", "한미영", 33, "여", 6, 90, 28, "010-6789-0123"),
-      ConfirmedWorker("7", "장준호", 29, "남", 4, 75, 20, "010-7890-1234"),
-      ConfirmedWorker("8", "윤서진", 31, "여", 7, 93, 32, "010-8901-2345")
-    )
+  // 날짜별 확정 근로자 데이터 (캐시됨)
+  val confirmedWorkersByDate = CompanyMockDataFactory.getConfirmedWorkersByDate().mapKeys { 
+    LocalDate.parse(it.key) 
   }
+  
+  // 데이터 일관성 테스트 (한 번만 실행)
+  LaunchedEffect(Unit) {
+    CompanyMockDataFactory.testDataConsistency()
+  }
+  
+  // 현재 선택된 날짜 (실시간 업데이트를 위해 remember 제거)
+  val effectiveDate = try {
+    selectedDate?.takeIf { it.isNotBlank() }?.let { 
+      LocalDate.parse(it) 
+    } ?: LocalDate.parse("2025-08-01") // 데이터 범위 내 기본 날짜 사용
+  } catch (e: Exception) {
+    println("Error parsing selectedDate: $selectedDate, using default date 2025-08-01")
+    LocalDate.parse("2025-08-01") // 에러 시에도 데이터 범위 내 날짜 사용
+  }
+  
+  // 선택된 날짜에 따른 근로자 목록 (디버깅 정보 포함)
+  val confirmedWorkers = confirmedWorkersByDate[effectiveDate] ?: emptyList()
+  
+  // 디버깅: 현재 데이터 상태 확인
+  println("=== WorkerInfoScreen Debug ===")
+  println("selectedDate parameter: $selectedDate")
+  println("effectiveDate calculated: $effectiveDate")
+  println("confirmedWorkers.size: ${confirmedWorkers.size}")
+  println("confirmedWorkers.names: ${confirmedWorkers.map { it.name }}")
+  println("all available dates: ${confirmedWorkersByDate.keys.sorted()}")
+  println("data for this date exists: ${confirmedWorkersByDate.containsKey(effectiveDate)}")
+  println("workDayId: $workDayId")
+  println("=================================")
+
+  // 제목에 날짜 정보 포함
+  val titleWithDate = "출근확정 근로자 정보 (${effectiveDate.format(DateTimeFormatter.ofPattern("MM/dd"))})"
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
     topBar = {
       BackNavigationTopBar(
-        title = "출근확정 근로자 정보",
+        title = titleWithDate,
         onBackClick = { navController.popBackStack() }
       )
     }
@@ -74,7 +90,22 @@ fun WorkerInfoScreen(
         .padding(innerPadding)
         .background(Color(0xFFF8F9FA))
     ) {
-      Divider(thickness = 1.dp, color = Color.LightGray)
+      HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
+      
+      // 선택된 날짜 정보 표시 (WorkerManagementScreen과 동일한 스타일)
+      Box(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 8.dp)
+      ) {
+        Text(
+          text = effectiveDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")),
+          style = AppTypography.bodyMedium,
+          fontWeight = FontWeight.Medium
+        )
+      }
+      
+      HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
       
       // 총 인원수 표시
       Box(
@@ -86,7 +117,7 @@ fun WorkerInfoScreen(
           verticalAlignment = Alignment.CenterVertically
         ) {
           Text(
-            text = "총 ",
+            text = "출근 확정된 근로자 ",
             style = AppTypography.bodyMedium,
             color = Color.Gray
           )
@@ -100,13 +131,38 @@ fun WorkerInfoScreen(
       }
       
       // 근로자 리스트
-      LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-      ) {
-        items(confirmedWorkers) { worker ->
-          WorkerCard(worker = worker)
+      if (confirmedWorkers.isEmpty()) {
+        Box(
+          modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 48.dp),
+          contentAlignment = Alignment.Center
+        ) {
+          Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+          ) {
+            Text(
+              text = "${effectiveDate.format(DateTimeFormatter.ofPattern("MM월 dd일"))}에 확정된 근로자가 없습니다",
+              style = AppTypography.bodyLarge,
+              color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+              text = "다른 날짜를 선택해보세요",
+              style = AppTypography.bodySmall,
+              color = Color.Gray
+            )
+          }
+        }
+      } else {
+        LazyColumn(
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+          verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+          items(confirmedWorkers) { worker ->
+            WorkerCard(worker = worker)
+          }
         }
       }
     }
@@ -190,12 +246,38 @@ private fun WorkerCard(
         
         Spacer(modifier = Modifier.height(4.dp))
         
-        // 기본 정보
+        // 기본 정보 (직종 정보 포함)
         Text(
-          text = "만 ${worker.age}세 • ${worker.gender} • 경력 ${worker.experience}년",
+          text = "${worker.jobType ?: "일반"} (${worker.skill ?: "중급"}) • 만 ${worker.age}세 • ${worker.gender} • 경력 ${worker.experience}년",
           style = AppTypography.bodyMedium,
           color = Color.Gray
         )
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        // 평점과 거리 정보
+        Row(
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = "⭐ ${String.format("%.1f", worker.rating)}",
+            style = AppTypography.bodySmall,
+            color = Color(0xFFFF9800)
+          )
+          Spacer(modifier = Modifier.width(8.dp))
+          Text(
+            text = "📍 ${String.format("%.1f", worker.distance)}km",
+            style = AppTypography.bodySmall,
+            color = Color.Gray
+          )
+          Spacer(modifier = Modifier.width(8.dp))
+          Text(
+            text = worker.workPreference ?: "혼합",
+            style = AppTypography.bodySmall,
+            color = Color(0xFF4B7BFF),
+            fontWeight = FontWeight.Medium
+          )
+        }
         
         Spacer(modifier = Modifier.height(4.dp))
         
@@ -205,6 +287,17 @@ private fun WorkerCard(
           style = AppTypography.bodySmall,
           color = Color.Gray
         )
+        
+        // 자격증 정보 (있을 경우만 표시)
+        if (worker.certifications.isNotEmpty()) {
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+            text = "🏆 ${worker.certifications.joinToString(", ")}",
+            style = AppTypography.bodySmall,
+            color = Color(0xFF4CAF50),
+            fontWeight = FontWeight.Medium
+          )
+        }
       }
     }
   }
@@ -216,7 +309,44 @@ fun WorkerInfoScreenPreview() {
   Jikgong1111Theme {
     WorkerInfoScreen(
       navController = rememberNavController(),
-      workDayId = "1"
+      workDayId = "1",
+      selectedDate = "2025-08-01"
+    )
+  }
+}
+
+@Preview
+@Composable
+fun WorkerInfoScreenPreview2() {
+  Jikgong1111Theme {
+    WorkerInfoScreen(
+      navController = rememberNavController(),
+      workDayId = "1",
+      selectedDate = "2025-08-02"
+    )
+  }
+}
+
+@Preview
+@Composable
+fun WorkerInfoScreenPreview3() {
+  Jikgong1111Theme {
+    WorkerInfoScreen(
+      navController = rememberNavController(),
+      workDayId = "1",
+      selectedDate = "2025-08-04"
+    )
+  }
+}
+
+@Preview
+@Composable
+fun WorkerInfoScreenPreview4() {
+  Jikgong1111Theme {
+    WorkerInfoScreen(
+      navController = rememberNavController(),
+      workDayId = "1",
+      selectedDate = "2025-08-07"
     )
   }
 }

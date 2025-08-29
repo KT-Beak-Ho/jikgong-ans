@@ -38,6 +38,11 @@ import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import com.billcorea.jikgong.presentation.destinations.NotificationSettingsScreenDestination
+import com.billcorea.jikgong.presentation.destinations.AnnouncementScreenDestination
+import com.billcorea.jikgong.presentation.destinations.CustomerServiceScreenDestination
+import com.billcorea.jikgong.presentation.destinations.TermsAndPoliciesScreenDestination
+import com.billcorea.jikgong.presentation.destinations.MyInfoScreenDestination
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 
@@ -162,11 +167,21 @@ internal fun CompanyInfoContent(
           Spacer(modifier = Modifier.height(20.dp))
           SettingsMenu(
             notifications = companyData.notifications,
-            onNotificationClick = onClearNotifications,
-            onAnnouncementClick = { /* Navigate */ },
-            onCustomerServiceClick = { /* Navigate */ },
-            onTermsClick = { /* Navigate */ },
-            onMyInfoClick = { /* Navigate */ }
+            onNotificationClick = { 
+              navigator.navigate(NotificationSettingsScreenDestination)
+            },
+            onAnnouncementClick = { 
+              navigator.navigate(AnnouncementScreenDestination)
+            },
+            onCustomerServiceClick = { 
+              navigator.navigate(CustomerServiceScreenDestination)
+            },
+            onTermsClick = { 
+              navigator.navigate(TermsAndPoliciesScreenDestination)
+            },
+            onMyInfoClick = { 
+              navigator.navigate(MyInfoScreenDestination)
+            }
           )
         }
 

@@ -25,6 +25,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.billcorea.jikgong.network.models.SimpleProject
+import com.billcorea.jikgong.network.models.WorkDay
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -32,20 +34,6 @@ import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopB
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
-// 일자별 작업 데이터
-data class WorkDay(
-  val id: String,
-  val title: String, // 모집 제목
-  val date: LocalDate,
-  val startTime: String,
-  val endTime: String,
-  val recruitPeriod: String,
-  val applicants: Int,
-  val confirmed: Int,
-  val maxWorkers: Int,
-  val status: String // "IN_PROGRESS", "UPCOMING", "COMPLETED"
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination
@@ -94,6 +82,18 @@ fun ProjectDetailScreen(
   val scope = rememberCoroutineScope()
   var showBottomSheet by remember { mutableStateOf(false) }
   var selectedWorkDay by remember { mutableStateOf<WorkDay?>(null) }
+  
+  // 지원자 데이터 (날짜별)
+  val applicantsByDate = remember {
+    CompanyMockDataFactory.getApplicantWorkersByDate().mapKeys { 
+      LocalDate.parse(it.key) 
+    }
+  }
+  
+  // 날짜별 지원자 수 계산 함수
+  fun getApplicantsCountForDate(date: LocalDate): Int {
+    return (applicantsByDate[date] ?: emptyList()).size
+  }
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
@@ -200,6 +200,7 @@ fun ProjectDetailScreen(
             WorkDayCard(
               workDay = workDay,
               wage = project.wage,
+              applicantsCount = getApplicantsCountForDate(workDay.date),
               onMenuClick = {
                 selectedWorkDay = workDay
                 showBottomSheet = true
@@ -322,6 +323,7 @@ fun ProjectDetailScreen(
 private fun WorkDayCard(
   workDay: WorkDay,
   wage: Int,
+  applicantsCount: Int = 0,
   onMenuClick: () -> Unit,
   onWorkerManageClick: () -> Unit
 ) {
@@ -355,12 +357,6 @@ private fun WorkDayCard(
             style = AppTypography.titleMedium,
             fontWeight = FontWeight.Bold
           )
-          // 작업 날짜
-          Text(
-            text = workDay.date.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 (E)")),
-            style = AppTypography.bodyMedium,
-            color = Color.Gray
-          )
         }
         
         // 더보기 버튼
@@ -377,6 +373,40 @@ private fun WorkDayCard(
       }
 
       Spacer(modifier = Modifier.height(12.dp))
+      
+      // 수락 대기 알림 (지원자가 있을 경우)
+      if (applicantsCount > 0) {
+        Card(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+          shape = RoundedCornerShape(8.dp),
+          colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFF3CD)
+          )
+        ) {
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Icon(
+              Icons.Filled.NotificationsActive,
+              contentDescription = null,
+              modifier = Modifier.size(20.dp),
+              tint = Color(0xFFFF8C00)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+              text = "수락 대기 중인 지원자 ${applicantsCount}명이 있습니다",
+              style = AppTypography.bodySmall,
+              color = Color(0xFF856404),
+              fontWeight = FontWeight.Medium
+            )
+          }
+        }
+      }
 
       // 모집 기간
       Row(
@@ -398,47 +428,7 @@ private fun WorkDayCard(
 
       Spacer(modifier = Modifier.height(12.dp))
 
-      // 인원 정보
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-      ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-          Text(
-            "지원자 수",
-            style = AppTypography.bodySmall,
-            color = Color.Gray
-          )
-          Text(
-            "${workDay.applicants}명",
-            style = AppTypography.titleSmall,
-            fontWeight = FontWeight.Bold
-          )
-        }
-        
-        Divider(
-          modifier = Modifier
-            .height(40.dp)
-            .width(1.dp),
-          color = Color.LightGray
-        )
-        
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-          Text(
-            "확정자 수",
-            style = AppTypography.bodySmall,
-            color = Color.Gray
-          )
-          Text(
-            "${workDay.confirmed}명",
-            style = AppTypography.titleSmall,
-            fontWeight = FontWeight.Bold,
-            color = appColorScheme.primary
-          )
-        }
-      }
-
-      Spacer(modifier = Modifier.height(12.dp))
+      Spacer(modifier = Modifier.height(8.dp))
 
       // 인력 관리 버튼
       Button(
@@ -456,7 +446,7 @@ private fun WorkDayCard(
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-          text = "인력 관리",
+          text = "날짜별 인력 관리",
           style = AppTypography.bodyMedium,
           fontWeight = FontWeight.Medium
         )

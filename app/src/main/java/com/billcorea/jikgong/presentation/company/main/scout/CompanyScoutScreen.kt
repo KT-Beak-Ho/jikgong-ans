@@ -24,6 +24,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
 import com.billcorea.jikgong.presentation.company.main.common.ScoutTopBar
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
 import com.billcorea.jikgong.network.models.Worker
 import com.billcorea.jikgong.network.models.Proposal
 import com.billcorea.jikgong.network.models.ProposalStatus
@@ -158,7 +159,7 @@ fun CompanyScoutMainScreen(
         WorkerDetailBottomSheetContent(
             worker = selectedWorker,
             onDismiss = { viewModel.dismissWorkerDetail() },
-            onScoutConfirm = { wage, message ->
+            onScoutConfirm = { wage, message, projectId, selectedDate ->
                 viewModel.confirmScoutProposal(
                     worker = selectedWorker,
                     wage = wage,
@@ -287,10 +288,33 @@ private fun TabItem(
 private fun WorkerDetailBottomSheetContent(
     worker: Worker,
     onDismiss: () -> Unit,
-    onScoutConfirm: (wage: String, message: String) -> Unit
+    onScoutConfirm: (wage: String, message: String, projectId: String, selectedDate: String) -> Unit
 ) {
     var wage by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
+    var selectedProjectId by remember { mutableStateOf("") }
+    var selectedDate by remember { mutableStateOf("") }
+    var showConfirmDialog by remember { mutableStateOf(false) }
+    
+    // 진행 중인 프로젝트 목록 가져오기 (RECRUITING 또는 IN_PROGRESS 상태)
+    val activeProjects = remember {
+        CompanyMockDataFactory.getProjectsByStatus("RECRUITING") + 
+        CompanyMockDataFactory.getProjectsByStatus("IN_PROGRESS")
+    }
+    
+    // 선택된 프로젝트의 날짜 범위 계산
+    val projectDates = remember(selectedProjectId) {
+        if (selectedProjectId.isNotEmpty()) {
+            val project = activeProjects.find { it.id == selectedProjectId }
+            project?.let { p ->
+                val startDate = java.time.LocalDate.parse(p.startDate)
+                val endDate = java.time.LocalDate.parse(p.endDate)
+                generateSequence(startDate) { it.plusDays(1) }
+                    .takeWhile { !it.isAfter(endDate) }
+                    .toList()
+            } ?: emptyList()
+        } else emptyList()
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -383,18 +407,105 @@ private fun WorkerDetailBottomSheetContent(
                 )
             )
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 프로젝트 선택
+            var expanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = if (selectedProjectId.isEmpty()) "" else 
+                        activeProjects.find { it.id == selectedProjectId }?.title ?: "",
+                    onValueChange = { },
+                    readOnly = true,
+                    label = { Text("스카웃할 현장 선택") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF4B7BFF),
+                        unfocusedBorderColor = Color(0xFFE5E8EB)
+                    )
+                )
+                
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    activeProjects.forEach { project ->
+                        DropdownMenuItem(
+                            text = { Text(project.title) },
+                            onClick = {
+                                selectedProjectId = project.id
+                                selectedDate = "" // 프로젝트 변경시 날짜 초기화
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 날짜 선택
+            if (selectedProjectId.isNotEmpty() && projectDates.isNotEmpty()) {
+                var dateExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(
+                    expanded = dateExpanded,
+                    onExpandedChange = { dateExpanded = !dateExpanded }
+                ) {
+                    OutlinedTextField(
+                        value = selectedDate,
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text("근무 날짜 선택") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dateExpanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF4B7BFF),
+                            unfocusedBorderColor = Color(0xFFE5E8EB)
+                        )
+                    )
+                    
+                    ExposedDropdownMenu(
+                        expanded = dateExpanded,
+                        onDismissRequest = { dateExpanded = false }
+                    ) {
+                        projectDates.forEach { date ->
+                            DropdownMenuItem(
+                                text = { Text(date.toString()) },
+                                onClick = {
+                                    selectedDate = date.toString()
+                                    dateExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             // 스카웃 제안 버튼
             Button(
-                onClick = { onScoutConfirm(wage, message) },
+                onClick = { 
+                    showConfirmDialog = true
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF4B7BFF)
                 ),
-                enabled = wage.isNotEmpty() && message.isNotEmpty()
+                enabled = wage.isNotEmpty() && message.isNotEmpty() && 
+                         selectedProjectId.isNotEmpty() && selectedDate.isNotEmpty()
             ) {
                 Text(
                     text = "스카웃 제안하기",
@@ -406,6 +517,78 @@ private fun WorkerDetailBottomSheetContent(
 
             Spacer(modifier = Modifier.height(20.dp))
         }
+    }
+
+    // 최종 확인 다이얼로그
+    if (showConfirmDialog) {
+        val selectedProject = activeProjects.find { it.id == selectedProjectId }
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = {
+                Text(
+                    text = "스카웃 제안 확인",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column {
+                    Text("다음 내용으로 스카웃 제안을 보내시겠습니까?", 
+                         style = MaterialTheme.typography.bodyMedium)
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Text("• 프로젝트: ${selectedProject?.title ?: ""}",
+                         style = MaterialTheme.typography.bodyMedium,
+                         fontWeight = FontWeight.Medium)
+                    
+                    Text("• 날짜: $selectedDate",
+                         style = MaterialTheme.typography.bodyMedium,
+                         fontWeight = FontWeight.Medium)
+                    
+                    Text("• 일당: $wage",
+                         style = MaterialTheme.typography.bodyMedium,
+                         fontWeight = FontWeight.Medium)
+                         
+                    Text("• 근무시간: 06:30~15:00",
+                         style = MaterialTheme.typography.bodyMedium,
+                         fontWeight = FontWeight.Medium)
+                         
+                    Text("• 장소: ${selectedProject?.location ?: ""}",
+                         style = MaterialTheme.typography.bodyMedium,
+                         fontWeight = FontWeight.Medium)
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Text("• 메시지: $message",
+                         style = MaterialTheme.typography.bodyMedium,
+                         fontWeight = FontWeight.Medium)
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Text("⚠️ 지원 후에는 취소가 어렵습니다",
+                         style = MaterialTheme.typography.bodySmall,
+                         color = Color(0xFFFF5722))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showConfirmDialog = false }
+                ) {
+                    Text("취소", color = Color.Gray)
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showConfirmDialog = false
+                        onScoutConfirm(wage, message, selectedProjectId, selectedDate)
+                    }
+                ) {
+                    Text("스카웃", color = Color(0xFF4B7BFF), fontWeight = FontWeight.Bold)
+                }
+            }
+        )
     }
 }
 
@@ -708,7 +891,7 @@ private fun CompanyScoutMainScreenPreview(
         WorkerDetailBottomSheetContent(
             worker = worker,
             onDismiss = onWorkerDismiss,
-            onScoutConfirm = { _, _ -> onWorkerDismiss() }
+            onScoutConfirm = { _, _, _, _ -> onWorkerDismiss() }
         )
     }
 }

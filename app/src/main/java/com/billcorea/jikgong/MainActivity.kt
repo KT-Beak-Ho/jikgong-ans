@@ -314,11 +314,13 @@ class MainActivity : ComponentActivity() {
                 )
               }
               /** WorkerManagementScreen 에서 출근확정 근로자 정보 버튼 클릭시 사용하는 Router */
-              composable("worker_info/{workDayId}") { navBackStackEntry ->
+              composable("worker_info/{workDayId}?selectedDate={selectedDate}") { navBackStackEntry ->
                 val workDayId = navBackStackEntry.arguments?.getString("workDayId") ?: ""
+                val selectedDate = navBackStackEntry.arguments?.getString("selectedDate")
                 WorkerInfoScreen(
                   navController = navController,
                   workDayId = workDayId,
+                  selectedDate = selectedDate,
                   modifier = Modifier.padding(5.dp)
                 )
               }
