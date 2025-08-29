@@ -15,15 +15,21 @@ import com.billcorea.jikgong.network.Coord2AddressResponse
 import com.billcorea.jikgong.network.Coord2RoadAddress
 import com.billcorea.jikgong.network.PhoneValidationRequest
 import com.billcorea.jikgong.network.PhoneValidationResponse
+import com.billcorea.jikgong.network.RegisterWorker
+import com.billcorea.jikgong.network.RegisterWorkerResponse
 import com.billcorea.jikgong.network.RetrofitAPI
 import com.billcorea.jikgong.network.SmsVerificationRequest
 import com.billcorea.jikgong.network.SmsVerificationResponse
 import com.billcorea.jikgong.presentation.worker.auth.common.constants.WorkerJoinConstants.TOTAL_PAGES
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -70,7 +76,10 @@ class WorkerJoinSharedViewModel : ViewModel() {
     val pageCompletionMap = mapOf(
       1 to state.isPage1Complete,
       2 to state.isPage2Complete,
-      3 to state.isPage3Complete
+      3 to state.isPage3Complete,
+      4 to state.isPage4Complete,
+      5 to if (state.isPage5Complete) state.isPage5Complete else state.isPage5LaterComplete,
+      6 to if (state.isPage6Complete) state.isPage6Complete else state.isPage6LaterComplete
     )
     return pageCompletionMap[currentPage] ?: false
   }
@@ -113,7 +122,7 @@ class WorkerJoinSharedViewModel : ViewModel() {
         call: Call<SmsVerificationResponse>,
         response: Response<SmsVerificationResponse>
       ) {
-        //  Log.e("", "response ${response.body()?.data?.authCode}")
+        Log.e("", "response ${response.body()?.data?.authCode}")
         _uiState.value = _uiState.value.copy(
           authCode = response.body()?.data?.authCode,
           isWaiting = false
@@ -121,7 +130,7 @@ class WorkerJoinSharedViewModel : ViewModel() {
       }
 
       override fun onFailure(call: Call<SmsVerificationResponse>, t: Throwable) {
-        // Log.e("", "error ${t.localizedMessage}")
+        Log.e("", "error ${t.localizedMessage}")
         // 실패 시에도 isWaiting = false로 변경
         _uiState.value = _uiState.value.copy(isWaiting = false)
       }
@@ -519,16 +528,42 @@ class WorkerJoinSharedViewModel : ViewModel() {
   }
 
   fun submitWorkerRegistration() {
+
     val state = _uiState.value
-    // MainViewModel의 doRegisterWorker 메서드 호출 로직 구현
-    // 성공 시 홈으로 이동
-    _shouldNavigateHome.value = true
+
+    val registerWorkerRequest = RegisterWorker(state.id, state.password, state.phoneNumber, state.email, role="ROLE_WORKER", privacyConsent=true,
+      deviceToken="token", isNotification=true, state.name, state.birthday, state.gender, state.nationality, state.accountName, state.accountNumber, state.bankName,
+      workerCardNumber="null", hasVisa=true, credentialLiabilityConsent=true, state.workExperienceList, state.address, state.lat, state.lon)
+    val gson = Gson()
+    val jsonString = gson.toJson(registerWorkerRequest)
+    val requestBody = jsonString.toRequestBody("application/json; charset=utf-8".toMediaType())
+
+    val educationCertificateImage = MultipartBody.Part.createFormData("educationCertificateImage", state.educationCertificateUri)
+    val workerCardImage = MultipartBody.Part.createFormData("workerCardImage", state.workerCardUri)
+    val signatureImage = MultipartBody.Part.createFormData("signatureImage", "")
+
+    RetrofitAPI.create().registerWorker(requestBody, educationCertificateImage, workerCardImage, signatureImage).enqueue(object:
+      Callback<RegisterWorkerResponse> {
+      override fun onResponse(
+        call: Call<RegisterWorkerResponse>,
+        response: Response<RegisterWorkerResponse>
+      ) {
+        Log.e("", "response ${response.body()?.message}")
+        Log.e("", "response ${response.body()}")
+        // _registerResult.value = response.body()?.message
+        _uiState.value = _uiState.value.copy(
+          isRegistrationSuccess = true
+        )
+        // 페이지 추가 또는 다이얼로그 띄워서 회원가입 성공 유무 확인
+        _shouldNavigateHome.value = true
+      }
+
+      override fun onFailure(call: Call<RegisterWorkerResponse>, t: Throwable) {
+        Log.e("", "error ${t.localizedMessage}")
+      }
+
+    })
   }
-
-
-
-
-
 
   /**
    * 전체 이벤트 처리
@@ -957,16 +992,13 @@ class WorkerJoinSharedViewModel : ViewModel() {
           selectedJobCode = "",
           selectedJobName = "직종을 선택해주세요",
           workExperienceList = emptyList(),
-          isRegistrationInProgress = false,
+          isRegistrationSuccess = false,
           currentPage = 6
         )
       }
 
       is WorkerJoinSharedEvent.SubmitRegistration -> {
-        _uiState.value = _uiState.value.copy(
-          isRegistrationInProgress = true
-        )
-        // 실제 회원가입 API 호출
+        // 회원가입 API 호출
         submitWorkerRegistration()
       }
 

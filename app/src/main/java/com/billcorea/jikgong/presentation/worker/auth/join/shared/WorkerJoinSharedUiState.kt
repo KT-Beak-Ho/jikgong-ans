@@ -57,7 +57,7 @@ data class WorkerJoinSharedUiState(
   val yearInput: String = "",
   val monthInput: String = "",
   val workExperienceList: List<WorkExperience> = emptyList(),
-  val isRegistrationInProgress: Boolean = false,
+  val isRegistrationSuccess: Boolean = false,
 
   // 공통 상태
   val currentPage: Int = 1,
@@ -98,7 +98,13 @@ data class WorkerJoinSharedUiState(
       get() = educationCertificateUri.isEmpty() &&
         workerCardUri.isEmpty()
 
+    val isPage6Complete: Boolean
+      get() = workExperienceList.isNotEmpty()
+
+    val isPage6LaterComplete: Boolean
+      get() = workExperienceList.isEmpty()
+
     // 전체 완료 상태
     val isAllDataComplete: Boolean
-    get() = isPage1Complete && isPage2Complete && isPage3Complete && isPage4Complete && (isPage5Complete || isPage5LaterComplete)
+    get() = isPage1Complete && isPage2Complete && isPage3Complete && isPage4Complete && (isPage5Complete || isPage5LaterComplete) && (isPage6Complete || isPage6LaterComplete)
 }

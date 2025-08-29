@@ -82,7 +82,7 @@ fun WorkerJoinPage3Screen(
 
   // 페이지 실행 시 초기화
   LaunchedEffect(Unit) {
-    workerJoinViewModel.onEvent(WorkerJoinSharedEvent.ResetJoin1Flow)
+    workerJoinViewModel.onEvent(WorkerJoinSharedEvent.ResetJoin3Flow)
   }
 
   // 네비게이션 이벤트 처리 - 다음페이지

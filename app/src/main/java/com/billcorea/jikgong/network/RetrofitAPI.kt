@@ -72,7 +72,7 @@ interface RetrofitAPI {
     ): Call<RegisterWorkerResponse>
 
     companion object {
-        var baseURL="https://www.jikgong.p-e.kr/"
+        var baseURL="http://59.21.223.137:8080/"
         var kakaoURL="https://dapi.kakao.com/"
         private val client = OkHttpClient.Builder().build()
         val gson : Gson =   GsonBuilder().setLenient().create();
