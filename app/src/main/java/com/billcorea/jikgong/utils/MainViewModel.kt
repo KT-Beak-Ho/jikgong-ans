@@ -222,7 +222,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun doSmsVerification(phone: String) {
-        val smsBody = SmsVerificationRequest(phone, "")
+        val smsBody = SmsVerificationRequest(phone)
         RetrofitAPI.create().smsVerification(smsBody).enqueue(object:
             Callback<SmsVerificationResponse> {
             override fun onResponse(
