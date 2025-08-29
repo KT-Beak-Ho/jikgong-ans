@@ -1,6 +1,6 @@
 package com.billcorea.jikgong.presentation.company.main.common.repository
 
-import com.billcorea.jikgong.network.*
+import com.billcorea.jikgong.network.models.CompanyData
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 

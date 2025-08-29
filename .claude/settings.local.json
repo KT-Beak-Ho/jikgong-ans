@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\data.kt\")",
+      "Bash(find:*)",
+      "Bash(./gradlew:*)",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\api\\service\\AuthApi.kt\")",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\projectlist\\projectDetail\\screen\\JobRegistrationScreen.kt\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

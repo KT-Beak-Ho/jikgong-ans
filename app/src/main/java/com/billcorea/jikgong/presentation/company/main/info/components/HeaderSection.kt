@@ -12,8 +12,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.billcorea.jikgong.network.CompanyData
-import com.billcorea.jikgong.network.CompanyType
+import com.billcorea.jikgong.network.models.CompanyData
+import com.billcorea.jikgong.network.models.CompanyType
 
 @Composable
 fun HeaderSection(
@@ -68,8 +68,8 @@ fun HeaderSection(
                   .background(
                     Brush.horizontalGradient(
                       colors = listOf(
-                        Color(0xFF7C3AED),
-                        Color(0xFF8B5CF6)
+                        Color(0xFF4B7BFF),
+                        Color(0xFF5B87FF)
                       )
                     )
                   )

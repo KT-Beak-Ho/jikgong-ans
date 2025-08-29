@@ -13,25 +13,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.money.components.ProjectPaymentCard
 import com.billcorea.jikgong.presentation.company.main.money.components.ProjectPaymentFilterBar
 import com.billcorea.jikgong.presentation.company.main.money.components.ProjectPaymentSummaryCard
 import com.billcorea.jikgong.presentation.company.main.money.components.EmptyMoneyState
 import com.billcorea.jikgong.presentation.company.main.money.components.ScrollBar
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentSampleData
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentStatus
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.network.models.ProjectPaymentStatus
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import com.ramcosta.composedestinations.annotation.Destination
+import androidx.navigation.NavController
+import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
+import com.billcorea.jikgong.presentation.company.main.common.SearchableTopBar
 
-// @Destination 어노테이션 제거 - 바텀 네비게이션에서 composable()로 직접 호출됨
+@Destination
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompanyMoneyScreen(
     navigator: DestinationsNavigator,
+    navController: NavController,
     modifier: Modifier = Modifier,
     showBottomBar: Boolean = true
 ) {
@@ -40,7 +46,7 @@ fun CompanyMoneyScreen(
 
     val projectPayments = remember {
         if (hasData) {
-            val originalData = ProjectPaymentSampleData.getSampleProjectPayments()
+            val originalData = CompanyMockDataFactory.getProjectPayments()
             val copyData1 = originalData.map { project ->
                 project.copy(
                     id = "${project.id}_copy_1",
@@ -61,59 +67,59 @@ fun CompanyMoneyScreen(
 
     val summary = remember {
         if (hasData) {
-            ProjectPaymentSampleData.getSampleProjectPaymentSummary()
+            CompanyMockDataFactory.getProjectPaymentSummary()
         } else {
-            ProjectPaymentSampleData.getEmptyProjectPaymentSummary()
+            CompanyMockDataFactory.getEmptyProjectPaymentSummary()
         }
     }
 
     var selectedStatus by remember { mutableStateOf<ProjectPaymentStatus?>(null) }
 
-    // 필터링된 프로젝트 목록
+    // 필터링 및 정렬된 프로젝트 목록
     val filteredProjects = remember(selectedStatus) {
-        if (selectedStatus == null) {
+        val filtered = if (selectedStatus == null) {
             projectPayments
         } else {
             projectPayments.filter { it.status == selectedStatus }
         }
+        
+        // 우선순위에 따른 정렬: 지급 대기 > 처리중 > 연체 > 지급 실패 > 지급 완료
+        filtered.sortedWith(compareBy<com.billcorea.jikgong.network.models.ProjectPaymentData> { project ->
+            when (project.status) {
+                ProjectPaymentStatus.PENDING -> 1    // 지급 대기 (최우선)
+                ProjectPaymentStatus.PROCESSING -> 2  // 처리중
+                ProjectPaymentStatus.OVERDUE -> 3     // 연체
+                ProjectPaymentStatus.FAILED -> 4      // 지급 실패
+                ProjectPaymentStatus.COMPLETED -> 5   // 지급 완료 (마지막)
+            }
+        }.thenByDescending { it.createdAt }) // 같은 상태 내에서는 최신 순으로 정렬
     }
 
     Scaffold(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        containerColor = androidx.compose.ui.graphics.Color(0xFFF7F8FA), // 파란색 배경으로 변경
+        topBar = {
+            SearchableTopBar(
+                title = "임금 관리",
+                onSearchClick = {
+                    // TODO: 검색 기능 구현
+                }
+            )
+        },
+        bottomBar = {
+            if (showBottomBar) {
+                CompanyBottomBar(
+                    navController = navController,
+                    currentRoute = "company_money_screen"
+                )
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // 상단바
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "임금 관리",
-                        style = AppTypography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            // TODO: 검색 기능 구현
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "검색"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = appColorScheme.surface,
-                    titleContentColor = appColorScheme.onSurface
-                )
-            )
-
             // 메인 컨텐츠
             if (projectPayments.isEmpty()) {
                 // 빈 상태
@@ -143,33 +149,42 @@ fun CompanyMoneyScreen(
 
 @Composable
 private fun ScrollableContentWithScrollbar(
-    projectPayments: List<com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentData>,
-    summary: com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentSummary,
+    projectPayments: List<com.billcorea.jikgong.network.models.ProjectPaymentData>,
+    summary: com.billcorea.jikgong.network.models.ProjectPaymentSummary,
     selectedStatus: ProjectPaymentStatus?,
     onStatusSelected: (ProjectPaymentStatus?) -> Unit,
-    onPaymentAction: (com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentData, String) -> Unit,
+    onPaymentAction: (com.billcorea.jikgong.network.models.ProjectPaymentData, String) -> Unit,
     modifier: Modifier = Modifier,
     showBottomBar: Boolean = true
 ) {
     val scrollState = rememberLazyListState()
 
-    // 스크롤 진행률 계산
+    // 스크롤 진행률 계산 - 개선된 버전
     val scrollProgress by remember {
         derivedStateOf {
-            if (scrollState.layoutInfo.totalItemsCount <= 1) return@derivedStateOf 0f
+            val layoutInfo = scrollState.layoutInfo
+            if (layoutInfo.totalItemsCount <= 1 || layoutInfo.visibleItemsInfo.isEmpty()) {
+                return@derivedStateOf 0f
+            }
 
             val firstVisibleItemIndex = scrollState.firstVisibleItemIndex
             val firstVisibleItemScrollOffset = scrollState.firstVisibleItemScrollOffset
-            val itemHeight = scrollState.layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
-
-            val totalScrollableHeight = (scrollState.layoutInfo.totalItemsCount - 1) * itemHeight
-            val currentScrollOffset = firstVisibleItemIndex * itemHeight + firstVisibleItemScrollOffset
-
-            if (totalScrollableHeight > 0) {
-                (currentScrollOffset.toFloat() / totalScrollableHeight.toFloat()).coerceIn(0f, 1f)
-            } else {
-                0f
+            val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: firstVisibleItemIndex
+            
+            // 전체 컨텐츠 높이 계산
+            val totalItemsCount = layoutInfo.totalItemsCount
+            val averageItemSize = layoutInfo.visibleItemsInfo.map { it.size }.average().toFloat()
+            val totalContentHeight = totalItemsCount * averageItemSize
+            val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+            
+            if (totalContentHeight <= viewportHeight) {
+                return@derivedStateOf 0f
             }
+            
+            val scrollableHeight = totalContentHeight - viewportHeight
+            val currentScrollOffset = firstVisibleItemIndex * averageItemSize + firstVisibleItemScrollOffset
+            
+            (currentScrollOffset / scrollableHeight).coerceIn(0f, 1f)
         }
     }
 
@@ -187,11 +202,11 @@ private fun ScrollableContentWithScrollbar(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(end = if (canScroll) 12.dp else 0.dp), // 스크롤바 공간 확보
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp), // 카드 간격 증가
             contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = 8.dp,
+                start = 20.dp, // 토스 스타일 패딩
+                end = 20.dp,
+                top = 12.dp,
                 bottom = if (showBottomBar) 120.dp else 40.dp // 하단 네비게이션 공간 확보
             ),
             userScrollEnabled = true
@@ -218,16 +233,19 @@ private fun ScrollableContentWithScrollbar(
                 ) {
                     Text(
                         text = "현장별 임금 지급",
-                        style = AppTypography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold
+                        style = AppTypography.titleLarge.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = (-0.3).sp
                         ),
-                        color = appColorScheme.onSurface
+                        color = androidx.compose.ui.graphics.Color(0xFF1A1A1A) // 진한 검정
                     )
 
                     Text(
                         text = "총 ${projectPayments.size}건",
-                        style = AppTypography.bodyMedium,
-                        color = appColorScheme.onSurfaceVariant
+                        style = AppTypography.bodyLarge.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = androidx.compose.ui.graphics.Color(0xFF6B7280) // 토스 그레이
                     )
                 }
             }
@@ -249,18 +267,18 @@ private fun ScrollableContentWithScrollbar(
             }
         }
 
-        // 스크롤바
+        // 스크롤바 - 토스 스타일
         if (canScroll) {
             ScrollBar(
                 scrollProgress = scrollProgress,
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .fillMaxHeight()
-                    .width(8.dp)
+                    .width(6.dp) // 더 열은 스크롤바
                     .padding(
-                        end = 4.dp,
-                        top = 16.dp,
-                        bottom = if (showBottomBar) 120.dp else 40.dp
+                        end = 8.dp, // 오른쪽 여백 증가
+                        top = 20.dp,
+                        bottom = if (showBottomBar) 140.dp else 60.dp // 하단 여백 증가
                     )
             )
         }
@@ -276,6 +294,7 @@ fun CompanyMoneyScreenWithDataPreview() {
     Jikgong1111Theme {
         CompanyMoneyScreen(
             navigator = navigator,
+            navController = navController,
             showBottomBar = false
         )
     }

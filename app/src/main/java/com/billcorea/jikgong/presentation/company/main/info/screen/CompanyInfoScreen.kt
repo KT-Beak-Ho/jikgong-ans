@@ -18,13 +18,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.billcorea.jikgong.network.CompanyData
-import com.billcorea.jikgong.network.CompanyStats
-import com.billcorea.jikgong.network.CompanyType
-import com.billcorea.jikgong.network.CompanyStatus
-import com.billcorea.jikgong.network.NotificationInfo
-import com.billcorea.jikgong.network.StatItem
+import com.billcorea.jikgong.network.models.CompanyData
+import com.billcorea.jikgong.network.models.CompanyStats
+import com.billcorea.jikgong.network.models.CompanyType
+import com.billcorea.jikgong.network.models.CompanyStatus
+import com.billcorea.jikgong.network.models.NotificationInfo
+import com.billcorea.jikgong.network.models.StatItem
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
+import com.billcorea.jikgong.presentation.company.main.common.InfoTopBar
 import com.billcorea.jikgong.presentation.company.main.info.components.HeaderSection
 import com.billcorea.jikgong.presentation.company.main.info.components.SavingsCard
 import com.billcorea.jikgong.presentation.company.main.info.components.StatsGrid
@@ -37,6 +38,11 @@ import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
+import com.billcorea.jikgong.presentation.destinations.NotificationSettingsScreenDestination
+import com.billcorea.jikgong.presentation.destinations.AnnouncementScreenDestination
+import com.billcorea.jikgong.presentation.destinations.CustomerServiceScreenDestination
+import com.billcorea.jikgong.presentation.destinations.TermsAndPoliciesScreenDestination
+import com.billcorea.jikgong.presentation.destinations.MyInfoScreenDestination
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 
@@ -61,6 +67,7 @@ internal object CompanyInfoFormatter {
 @Composable
 fun CompanyInfoScreen(
   navigator: DestinationsNavigator,
+  navController: NavController,
   viewModel: CompanyInfoViewModel = koinViewModel()
 ) {
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -68,7 +75,7 @@ fun CompanyInfoScreen(
 
   CompanyInfoContent(
     navigator = navigator,
-    navController = navigator as? NavController,  // 안전한 캐스팅
+    navController = navController,
     uiState = uiState,
     companyData = companyData,
     onRefresh = viewModel::refresh,
@@ -82,7 +89,7 @@ fun CompanyInfoScreen(
 @Composable
 internal fun CompanyInfoContent(
   navigator: DestinationsNavigator,
-  navController: NavController? = null,
+  navController: NavController,
   uiState: CompanyInfoUiState,
   companyData: CompanyData,
   onRefresh: () -> Unit,
@@ -94,22 +101,22 @@ internal fun CompanyInfoContent(
   val pullToRefreshState = rememberPullToRefreshState()
 
   Scaffold(
-    bottomBar = {
-      // Preview에서도 BottomBar를 표시하기 위한 처리
-      if (showBottomBar) {
-        if (navController != null) {
-          CompanyBottomBar(
-            navController = navController,
-            currentRoute = "company/info"
-          )
-        } else {
-          // Preview용 NavController 생성
-          val previewNavController = rememberNavController()
-          CompanyBottomBar(
-            navController = previewNavController,
-            currentRoute = "company/info"
-          )
+    topBar = {
+      InfoTopBar(
+        title = companyData.name,
+        notificationCount = companyData.notifications.unreadCount,
+        onNotificationClick = onClearNotifications,
+        onSettingsClick = {
+          // TODO: 설정 화면으로 이동
         }
+      )
+    },
+    bottomBar = {
+      if (showBottomBar) {
+        CompanyBottomBar(
+          navController = navController,
+          currentRoute = "company_info_screen"
+        )
       }
     },
     containerColor = Color.White
@@ -130,11 +137,6 @@ internal fun CompanyInfoContent(
         verticalArrangement = Arrangement.spacedBy(0.dp),
         contentPadding = PaddingValues(bottom = 16.dp)  // 컨텐츠 하단 패딩
       ) {
-        // 헤더
-        item {
-          HeaderSection(companyData = companyData)
-        }
-
         // 절약 카드
         item {
           Spacer(modifier = Modifier.height(20.dp))
@@ -165,11 +167,21 @@ internal fun CompanyInfoContent(
           Spacer(modifier = Modifier.height(20.dp))
           SettingsMenu(
             notifications = companyData.notifications,
-            onNotificationClick = onClearNotifications,
-            onAnnouncementClick = { /* Navigate */ },
-            onCustomerServiceClick = { /* Navigate */ },
-            onTermsClick = { /* Navigate */ },
-            onMyInfoClick = { /* Navigate */ }
+            onNotificationClick = { 
+              navigator.navigate(NotificationSettingsScreenDestination)
+            },
+            onAnnouncementClick = { 
+              navigator.navigate(AnnouncementScreenDestination)
+            },
+            onCustomerServiceClick = { 
+              navigator.navigate(CustomerServiceScreenDestination)
+            },
+            onTermsClick = { 
+              navigator.navigate(TermsAndPoliciesScreenDestination)
+            },
+            onMyInfoClick = { 
+              navigator.navigate(MyInfoScreenDestination)
+            }
           )
         }
 
@@ -276,7 +288,7 @@ fun CompanyInfoScreenFullPreview() {
 
     CompanyInfoContent(
       navigator = navigator,
-      navController = null,  // Preview에서는 null이지만 내부에서 생성
+      navController = navController,
       uiState = CompanyInfoUiState(
         isRefreshing = false,
         error = null
@@ -306,7 +318,7 @@ fun CompanyInfoScreenPreview() {
 
     CompanyInfoContent(
       navigator = navigator,
-      navController = null,
+      navController = navController,
       uiState = CompanyInfoUiState(
         isRefreshing = false,
         error = null
@@ -336,7 +348,7 @@ fun CompanyInfoScreenLoadingPreview() {
 
     CompanyInfoContent(
       navigator = navigator,
-      navController = null,
+      navController = navController,
       uiState = CompanyInfoUiState(
         isRefreshing = true,
         error = null
@@ -366,7 +378,7 @@ fun CompanyInfoScreenWithNotificationsPreview() {
 
     CompanyInfoContent(
       navigator = navigator,
-      navController = null,
+      navController = navController,
       uiState = CompanyInfoUiState(
         isRefreshing = false,
         error = null
@@ -501,7 +513,7 @@ fun CompanyBottomBarPreview() {
   Jikgong1111Theme {
     CompanyBottomBar(
       navController = rememberNavController(),
-      currentRoute = "company/info"
+      currentRoute = "company_info_screen"
     )
   }
 }
