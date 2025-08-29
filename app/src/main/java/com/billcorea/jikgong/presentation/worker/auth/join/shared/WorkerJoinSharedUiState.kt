@@ -6,6 +6,7 @@ import com.billcorea.jikgong.network.auth.WorkExperience
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+
 data class WorkerJoinSharedUiState(
   // Page 1: 전화 번호 인증 및 중복 확인
   val phoneNumber: String = "",               //  전화번호
