@@ -957,14 +957,14 @@ class WorkerJoinSharedViewModel : ViewModel() {
           selectedJobCode = "",
           selectedJobName = "직종을 선택해주세요",
           workExperienceList = emptyList(),
-          isRegistrationInProgress = false,
+          isRegistrationSuccess = false,
           currentPage = 6
         )
       }
 
       is WorkerJoinSharedEvent.SubmitRegistration -> {
         _uiState.value = _uiState.value.copy(
-          isRegistrationInProgress = true
+          isRegistrationSuccess = true
         )
         // 실제 회원가입 API 호출
         submitWorkerRegistration()

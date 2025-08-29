@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.presentation.JoinedPage.BankSelectList
+import com.billcorea.jikgong.presentation.JoinedPageLegacy.BankSelectList
 import com.billcorea.jikgong.presentation.common.components.KeyboardConstants
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
@@ -81,7 +81,7 @@ fun WorkerJoinPage3Screen(
 
   // 페이지 실행 시 초기화
   LaunchedEffect(Unit) {
-    workerJoinViewModel.onEvent(WorkerJoinSharedEvent.ResetJoin1Flow)
+    workerJoinViewModel.onEvent(WorkerJoinSharedEvent.ResetJoin3Flow)
   }
 
   // 네비게이션 이벤트 처리 - 다음페이지
