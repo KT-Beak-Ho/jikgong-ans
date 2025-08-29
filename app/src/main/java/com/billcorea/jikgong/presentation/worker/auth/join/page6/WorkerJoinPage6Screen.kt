@@ -48,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.network.WorkExperience
+import com.billcorea.jikgong.network.models.WorkExperience
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.LabelText
@@ -210,7 +211,7 @@ fun WorkerJoinPage6Screen(
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             modifier = Modifier
               .width((screenWidth * .44).dp),
-              // .padding(WindowInsets.navigationBars.asPaddingValues()),
+            // .padding(WindowInsets.navigationBars.asPaddingValues()),
             onChange = { newValue ->
               if (newValue.all { it.isDigit() } && newValue.length <= 2) {
                 workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateYearInput(newValue))
@@ -225,7 +226,7 @@ fun WorkerJoinPage6Screen(
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             modifier = Modifier
               .width((screenWidth * .44).dp),
-              // .padding(WindowInsets.navigationBars.asPaddingValues()),
+            // .padding(WindowInsets.navigationBars.asPaddingValues()),
             onChange = { newValue ->
               if (newValue.all { it.isDigit() } && newValue.length <= 2) {
                 workerJoinViewModel.onEvent(WorkerJoinSharedEvent.UpdateMonthInput(newValue))

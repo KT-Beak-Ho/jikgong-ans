@@ -2,7 +2,7 @@ package com.billcorea.jikgong.di
 
 import android.util.Log
 import com.billcorea.jikgong.BuildConfig
-import com.billcorea.jikgong.api.service.AuthApi
+import com.billcorea.jikgong.network.service.AuthApi
 import com.billcorea.jikgong.api.service.JoinApi
 // import com.billcorea.jikgong.api.service.ProjectApi
 import okhttp3.OkHttpClient
@@ -16,6 +16,16 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 val networkModule = module {
+  
+  // BuildConfig 확인을 위한 로깅
+  factory {
+    try {
+      Log.d("NetworkModule", "BASE_URL: ${BuildConfig.BASE_URL}")
+      Log.d("NetworkModule", "KAKAO_REST_API available: ${::BuildConfig.name}")
+    } catch (e: Exception) {
+      Log.e("NetworkModule", "BuildConfig access error", e)
+    }
+  }
   single {
     OkHttpClient.Builder()
       .connectTimeout(10, TimeUnit.SECONDS)     // 30초 → 10초로 단축
@@ -45,8 +55,19 @@ val networkModule = module {
   }
 
   single {
+    val baseUrl = try {
+      if (BuildConfig.BASE_URL.isNullOrBlank()) {
+        "https://www.jikgong.p-e.kr/"
+      } else {
+        BuildConfig.BASE_URL
+      }
+    } catch (e: Exception) {
+      Log.e("NetworkModule", "BuildConfig.BASE_URL not available, using fallback", e)
+      "https://www.jikgong.p-e.kr/"
+    }
+    
     Retrofit.Builder()
-      .baseUrl(BuildConfig.BASE_URL)
+      .baseUrl(baseUrl)
       .client(get())
       .addConverterFactory(GsonConverterFactory.create())
       .build()

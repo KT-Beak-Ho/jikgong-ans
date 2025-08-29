@@ -37,6 +37,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.CompanyLoginPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
@@ -140,7 +141,7 @@ Scaffold(
               navigator.navigate(WorkerLoginPageDestination)
             },
             doLoginCorp = {
-
+              navigator.navigate(CompanyLoginPage1ScreenDestination)
             }
           )
         }

@@ -19,8 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentData
-import com.billcorea.jikgong.presentation.company.main.money.data.PaymentSampleData
+import com.billcorea.jikgong.network.models.PaymentData
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -203,7 +203,7 @@ fun PaymentCard(
             }
 
             // 액션 버튼 (대기중인 경우만)
-            if (payment.status == com.billcorea.jikgong.presentation.company.main.money.data.PaymentStatus.PENDING) {
+            if (payment.status == com.billcorea.jikgong.network.models.PaymentStatus.PENDING) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -293,7 +293,7 @@ fun PaymentCardPreview() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             PaymentCard(
-                payment = PaymentSampleData.getSamplePayments().first(),
+                payment = CompanyMockDataFactory.getSamplePayments().first(),
                 onPaymentClick = {}
             )
         }

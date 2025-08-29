@@ -16,9 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentData
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentSampleData
-import com.billcorea.jikgong.presentation.company.main.money.data.ProjectPaymentStatus
+import com.billcorea.jikgong.network.models.ProjectPaymentData
+import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.network.models.ProjectPaymentStatus
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -38,7 +38,7 @@ fun ProjectPaymentCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = appColorScheme.surface
+            containerColor = androidx.compose.ui.graphics.Color(0xFFFBFCFF)
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 3.dp
@@ -56,20 +56,20 @@ fun ProjectPaymentCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = projectPayment.projectTitle,
-                        style = AppTypography.titleLarge.copy(
+                        style = AppTypography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold
                         ),
                         color = appColorScheme.onSurface,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        lineHeight = AppTypography.titleLarge.lineHeight * 1.2
+                        lineHeight = AppTypography.headlineSmall.lineHeight * 1.2
                     )
 
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = projectPayment.projectLocation,
-                        style = AppTypography.bodyLarge,
+                        text = projectPayment.location,
+                        style = AppTypography.titleMedium,
                         color = appColorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -99,12 +99,12 @@ fun ProjectPaymentCard(
                 Column {
                     Text(
                         text = "총 결제금액",
-                        style = AppTypography.bodyLarge,
+                        style = AppTypography.titleMedium,
                         color = appColorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(projectPayment.totalAmount)}원",
-                        style = AppTypography.headlineMedium.copy(
+                        style = AppTypography.headlineLarge.copy(
                             fontWeight = FontWeight.Bold
                         ),
                         color = appColorScheme.primary
@@ -114,12 +114,12 @@ fun ProjectPaymentCard(
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = "작업자",
-                        style = AppTypography.bodyLarge,
+                        style = AppTypography.titleMedium,
                         color = appColorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "${projectPayment.completedWorkers}/${projectPayment.totalWorkers}명",
-                        style = AppTypography.titleLarge.copy(
+                        style = AppTypography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold
                         ),
                         color = appColorScheme.onSurface
@@ -127,32 +127,11 @@ fun ProjectPaymentCard(
                 }
             }
 
-            // 작업 완료 메시지
-            if (projectPayment.notes.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    color = appColorScheme.primaryContainer.copy(alpha = 0.3f)
-                ) {
-                    Text(
-                        text = projectPayment.notes,
-                        style = AppTypography.bodyMedium,
-                        color = appColorScheme.onSurface,
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
-            }
+            // 작업 완료 메시지 (notes field removed from data structure)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 직직직 혜택 강조 카드
-            JikgongBenefitHighlightCard(
-                originalServiceFee = projectPayment.originalServiceFee,
-                currentServiceFee = projectPayment.currentServiceFee,
-                totalSavings = projectPayment.totalSavings,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // 직직직 혜택 강조 카드 (service fee benefits removed from data structure)
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -180,12 +159,7 @@ fun ProjectPaymentCard(
                         thickness = 1.dp
                     )
 
-                    // 상세 혜택 정보
-                    DetailedBenefitCard(
-                        originalServiceFee = projectPayment.originalServiceFee,
-                        currentServiceFee = projectPayment.currentServiceFee,
-                        totalSavings = projectPayment.totalSavings
-                    )
+                    // 상세 혜택 정보 (service fee benefits removed from data structure)
 
                     Spacer(modifier = Modifier.height(20.dp))
 
@@ -197,7 +171,7 @@ fun ProjectPaymentCard(
                     ) {
                         Text(
                             text = "작업자별 상세 내역",
-                            style = AppTypography.titleMedium.copy(
+                            style = AppTypography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold
                             ),
                             color = appColorScheme.onSurface
@@ -209,7 +183,7 @@ fun ProjectPaymentCard(
                         ) {
                             Text(
                                 text = "${projectPayment.completedWorkers}/${projectPayment.totalWorkers} 지급완료",
-                                style = AppTypography.labelMedium.copy(
+                                style = AppTypography.bodyLarge.copy(
                                     fontWeight = FontWeight.Medium
                                 ),
                                 color = appColorScheme.primary,
@@ -440,7 +414,7 @@ private fun ComparisonItem(
 
 @Composable
 private fun WorkerPaymentItem(
-    worker: com.billcorea.jikgong.presentation.company.main.money.data.WorkerPaymentInfo,
+    worker: com.billcorea.jikgong.network.models.ProjectPaymentData.WorkerPaymentInfo,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -458,7 +432,7 @@ private fun WorkerPaymentItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = worker.workerName,
-                    style = AppTypography.titleSmall.copy(
+                    style = AppTypography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
                     color = appColorScheme.onSurface
@@ -467,16 +441,16 @@ private fun WorkerPaymentItem(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "${worker.jobType} • ${worker.workHours}시간 근무",
-                    style = AppTypography.bodySmall,
+                    text = "${worker.jobType} • ${worker.hoursWorked}시간 근무",
+                    style = AppTypography.bodyMedium,
                     color = appColorScheme.onSurfaceVariant
                 )
             }
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(worker.finalAmount)}원",
-                    style = AppTypography.titleSmall.copy(
+                    text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(worker.totalAmount)}원",
+                    style = AppTypography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
                     color = appColorScheme.onSurface
@@ -487,30 +461,23 @@ private fun WorkerPaymentItem(
                 // 개별 상태 표시
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = when (worker.status) {
-                        ProjectPaymentStatus.PENDING -> androidx.compose.ui.graphics.Color(0xFFFFA726).copy(alpha = 0.15f)
-                        ProjectPaymentStatus.PROCESSING -> appColorScheme.primary.copy(alpha = 0.15f)
-                        ProjectPaymentStatus.COMPLETED -> androidx.compose.ui.graphics.Color(0xFF4CAF50).copy(alpha = 0.15f)
-                        ProjectPaymentStatus.FAILED -> appColorScheme.error.copy(alpha = 0.15f)
+                    color = if (worker.isPaid) {
+                        androidx.compose.ui.graphics.Color(0xFF4CAF50).copy(alpha = 0.15f)
+                    } else {
+                        androidx.compose.ui.graphics.Color(0xFFFFA726).copy(alpha = 0.15f)
                     }
                 ) {
                     Text(
-                        text = when (worker.status) {
-                            ProjectPaymentStatus.PENDING -> "대기"
-                            ProjectPaymentStatus.PROCESSING -> "처리중"
-                            ProjectPaymentStatus.COMPLETED -> "완료"
-                            ProjectPaymentStatus.FAILED -> "실패"
-                        },
-                        style = AppTypography.labelSmall.copy(
+                        text = if (worker.isPaid) "완료" else "대기",
+                        style = AppTypography.labelMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),
-                        color = when (worker.status) {
-                            ProjectPaymentStatus.PENDING -> androidx.compose.ui.graphics.Color(0xFFFFA726)
-                            ProjectPaymentStatus.PROCESSING -> appColorScheme.primary
-                            ProjectPaymentStatus.COMPLETED -> androidx.compose.ui.graphics.Color(0xFF4CAF50)
-                            ProjectPaymentStatus.FAILED -> appColorScheme.error
+                        color = if (worker.isPaid) {
+                            androidx.compose.ui.graphics.Color(0xFF4CAF50)
+                        } else {
+                            androidx.compose.ui.graphics.Color(0xFFFFA726)
                         },
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                     )
                 }
             }
@@ -523,7 +490,7 @@ private fun WorkerPaymentItem(
 fun ProjectPaymentCardPreview() {
     Jikgong1111Theme {
         ProjectPaymentCard(
-            projectPayment = ProjectPaymentSampleData.getSampleProjectPayments().first(),
+            projectPayment = CompanyMockDataFactory.getProjectPayments().first(),
             modifier = Modifier.padding(16.dp)
         )
     }

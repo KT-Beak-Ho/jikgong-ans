@@ -1,7 +1,7 @@
 package com.billcorea.jikgong.api.repository.login
 
-import com.billcorea.jikgong.api.models.response.ApiResult
-import com.billcorea.jikgong.api.models.response.LoginResponse
+import com.billcorea.jikgong.network.common.ApiResult
+import com.billcorea.jikgong.network.auth.LoginResponse
 
 
 /**
