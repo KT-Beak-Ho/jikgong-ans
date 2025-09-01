@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.datepicker
+package com.billcorea.jikgong.presentation.common.components.datepicker
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row

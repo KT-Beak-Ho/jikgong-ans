@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.datepicker
+package com.billcorea.jikgong.presentation.common.components.datepicker
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.LocalContentColor

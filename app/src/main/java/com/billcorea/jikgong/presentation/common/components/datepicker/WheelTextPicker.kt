@@ -1,7 +1,6 @@
 package com.commandiron.wheel_picker_compose.core
 
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -10,7 +9,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.billcorea.jikgong.ui.theme.AppTypography
-import com.billcorea.jikgong.ui.theme.appColorScheme
 
 @Composable
 fun WheelTextPicker(
