@@ -44,7 +44,7 @@ import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker.CheckoutScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.job.ExistingJobScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.screen.JobCreationScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.payment.PaymentSummaryScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker.payment.PaymentSummaryScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.job.TempSaveScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.job.PreviousJobPostsScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker.WorkerInfoScreen

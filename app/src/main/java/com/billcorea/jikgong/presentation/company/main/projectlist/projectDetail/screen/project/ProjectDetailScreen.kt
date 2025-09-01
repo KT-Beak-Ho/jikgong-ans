@@ -350,7 +350,7 @@ fun ProjectDetailScreen(
               scope.launch {
                 jobRegistrationBottomSheetState.hide()
                 showJobRegistrationBottomSheet = false
-                navController.navigate("job_registration")
+                navController.navigate("job_registration?projectStartDate=${project.startDate}&projectEndDate=${project.endDate}")
               }
             }
             .padding(horizontal = 20.dp, vertical = 16.dp),

@@ -266,20 +266,6 @@ private fun ProjectCard(
           )
         }
 
-        // 북마크 버튼
-        IconButton(
-          onClick = { /* 북마크 토글 */ },
-          modifier = Modifier.size(24.dp)
-        ) {
-          Icon(
-            imageVector = if (project.isBookmarked)
-              Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-            contentDescription = "북마크",
-            tint = if (project.isBookmarked)
-              MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant
-          )
-        }
       }
 
       Spacer(modifier = Modifier.height(12.dp))

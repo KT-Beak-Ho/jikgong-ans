@@ -107,7 +107,9 @@ fun getPreviousJobPostById(id: String): PreviousJobPost? {
 @Composable
 fun JobCreationScreen(
   onNavigateBack: () -> Unit,
-  reuseJobPostId: String? = null
+  reuseJobPostId: String? = null,
+  projectStartDate: String? = null,
+  projectEndDate: String? = null
 ) {
   // 기존 공고 데이터를 가져와서 초기값으로 설정
   val initialUiState = remember(reuseJobPostId) {
@@ -152,7 +154,9 @@ fun JobCreationScreen(
     uiState = initialUiState,
     onEvent = { },
     onNavigateBack = onNavigateBack,
-    isReuseMode = reuseJobPostId != null
+    isReuseMode = reuseJobPostId != null,
+    projectStartDate = projectStartDate,
+    projectEndDate = projectEndDate
   )
 }
 
@@ -162,13 +166,17 @@ fun JobCreationScreenContent(
   uiState: ProjectCreateUiState,
   onEvent: (ProjectCreateEvent) -> Unit,
   onNavigateBack: () -> Unit,
-  isReuseMode: Boolean = false
+  isReuseMode: Boolean = false,
+  projectStartDate: String? = null,
+  projectEndDate: String? = null
 ) {
   ProjectCreateScreenContent(
     uiState = uiState,
     onEvent = onEvent,
     onNavigateBack = onNavigateBack,
-    isReuseMode = isReuseMode
+    isReuseMode = isReuseMode,
+    projectStartDate = projectStartDate,
+    projectEndDate = projectEndDate
   )
 }
 
@@ -178,7 +186,9 @@ internal fun ProjectCreateScreenContent(
   uiState: ProjectCreateUiState,
   onEvent: (ProjectCreateEvent) -> Unit,
   onNavigateBack: () -> Unit,
-  isReuseMode: Boolean = false
+  isReuseMode: Boolean = false,
+  projectStartDate: String? = null,
+  projectEndDate: String? = null
 ) {
   Scaffold(
     topBar = {
@@ -541,8 +551,12 @@ internal fun ProjectCreateScreenContent(
             
             // 달력 UI
             var selectedDates by remember { mutableStateOf(setOf<LocalDate>()) }
-            val projectStartDate = LocalDate.of(2025, 1, 1) // TODO: 실제 프로젝트 시작일
-            val projectEndDate = LocalDate.of(2025, 12, 31) // TODO: 실제 프로젝트 종료일
+            val calendarStartDate = remember(projectStartDate) {
+              projectStartDate?.let { LocalDate.parse(it) } ?: LocalDate.of(2025, 1, 1)
+            }
+            val calendarEndDate = remember(projectEndDate) {
+              projectEndDate?.let { LocalDate.parse(it) } ?: LocalDate.of(2025, 12, 31)
+            }
             
             WorkDateCalendar(
               selectedDates = selectedDates,
@@ -553,8 +567,8 @@ internal fun ProjectCreateScreenContent(
                   selectedDates + date
                 }
               },
-              projectStartDate = projectStartDate,
-              projectEndDate = projectEndDate,
+              projectStartDate = calendarStartDate,
+              projectEndDate = calendarEndDate,
               modifier = Modifier.fillMaxWidth()
             )
             
