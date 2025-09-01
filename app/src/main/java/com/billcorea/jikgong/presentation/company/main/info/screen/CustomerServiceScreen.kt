@@ -52,7 +52,7 @@ fun CustomerServiceScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = appColorScheme.primaryContainer.copy(alpha = 0.1f)
+                        containerColor = Color(0xFF4B7BFF).copy(alpha = 0.1f)
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
@@ -81,14 +81,14 @@ fun CustomerServiceScreen(
                                     text = "1588-1234",
                                     style = AppTypography.titleLarge,
                                     fontWeight = FontWeight.Bold,
-                                    color = appColorScheme.primary
+                                    color = Color(0xFF4B7BFF)
                                 )
                             }
                             
                             Button(
                                 onClick = { /* TODO: Call phone */ },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = appColorScheme.primary
+                                    containerColor = Color(0xFF4B7BFF)
                                 )
                             ) {
                                 Icon(
@@ -194,7 +194,7 @@ fun CustomerServiceScreen(
                             onClick = { /* TODO: Navigate to inquiry */ },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = appColorScheme.primary
+                                containerColor = Color(0xFF4B7BFF)
                             ),
                             shape = RoundedCornerShape(8.dp)
                         ) {
@@ -243,7 +243,7 @@ fun CustomerServiceScreen(
                             onClick = { /* TODO: Start remote support */ },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = appColorScheme.primary
+                                contentColor = Color(0xFF4B7BFF)
                             ),
                             shape = RoundedCornerShape(8.dp)
                         ) {
@@ -315,7 +315,7 @@ private fun ServiceMenuItem(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = appColorScheme.primary,
+                tint = Color(0xFF4B7BFF),
                 modifier = Modifier.size(24.dp)
             )
             

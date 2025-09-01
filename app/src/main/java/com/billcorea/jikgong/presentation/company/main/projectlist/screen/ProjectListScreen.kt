@@ -64,7 +64,7 @@ fun ProjectListScreen(
     floatingActionButton = {
       ExtendedFloatingActionButton(
         onClick = { showCreateDialog = true },
-        containerColor = appColorScheme.primary,
+        containerColor = Color(0xFF4B7BFF),
         contentColor = Color.White,
         modifier = Modifier.padding(bottom = 80.dp)
       ) {
@@ -234,7 +234,7 @@ private fun ProjectCard(
             }
             Badge(
               containerColor = when(project.status) {
-                "RECRUITING" -> Color(0xFF2196F3)
+                "RECRUITING" -> Color(0xFF4B7BFF)
                 "IN_PROGRESS" -> Color(0xFF4CAF50)
                 else -> Color(0xFF9E9E9E)
               },
@@ -328,7 +328,7 @@ private fun ProjectCard(
             "${(project.currentApplicants.toFloat() / project.maxApplicants * 100).toInt()}%",
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF2196F3)
+            color = Color(0xFF4B7BFF)
           )
         }
         Spacer(modifier = Modifier.height(4.dp))
@@ -341,7 +341,7 @@ private fun ProjectCard(
           color = when {
             project.currentApplicants >= project.maxApplicants -> Color(0xFF4CAF50)
             project.currentApplicants >= project.maxApplicants * 0.8 -> Color(0xFFFFC107)
-            else -> Color(0xFF2196F3)
+            else -> Color(0xFF4B7BFF)
           },
           trackColor = Color(0xFFE0E0E0)
         )
@@ -354,7 +354,7 @@ private fun ProjectCard(
             .fillMaxWidth()
             .height(40.dp),
           colors = ButtonDefaults.buttonColors(
-            containerColor = appColorScheme.primary
+            containerColor = Color(0xFF4B7BFF)
           ),
           shape = RoundedCornerShape(8.dp)
         ) {

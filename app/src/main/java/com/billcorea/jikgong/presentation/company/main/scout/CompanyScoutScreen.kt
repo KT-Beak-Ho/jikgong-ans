@@ -51,6 +51,9 @@ fun CompanyScoutMainScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
+    
+    // 새로고침 완료 알림을 위한 상태
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         modifier = modifier,
@@ -61,7 +64,11 @@ fun CompanyScoutMainScreen(
                     title = "스카웃",
                     onSettingsClick = {
                         // TODO: 설정 화면으로 이동
-                    }
+                    },
+                    onRefreshClick = {
+                        viewModel.refreshWorkers()
+                    },
+                    isRefreshing = uiState.isLoading
                 )
 
                 // 현재 위치 표시
@@ -108,6 +115,9 @@ fun CompanyScoutMainScreen(
                 currentRoute = "company_scout_main"
             )
         },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         containerColor = Color(0xFFF7F8FA) // 토스 배경색
     ) { paddingValues ->
         HorizontalPager(
@@ -118,7 +128,7 @@ fun CompanyScoutMainScreen(
         ) { page ->
             when (page) {
                 0 -> WorkerListPage(
-                    workers = uiState.workers,
+                    workers = uiState.filteredWorkers,
                     isLoading = uiState.isLoading,
                     onWorkerClick = { worker ->
                         viewModel.showWorkerDetail(worker)
@@ -128,7 +138,19 @@ fun CompanyScoutMainScreen(
                     },
                     onRefresh = {
                         viewModel.refreshWorkers()
-                    }
+                        // 새로고침이 완료된 후 알림 표시
+                        coroutineScope.launch {
+                            kotlinx.coroutines.delay(1200) // 새로고침 시뮬레이션
+                            snackbarHostState.showSnackbar(
+                                message = "인력 새로고침이 완료되었습니다.",
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    },
+                    onFilterClick = {
+                        viewModel.toggleFilterDialog()
+                    },
+                    isFilterActive = uiState.isFilterActive
                 )
                 1 -> ProposalListPage(
                     proposals = uiState.proposals,
@@ -168,6 +190,18 @@ fun CompanyScoutMainScreen(
                     wage = wage,
                     message = message
                 )
+            }
+        )
+    }
+
+    // 필터 다이얼로그
+    if (uiState.showFilterDialog) {
+        WorkerFilterDialog(
+            currentFilters = uiState.currentFilters,
+            onDismiss = { viewModel.toggleFilterDialog() },
+            onApplyFilters = { filters ->
+                viewModel.applyFilters(filters)
+                viewModel.toggleFilterDialog()
             }
         )
     }
@@ -801,7 +835,9 @@ private fun CompanyScoutMainScreenPreview(
                     title = "스카웃",
                     onSettingsClick = {
                         // TODO: 설정 화면으로 이동
-                    }
+                    },
+                    onRefreshClick = {},
+                    isRefreshing = false
                 )
 
                 // 현재 위치 표시
@@ -891,6 +927,203 @@ private fun CompanyScoutMainScreenPreview(
             onScoutConfirm = { _, _, _, _ -> onWorkerDismiss() }
         )
     }
+}
+
+@Composable
+private fun WorkerFilterDialog(
+    currentFilters: WorkerFilters,
+    onDismiss: () -> Unit,
+    onApplyFilters: (WorkerFilters) -> Unit
+) {
+    var jobTypeFilter by remember { mutableStateOf(currentFilters.jobTypes) }
+    var minExperience by remember { mutableStateOf(currentFilters.minExperience.toString()) }
+    var selectedDistanceOption by remember { 
+        mutableStateOf(
+            when (currentFilters.maxDistance) {
+                Double.MAX_VALUE -> 0 // 상관없음
+                1.0 -> 1 // 1km이내
+                10.0 -> 2 // 10km이내
+                else -> 0
+            }
+        ) 
+    }
+    var minRating by remember { mutableStateOf(currentFilters.minRating.toString()) }
+    var availableOnly by remember { mutableStateOf(currentFilters.availableOnly) }
+    
+    val distanceOptions = listOf("상관없음", "1km이내", "10km이내")
+    
+    val allJobTypes = listOf("철근공", "형틀목공", "타일공", "전기공", "배관공", "도장공", "조적공", "미장공", "일반", "기타")
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "인력 필터",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 직종 필터
+                item {
+                    Text(
+                        text = "직종 선택",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    allJobTypes.chunked(3).forEach { rowJobTypes ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            rowJobTypes.forEach { jobType ->
+                                val isSelected = jobTypeFilter.contains(jobType)
+                                FilterChip(
+                                    onClick = {
+                                        jobTypeFilter = if (isSelected) {
+                                            jobTypeFilter - jobType
+                                        } else {
+                                            jobTypeFilter + jobType
+                                        }
+                                    },
+                                    label = { Text(jobType) },
+                                    selected = isSelected,
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = Color(0xFF4B7BFF),
+                                        selectedLabelColor = Color.White
+                                    ),
+                                    modifier = Modifier.weight(1f, false)
+                                )
+                            }
+                            // 남은 공간 채우기
+                            repeat(3 - rowJobTypes.size) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+                }
+                
+                // 경력 필터
+                item {
+                    OutlinedTextField(
+                        value = minExperience,
+                        onValueChange = { minExperience = it },
+                        label = { Text("최소 경력 (년)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF4B7BFF)
+                        )
+                    )
+                }
+                
+                // 거리 필터
+                item {
+                    Text(
+                        text = "거리 설정",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    distanceOptions.forEachIndexed { index, option ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedDistanceOption == index,
+                                onClick = { selectedDistanceOption = index },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = Color(0xFF4B7BFF)
+                                )
+                            )
+                            Text(
+                                text = option,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+                }
+                
+                // 평점 필터
+                item {
+                    OutlinedTextField(
+                        value = minRating,
+                        onValueChange = { minRating = it },
+                        label = { Text("최소 평점") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF4B7BFF)
+                        )
+                    )
+                }
+                
+                // 이용 가능한 인력만
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "이용 가능한 인력만",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Switch(
+                            checked = availableOnly,
+                            onCheckedChange = { availableOnly = it },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = Color(0xFF4B7BFF)
+                            )
+                        )
+                    }
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("취소", color = Color.Gray)
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val maxDistance = when (selectedDistanceOption) {
+                        0 -> Double.MAX_VALUE // 상관없음
+                        1 -> 1.0 // 1km이내
+                        2 -> 10.0 // 10km이내
+                        else -> Double.MAX_VALUE
+                    }
+                    
+                    val filters = WorkerFilters(
+                        jobTypes = jobTypeFilter,
+                        minExperience = minExperience.toIntOrNull() ?: 0,
+                        maxDistance = maxDistance,
+                        minRating = minRating.toFloatOrNull() ?: 0f,
+                        availableOnly = availableOnly
+                    )
+                    onApplyFilters(filters)
+                }
+            ) {
+                Text(
+                    "적용",
+                    color = Color(0xFF4B7BFF),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    )
 }
 
 @Composable

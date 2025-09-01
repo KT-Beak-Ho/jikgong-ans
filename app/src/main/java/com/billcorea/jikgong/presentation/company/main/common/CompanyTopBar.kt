@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -130,17 +131,48 @@ fun SearchableTopBar(
 fun ScoutTopBar(
     title: String,
     modifier: Modifier = Modifier,
-    onSettingsClick: () -> Unit = {}
+    onSettingsClick: () -> Unit = {},
+    onRefreshClick: () -> Unit = {},
+    isRefreshing: Boolean = false
 ) {
     TopAppBar(
         title = {
-            Text(
-                text = title,
-                style = AppTypography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = appColorScheme.onSurface
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = AppTypography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = appColorScheme.onSurface
+                )
+                Text(
+                    text = "주변 8명의 인력",
+                    style = AppTypography.bodyMedium,
+                    color = Color.Gray
+                )
+                if (isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = Color(0xFF4B7BFF),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    IconButton(
+                        onClick = onRefreshClick,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "새로고침",
+                            tint = Color(0xFF4B7BFF),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
         },
         modifier = modifier.fillMaxWidth(),
         actions = {

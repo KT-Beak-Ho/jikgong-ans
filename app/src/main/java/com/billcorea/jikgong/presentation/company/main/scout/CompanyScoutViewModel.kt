@@ -26,11 +26,7 @@ class CompanyScoutViewModel : ViewModel() {
 
   private fun loadInitialData() {
     viewModelScope.launch {
-      _uiState.value = _uiState.value.copy(isLoading = true)
-
-      // 위치 권한 확인 후 주변 노동자 로드
-      delay(1000) // 네트워크 요청 시뮬레이션
-
+      // 로딩 상태 제거 - 즉시 데이터 표시
       val workers = CompanyMockDataFactory.getScoutWorkers()
       val proposals = CompanyMockDataFactory.getScoutProposals()
 
@@ -44,13 +40,13 @@ class CompanyScoutViewModel : ViewModel() {
 
   fun refreshWorkers() {
     viewModelScope.launch {
-      _uiState.value = _uiState.value.copy(isRefreshing = true)
+      _uiState.value = _uiState.value.copy(isLoading = true)
       delay(1000)
 
       val workers = CompanyMockDataFactory.getScoutWorkers()
       _uiState.value = _uiState.value.copy(
         workers = workers,
-        isRefreshing = false
+        isLoading = false
       )
     }
   }
@@ -136,6 +132,25 @@ class CompanyScoutViewModel : ViewModel() {
       refreshWorkers()
     }
   }
+  
+  fun toggleFilterDialog() {
+    _uiState.value = _uiState.value.copy(
+      showFilterDialog = !_uiState.value.showFilterDialog
+    )
+  }
+  
+  fun applyFilters(filters: WorkerFilters) {
+    val isActive = filters.jobTypes.isNotEmpty() ||
+      filters.minExperience > 0 ||
+      filters.maxDistance < Double.MAX_VALUE ||
+      filters.minRating > 0f ||
+      filters.availableOnly
+    
+    _uiState.value = _uiState.value.copy(
+      currentFilters = filters,
+      isFilterActive = isActive
+    )
+  }
 }
 
 data class ScoutUiState(
@@ -146,5 +161,41 @@ data class ScoutUiState(
   val isRefreshing: Boolean = false,
   val errorMessage: String? = null,
   val currentLocation: String = "서울특별시 강남구",
-  val searchRadius: Int = 10
+  val searchRadius: Int = 10,
+  val currentFilters: WorkerFilters = WorkerFilters(),
+  val showFilterDialog: Boolean = false,
+  val isFilterActive: Boolean = false
+) {
+  val filteredWorkers: List<Worker>
+    get() = if (isFilterActive) {
+      workers.filter { worker ->
+        // 직종 필터
+        val jobTypeMatch = currentFilters.jobTypes.isEmpty() || 
+          worker.jobTypes.any { it in currentFilters.jobTypes }
+        
+        // 경력 필터
+        val experienceMatch = worker.experience >= currentFilters.minExperience
+        
+        // 거리 필터
+        val distanceMatch = worker.distance <= currentFilters.maxDistance
+        
+        // 평점 필터
+        val ratingMatch = worker.rating >= currentFilters.minRating
+        
+        // 이용 가능여부 필터
+        val availabilityMatch = !currentFilters.availableOnly || worker.isAvailable
+        
+        jobTypeMatch && experienceMatch && distanceMatch && ratingMatch && availabilityMatch
+      }
+    } else {
+      workers
+    }
+}
+
+data class WorkerFilters(
+  val jobTypes: Set<String> = emptySet(),
+  val minExperience: Int = 0,
+  val maxDistance: Double = Double.MAX_VALUE,
+  val minRating: Float = 0f,
+  val availableOnly: Boolean = false
 )

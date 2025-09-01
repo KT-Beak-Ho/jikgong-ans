@@ -46,9 +46,9 @@ fun DepositButton(
     val buttonConfig = when (status) {
         ProjectPaymentStatus.PENDING -> {
             ButtonConfig(
-                text = "임금 입금하기",
+                text = "입금하기",
                 subText = "2일 이내 지급 완료 보장",
-                backgroundColor = Color(0xFF2E3A59),
+                backgroundColor = Color(0xFF4B7BFF),
                 contentColor = Color.White,
                 icon = Icons.Default.AccountBalance,
                 enabled = true,
@@ -70,8 +70,8 @@ fun DepositButton(
             ButtonConfig(
                 text = "입금 완료",
                 subText = "모든 작업자에게 지급이 완료되었습니다",
-                backgroundColor = appColorScheme.surfaceVariant,
-                contentColor = appColorScheme.onSurfaceVariant,
+                backgroundColor = Color(0xFFE8F5E8),
+                contentColor = Color(0xFF2E7D32),
                 icon = Icons.Default.Check,
                 enabled = false,
                 showAmount = false
@@ -90,7 +90,7 @@ fun DepositButton(
         }
         ProjectPaymentStatus.OVERDUE -> {
             ButtonConfig(
-                text = "연체 임금 지급",
+                text = "연체 임금 지급하기",
                 subText = "지급 기한이 지났습니다 - 즉시 처리 필요",
                 backgroundColor = Color(0xFFD32F2F),
                 contentColor = Color.White,
@@ -133,19 +133,21 @@ fun DepositButton(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 아이콘
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = buttonConfig.contentColor.copy(alpha = 0.15f)
-                ) {
-                    Icon(
-                        imageVector = buttonConfig.icon,
-                        contentDescription = buttonConfig.text,
-                        tint = buttonConfig.contentColor,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .padding(8.dp)
-                    )
+                // 아이콘 (연체 상태가 아닐 때만 표시)
+                if (status != ProjectPaymentStatus.OVERDUE) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = buttonConfig.contentColor.copy(alpha = 0.15f)
+                    ) {
+                        Icon(
+                            imageVector = buttonConfig.icon,
+                            contentDescription = buttonConfig.text,
+                            tint = buttonConfig.contentColor,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(8.dp)
+                        )
+                    }
                 }
 
                 // 텍스트 정보
@@ -162,8 +164,14 @@ fun DepositButton(
 
                     Text(
                         text = buttonConfig.subText,
-                        style = AppTypography.bodySmall,
-                        color = buttonConfig.contentColor.copy(alpha = 0.8f)
+                        style = if (status == ProjectPaymentStatus.OVERDUE) {
+                            AppTypography.bodyMedium.copy(
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        } else {
+                            AppTypography.bodySmall
+                        },
+                        color = buttonConfig.contentColor.copy(alpha = 0.9f)
                     )
                 }
 
@@ -259,7 +267,7 @@ fun BulkDepositButton(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1976D2)
+            containerColor = Color(0xFF4B7BFF)
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp

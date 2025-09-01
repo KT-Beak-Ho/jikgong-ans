@@ -3,6 +3,7 @@ package com.billcorea.jikgong.presentation.company.main.scout.pages
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -25,7 +26,9 @@ fun WorkerListPage(
     isLoading: Boolean,
     onWorkerClick: (Worker) -> Unit,
     onScoutClick: (Worker) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onFilterClick: () -> Unit = {},
+    isFilterActive: Boolean = false
 ) {
     if (isLoading && workers.isEmpty()) {
         // 초기 로딩
@@ -90,12 +93,25 @@ fun WorkerListPage(
                         }
                     }
 
-                    // 필터 버튼 (추후 구현)
-                    TextButton(onClick = { /* TODO: 필터 */ }) {
-                        Text(
-                            text = "필터",
-                            color = Color(0xFF4B7BFF)
-                        )
+                    // 필터 버튼
+                    TextButton(onClick = onFilterClick) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "필터",
+                                color = if (isFilterActive) Color(0xFF4B7BFF) else Color.Gray,
+                                fontWeight = if (isFilterActive) FontWeight.Bold else FontWeight.Normal
+                            )
+                            if (isFilterActive) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = Color(0xFF4B7BFF),
+                                    modifier = Modifier.size(6.dp)
+                                ) {}
+                            }
+                        }
                     }
                 }
 
@@ -198,7 +214,9 @@ fun WorkerListPageWithDataPreview() {
             isLoading = false,
             onWorkerClick = {},
             onScoutClick = {},
-            onRefresh = {}
+            onRefresh = {},
+            onFilterClick = {},
+            isFilterActive = false
         )
     }
 }
@@ -212,21 +230,10 @@ fun WorkerListPageEmptyPreview() {
             isLoading = false,
             onWorkerClick = {},
             onScoutClick = {},
-            onRefresh = {}
+            onRefresh = {},
+            onFilterClick = {},
+            isFilterActive = false
         )
     }
 }
 
-@Preview(name = "인력 목록 - 로딩중", showBackground = true, backgroundColor = 0xFFF7F8FA)
-@Composable
-fun WorkerListPageLoadingPreview() {
-    Jikgong1111Theme {
-        WorkerListPage(
-            workers = emptyList(),
-            isLoading = true,
-            onWorkerClick = {},
-            onScoutClick = {},
-            onRefresh = {}
-        )
-    }
-}

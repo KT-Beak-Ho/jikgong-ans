@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen
+package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.job
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,6 +23,7 @@ import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopB
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.ramcosta.composedestinations.annotation.Destination
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -34,6 +35,7 @@ data class TempSavePost(
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Destination
 @Composable
 fun TempSaveScreen(
   navController: NavController,
@@ -105,7 +107,7 @@ fun TempSaveScreen(
                 text = "${tempSavePosts.size}건",
                 style = AppTypography.bodyMedium,
                 fontWeight = FontWeight.Bold,
-                color = appColorScheme.primary
+                color = Color(0xFF4B7BFF)
               )
             }
           }
@@ -253,7 +255,7 @@ private fun DeleteConfirmDialog(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-              containerColor = appColorScheme.primary
+              containerColor = Color(0xFF4B7BFF)
             )
           ) {
             Text(

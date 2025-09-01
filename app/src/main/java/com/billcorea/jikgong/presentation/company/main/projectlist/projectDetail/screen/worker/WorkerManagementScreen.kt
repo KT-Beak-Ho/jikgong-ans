@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen
+package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -310,7 +310,8 @@ fun WorkerManagementScreen(
                         navController.navigate("worker_info/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
-                      shape = RoundedCornerShape(4.dp)
+                      shape = RoundedCornerShape(4.dp),
+                      colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7BFF))
                     ) {
                       Text("출근확정 근로자 정보")
                     }
@@ -337,7 +338,8 @@ fun WorkerManagementScreen(
                         navController.navigate("attendance_check/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
-                      shape = RoundedCornerShape(4.dp)
+                      shape = RoundedCornerShape(4.dp),
+                      colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7BFF))
                     ) {
                       Text("출근확인")
                     }
@@ -364,7 +366,8 @@ fun WorkerManagementScreen(
                         navController.navigate("checkout/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
-                      shape = RoundedCornerShape(4.dp)
+                      shape = RoundedCornerShape(4.dp),
+                      colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7BFF))
                     ) {
                       Text("퇴근확인")
                     }
@@ -391,7 +394,8 @@ fun WorkerManagementScreen(
                         navController.navigate("payment_summary/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
-                      shape = RoundedCornerShape(4.dp)
+                      shape = RoundedCornerShape(4.dp),
+                      colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7BFF))
                     ) {
                       Text("지급내역서 보기")
                     }
@@ -479,7 +483,7 @@ fun WorkerManagementScreen(
             },
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = appColorScheme.primary)
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7BFF))
           ) {
             Text(
               text = "수락(${selectedApplicants.size})",
@@ -518,7 +522,7 @@ private fun ApplicantCard(
   fun getAttendanceBadgeColor(rate: Int): Color {
     return when {
       rate >= 90 -> Color(0xFF4CAF50) // 초록색
-      rate >= 80 -> Color(0xFF2196F3) // 파란색
+      rate >= 80 -> Color(0xFF4B7BFF) // 파란색
       rate >= 70 -> Color(0xFFFF9800) // 주황색
       else -> Color(0xFFF44336) // 빨간색
     }
@@ -673,7 +677,7 @@ private fun ApplicantActionDialog(
   fun getAttendanceBadgeColor(rate: Int): Color {
     return when {
       rate >= 90 -> Color(0xFF4CAF50) // 초록색
-      rate >= 80 -> Color(0xFF2196F3) // 파란색
+      rate >= 80 -> Color(0xFF4B7BFF) // 파란색
       rate >= 70 -> Color(0xFFFF9800) // 주황색
       else -> Color(0xFFF44336) // 빨간색
     }

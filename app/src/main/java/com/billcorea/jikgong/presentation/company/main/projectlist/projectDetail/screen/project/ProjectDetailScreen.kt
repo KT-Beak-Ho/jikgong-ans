@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen
+package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.project
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -82,6 +82,8 @@ fun ProjectDetailScreen(
   val scope = rememberCoroutineScope()
   var showBottomSheet by remember { mutableStateOf(false) }
   var selectedWorkDay by remember { mutableStateOf<WorkDay?>(null) }
+  var showJobRegistrationBottomSheet by remember { mutableStateOf(false) }
+  val jobRegistrationBottomSheetState = rememberModalBottomSheetState()
   
   // 지원자 데이터 (날짜별)
   val applicantsByDate = remember {
@@ -106,9 +108,9 @@ fun ProjectDetailScreen(
     floatingActionButton = {
       ExtendedFloatingActionButton(
         onClick = { 
-          navController.navigate("job_registration")
+          showJobRegistrationBottomSheet = true
         },
-        containerColor = appColorScheme.primary,
+        containerColor = Color(0xFF4B7BFF),
         contentColor = Color.White,
         modifier = Modifier.height(48.dp)
       ) {
@@ -190,7 +192,7 @@ fun ProjectDetailScreen(
                 text = month,
                 style = AppTypography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = appColorScheme.primary
+                color = Color(0xFF4B7BFF)
               )
             }
           }
@@ -317,6 +319,160 @@ fun ProjectDetailScreen(
       }
     }
   }
+
+  // Job Registration Options Bottom Sheet
+  if (showJobRegistrationBottomSheet) {
+    ModalBottomSheet(
+      onDismissRequest = { 
+        showJobRegistrationBottomSheet = false
+      },
+      sheetState = jobRegistrationBottomSheetState,
+      containerColor = Color.White
+    ) {
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(vertical = 16.dp)
+      ) {
+        // 제목
+        Text(
+          text = "일자리 등록 방법 선택",
+          style = AppTypography.titleMedium,
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+        )
+        
+        // 새 공고 작성
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+              scope.launch {
+                jobRegistrationBottomSheetState.hide()
+                showJobRegistrationBottomSheet = false
+                navController.navigate("job_registration")
+              }
+            }
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Icon(
+            Icons.Default.Create, 
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = Color(0xFF4B7BFF)
+          )
+          Spacer(modifier = Modifier.width(16.dp))
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              "새 공고 작성",
+              style = AppTypography.bodyLarge,
+              fontWeight = FontWeight.Medium
+            )
+            Text(
+              "처음부터 새로운 공고를 작성합니다",
+              style = AppTypography.bodySmall,
+              color = Color.Gray
+            )
+          }
+          Icon(
+            Icons.Default.ChevronRight,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = Color.Gray
+          )
+        }
+        
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
+        
+        // 기존 공고 재사용
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+              scope.launch {
+                jobRegistrationBottomSheetState.hide()
+                showJobRegistrationBottomSheet = false
+                navController.navigate("previous_job_posts/$projectId")
+              }
+            }
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Icon(
+            Icons.Default.Refresh, 
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = Color(0xFF4B7BFF)
+          )
+          Spacer(modifier = Modifier.width(16.dp))
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              "기존 공고 재사용",
+              style = AppTypography.bodyLarge,
+              fontWeight = FontWeight.Medium
+            )
+            Text(
+              "이전 공고를 복사하여 빠르게 등록합니다",
+              style = AppTypography.bodySmall,
+              color = Color.Gray
+            )
+          }
+          Icon(
+            Icons.Default.ChevronRight,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = Color.Gray
+          )
+        }
+        
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
+        
+        // 임시저장 불러오기
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+              scope.launch {
+                jobRegistrationBottomSheetState.hide()
+                showJobRegistrationBottomSheet = false
+                navController.navigate("temp_save")
+              }
+            }
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Icon(
+            Icons.Default.Drafts, 
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = Color(0xFF4B7BFF)
+          )
+          Spacer(modifier = Modifier.width(16.dp))
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              "임시저장 불러오기",
+              style = AppTypography.bodyLarge,
+              fontWeight = FontWeight.Medium
+            )
+            Text(
+              "임시저장된 공고를 불러와 완성합니다",
+              style = AppTypography.bodySmall,
+              color = Color.Gray
+            )
+          }
+          Icon(
+            Icons.Default.ChevronRight,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = Color.Gray
+          )
+        }
+        
+        Spacer(modifier = Modifier.height(32.dp))
+      }
+    }
+  }
 }
 
 @Composable
@@ -436,7 +592,7 @@ private fun WorkDayCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(
-          containerColor = appColorScheme.primary
+          containerColor = Color(0xFF4B7BFF)
         )
       ) {
         Icon(

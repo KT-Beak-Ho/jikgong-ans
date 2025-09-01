@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen
+package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.payment
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
