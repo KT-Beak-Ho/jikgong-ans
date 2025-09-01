@@ -17,14 +17,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 // 지급 근로자 데이터
@@ -42,20 +44,46 @@ data class PaymentWorker(
 fun PaymentSummaryScreen(
   navController: NavController,
   workDayId: String,
+  selectedDate: String? = null,
   modifier: Modifier = Modifier
 ) {
-  // 샘플 근로자 데이터
-  val workers = remember {
-    listOf(
-      PaymentWorker("1", "김철수", 30, "남", 200000, "정상출근"),
-      PaymentWorker("2", "이영희", 28, "여", 200000, "정상출근"),
-      PaymentWorker("3", "박민수", 35, "남", 200000, "정상출근"),
-      PaymentWorker("4", "정수연", 25, "여", 200000, "정상출근"),
-      PaymentWorker("5", "최동현", 42, "남", 200000, "정상출근"),
-      PaymentWorker("6", "한미영", 33, "여", 0, "조퇴"),
-      PaymentWorker("7", "장준호", 29, "남", 0, "결근"),
-      PaymentWorker("8", "윤서진", 31, "여", 0, "조퇴")
-    )
+  // 날짜별 확정 근로자 데이터
+  val confirmedWorkersByDate = CompanyMockDataFactory.getConfirmedWorkersByDate().mapKeys { 
+    LocalDate.parse(it.key) 
+  }
+  
+  // 현재 선택된 날짜 (디버깅 정보 추가)
+  val effectiveDate = try {
+    val parsedDate = selectedDate?.takeIf { it.isNotBlank() }?.let { 
+      LocalDate.parse(it) 
+    } ?: LocalDate.parse("2025-08-01")
+    
+    println("=== PaymentSummaryScreen Debug ===")
+    println("selectedDate parameter: $selectedDate")
+    println("effectiveDate: $parsedDate")
+    println("=================================")
+    
+    parsedDate
+  } catch (e: Exception) {
+    println("Error parsing selectedDate: $selectedDate, using default date")
+    LocalDate.parse("2025-08-01")
+  }
+  
+  // 해당 날짜의 확정 근로자를 지급 데이터로 변환 (임의로 일부는 정상출근, 일부는 조퇴/결근 설정)
+  val workers = remember(effectiveDate) {
+    val confirmedWorkers = confirmedWorkersByDate[effectiveDate] ?: emptyList()
+    confirmedWorkers.mapIndexed { index, worker ->
+      // 임의로 80%는 정상출근, 20%는 조퇴/결근으로 설정
+      val isNormalAttendance = index % 5 != 4 // 5명 중 4명은 정상출근
+      PaymentWorker(
+        id = worker.id,
+        name = worker.name,
+        age = worker.age,
+        gender = worker.gender,
+        paymentAmount = if (isNormalAttendance) 200000 else 0,
+        attendanceStatus = if (isNormalAttendance) "정상출근" else if (index % 2 == 0) "조퇴" else "결근"
+      )
+    }
   }
   
   // 정상출근자와 조퇴/결근자 분리
@@ -72,7 +100,7 @@ fun PaymentSummaryScreen(
     modifier = modifier.fillMaxSize(),
     topBar = {
       BackNavigationTopBar(
-        title = "지급내역서 보기",
+        title = "지급내역서 (${effectiveDate.format(DateTimeFormatter.ofPattern("MM/dd"))})",
         onBackClick = { navController.popBackStack() }
       )
     },
@@ -124,7 +152,7 @@ fun PaymentSummaryScreen(
       // 지급 총액
       item {
         Column {
-          Divider(thickness = 1.dp, color = Color.LightGray)
+          HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
           Spacer(modifier = Modifier.height(16.dp))
           
           Card(
@@ -293,7 +321,8 @@ fun PaymentSummaryScreenPreview() {
   Jikgong1111Theme {
     PaymentSummaryScreen(
       navController = rememberNavController(),
-      workDayId = "1"
+      workDayId = "1",
+      selectedDate = "2025-08-01"
     )
   }
 }

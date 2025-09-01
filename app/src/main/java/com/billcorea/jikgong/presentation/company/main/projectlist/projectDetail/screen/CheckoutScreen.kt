@@ -20,6 +20,9 @@ import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopB
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 // 퇴근 체크용 근로자 데이터
 data class CheckoutWorker(
@@ -41,19 +44,44 @@ enum class CheckoutStatus {
 fun CheckoutScreen(
   navController: NavController,
   workDayId: String,
+  selectedDate: String? = null,
   modifier: Modifier = Modifier
 ) {
-  // 샘플 근로자 데이터 (remember로 상태 유지)
-  val workers = remember {
+  // 날짜별 확정 근로자 데이터
+  val confirmedWorkersByDate = CompanyMockDataFactory.getConfirmedWorkersByDate().mapKeys { 
+    LocalDate.parse(it.key) 
+  }
+  
+  // 현재 선택된 날짜 (디버깅 정보 추가)
+  val effectiveDate = try {
+    val parsedDate = selectedDate?.takeIf { it.isNotBlank() }?.let { 
+      LocalDate.parse(it) 
+    } ?: LocalDate.parse("2025-08-01")
+    
+    println("=== CheckoutScreen Debug ===")
+    println("selectedDate parameter: $selectedDate")
+    println("effectiveDate: $parsedDate")
+    println("===========================")
+    
+    parsedDate
+  } catch (e: Exception) {
+    println("Error parsing selectedDate: $selectedDate, using default date")
+    LocalDate.parse("2025-08-01")
+  }
+  
+  // 해당 날짜의 확정 근로자를 퇴근체크 데이터로 변환
+  val workers = remember(effectiveDate) {
+    val confirmedWorkers = confirmedWorkersByDate[effectiveDate] ?: emptyList()
     mutableStateListOf(
-      CheckoutWorker("1", "김철수", 30, "남", CheckoutStatus.NORMAL_LEAVE),
-      CheckoutWorker("2", "이영희", 28, "여", CheckoutStatus.NONE),
-      CheckoutWorker("3", "박민수", 35, "남", CheckoutStatus.EARLY_LEAVE),
-      CheckoutWorker("4", "정수연", 25, "여", CheckoutStatus.NONE),
-      CheckoutWorker("5", "최동현", 42, "남", CheckoutStatus.NORMAL_LEAVE),
-      CheckoutWorker("6", "한미영", 33, "여", CheckoutStatus.EARLY_LEAVE),
-      CheckoutWorker("7", "장준호", 29, "남", CheckoutStatus.NONE),
-      CheckoutWorker("8", "윤서진", 31, "여", CheckoutStatus.NORMAL_LEAVE)
+      *confirmedWorkers.map { worker ->
+        CheckoutWorker(
+          id = worker.id,
+          name = worker.name,
+          age = worker.age,
+          gender = worker.gender,
+          checkoutStatus = CheckoutStatus.NONE
+        )
+      }.toTypedArray()
     )
   }
 
@@ -61,7 +89,7 @@ fun CheckoutScreen(
     modifier = modifier.fillMaxSize(),
     topBar = {
       BackNavigationTopBar(
-        title = "퇴근확인",
+        title = "퇴근확인 (${effectiveDate.format(DateTimeFormatter.ofPattern("MM/dd"))})",
         onBackClick = { navController.popBackStack() }
       )
     }
@@ -72,7 +100,7 @@ fun CheckoutScreen(
         .padding(innerPadding)
         .background(Color(0xFFF8F9FA))
     ) {
-      Divider(thickness = 1.dp, color = Color.LightGray)
+      HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
       
       // 총 인원수와 안내 문구
       Column(
@@ -106,21 +134,47 @@ fun CheckoutScreen(
       }
       
       // 근로자 리스트
-      LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-      ) {
-        items(workers) { worker ->
-          CheckoutWorkerCard(
-            worker = worker,
-            onCheckoutChange = { newStatus ->
-              val index = workers.indexOf(worker)
-              if (index >= 0) {
-                workers[index] = worker.copy(checkoutStatus = newStatus)
+      if (workers.isEmpty()) {
+        // 확정 근로자가 없는 경우 안내 메시지
+        Box(
+          modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 48.dp),
+          contentAlignment = Alignment.Center
+        ) {
+          Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+          ) {
+            Text(
+              text = "${effectiveDate.format(DateTimeFormatter.ofPattern("MM월 dd일"))}에 확정된 근로자가 없습니다",
+              style = AppTypography.bodyLarge,
+              color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+              text = "다른 날짜를 선택해보세요",
+              style = AppTypography.bodySmall,
+              color = Color.Gray
+            )
+          }
+        }
+      } else {
+        LazyColumn(
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+          verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+          items(workers) { worker ->
+            CheckoutWorkerCard(
+              worker = worker,
+              onCheckoutChange = { newStatus ->
+                val index = workers.indexOf(worker)
+                if (index >= 0) {
+                  workers[index] = worker.copy(checkoutStatus = newStatus)
+                }
               }
-            }
-          )
+            )
+          }
         }
       }
     }
@@ -248,7 +302,8 @@ fun CheckoutScreenPreview() {
   Jikgong1111Theme {
     CheckoutScreen(
       navController = rememberNavController(),
-      workDayId = "1"
+      workDayId = "1",
+      selectedDate = "2025-08-01"
     )
   }
 }

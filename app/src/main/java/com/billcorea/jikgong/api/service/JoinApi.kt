@@ -1,13 +1,13 @@
 package com.billcorea.jikgong.api.service
 
-import com.billcorea.jikgong.api.models.request.EmailValidationRequest
-import com.billcorea.jikgong.api.models.request.LoginIdValidationRequest
-import com.billcorea.jikgong.api.models.request.PhoneValidationRequest
-import com.billcorea.jikgong.api.models.request.SmsVerificationRequest
-import com.billcorea.jikgong.api.models.response.EmailValidationResponse
-import com.billcorea.jikgong.api.models.response.LoginIdValidationResponse
-import com.billcorea.jikgong.api.models.response.PhoneValidationResponse
-import com.billcorea.jikgong.api.models.response.SmsVerificationResponse
+import com.billcorea.jikgong.api.models.auth.EmailValidationRequest
+import com.billcorea.jikgong.api.models.auth.LoginIdValidationRequest
+import com.billcorea.jikgong.api.models.auth.PhoneValidationRequest
+import com.billcorea.jikgong.api.models.auth.SmsVerificationRequest
+import com.billcorea.jikgong.api.models.auth.EmailValidationResponse
+import com.billcorea.jikgong.api.models.auth.LoginIdValidationResponse
+import com.billcorea.jikgong.api.models.auth.PhoneValidationResponse
+import com.billcorea.jikgong.api.models.auth.SmsVerificationResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST

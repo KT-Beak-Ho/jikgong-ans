@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -26,11 +25,9 @@ import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopB
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.billcorea.jikgong.network.data.CompanyMockDataFactory
-import com.billcorea.jikgong.network.models.ConfirmedWorker
-import com.billcorea.jikgong.network.models.ApplicantWorker
-import com.billcorea.jikgong.network.models.WorkDay
-import kotlinx.coroutines.launch
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ApplicantWorker
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -334,7 +331,7 @@ fun WorkerManagementScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
                       onClick = { 
-                        navController.navigate("attendance_check/${workDay.id}")
+                        navController.navigate("attendance_check/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
                       shape = RoundedCornerShape(4.dp)
@@ -361,7 +358,7 @@ fun WorkerManagementScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
                       onClick = { 
-                        navController.navigate("checkout/${workDay.id}")
+                        navController.navigate("checkout/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
                       shape = RoundedCornerShape(4.dp)
@@ -388,7 +385,7 @@ fun WorkerManagementScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
                       onClick = { 
-                        navController.navigate("payment_summary/${workDay.id}")
+                        navController.navigate("payment_summary/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       },
                       modifier = Modifier.fillMaxWidth(),
                       shape = RoundedCornerShape(4.dp)

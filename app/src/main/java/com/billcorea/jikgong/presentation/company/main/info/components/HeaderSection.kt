@@ -12,8 +12,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.billcorea.jikgong.network.models.CompanyData
-import com.billcorea.jikgong.network.models.CompanyType
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.CompanyData
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.CompanyType
 
 @Composable
 fun HeaderSection(

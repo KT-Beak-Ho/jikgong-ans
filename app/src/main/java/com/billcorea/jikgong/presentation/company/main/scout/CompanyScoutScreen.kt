@@ -3,6 +3,8 @@ package com.billcorea.jikgong.presentation.company.main.scout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,10 +26,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
 import com.billcorea.jikgong.presentation.company.main.common.ScoutTopBar
-import com.billcorea.jikgong.network.data.CompanyMockDataFactory
-import com.billcorea.jikgong.network.models.Worker
-import com.billcorea.jikgong.network.models.Proposal
-import com.billcorea.jikgong.network.models.ProposalStatus
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Worker
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Proposal
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProposalStatus
 import com.billcorea.jikgong.presentation.company.main.scout.pages.WorkerListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.ProposalListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.LocationSettingPage
@@ -293,8 +295,9 @@ private fun WorkerDetailBottomSheetContent(
     var wage by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var selectedProjectId by remember { mutableStateOf("") }
-    var selectedDate by remember { mutableStateOf("") }
+    var selectedDates by remember { mutableStateOf(setOf<java.time.LocalDate>()) }
     var showConfirmDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
     
     // 진행 중인 프로젝트 목록 가져오기 (RECRUITING 또는 IN_PROGRESS 상태)
     val activeProjects = remember {
@@ -440,7 +443,7 @@ private fun WorkerDetailBottomSheetContent(
                             text = { Text(project.title) },
                             onClick = {
                                 selectedProjectId = project.id
-                                selectedDate = "" // 프로젝트 변경시 날짜 초기화
+                                selectedDates = emptySet() // 프로젝트 변경시 날짜 초기화
                                 expanded = false
                             }
                         )
@@ -450,45 +453,38 @@ private fun WorkerDetailBottomSheetContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 날짜 선택
-            if (selectedProjectId.isNotEmpty() && projectDates.isNotEmpty()) {
-                var dateExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(
-                    expanded = dateExpanded,
-                    onExpandedChange = { dateExpanded = !dateExpanded }
-                ) {
-                    OutlinedTextField(
-                        value = selectedDate,
-                        onValueChange = { },
-                        readOnly = true,
-                        label = { Text("근무 날짜 선택") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dateExpanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF4B7BFF),
-                            unfocusedBorderColor = Color(0xFFE5E8EB)
-                        )
-                    )
-                    
-                    ExposedDropdownMenu(
-                        expanded = dateExpanded,
-                        onDismissRequest = { dateExpanded = false }
-                    ) {
-                        projectDates.forEach { date ->
-                            DropdownMenuItem(
-                                text = { Text(date.toString()) },
-                                onClick = {
-                                    selectedDate = date.toString()
-                                    dateExpanded = false
-                                }
-                            )
-                        }
+            // 날짜 선택 (달력으로 여러 날짜 선택 가능)
+            OutlinedTextField(
+                value = if (selectedDates.isEmpty()) "" else 
+                    "${selectedDates.size}개 날짜 선택됨 (${selectedDates.minOrNull()}${if (selectedDates.size > 1) " 외 ${selectedDates.size - 1}개" else ""})",
+                onValueChange = { },
+                readOnly = true,
+                label = { Text("근무 날짜 선택") },
+                trailingIcon = { 
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "달력")
                     }
-                }
-                
-                Spacer(modifier = Modifier.height(12.dp))
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF4B7BFF),
+                    unfocusedBorderColor = Color(0xFFE5E8EB)
+                )
+            )
+            
+            // 달력 다이얼로그
+            if (showDatePicker) {
+                val selectedProject = activeProjects.find { it.id == selectedProjectId }
+                DatePickerDialog(
+                    onDateSelected = { dates ->
+                        selectedDates = dates
+                        showDatePicker = false
+                    },
+                    onDismiss = { showDatePicker = false },
+                    projectStartDate = selectedProject?.startDate,
+                    projectEndDate = selectedProject?.endDate,
+                    initialSelectedDates = selectedDates
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -505,7 +501,7 @@ private fun WorkerDetailBottomSheetContent(
                     containerColor = Color(0xFF4B7BFF)
                 ),
                 enabled = wage.isNotEmpty() && message.isNotEmpty() && 
-                         selectedProjectId.isNotEmpty() && selectedDate.isNotEmpty()
+                         selectedProjectId.isNotEmpty() && selectedDates.isNotEmpty()
             ) {
                 Text(
                     text = "스카웃 제안하기",
@@ -542,7 +538,7 @@ private fun WorkerDetailBottomSheetContent(
                          style = MaterialTheme.typography.bodyMedium,
                          fontWeight = FontWeight.Medium)
                     
-                    Text("• 날짜: $selectedDate",
+                    Text("• 날짜: ${selectedDates.joinToString(", ")}",
                          style = MaterialTheme.typography.bodyMedium,
                          fontWeight = FontWeight.Medium)
                     
@@ -582,7 +578,7 @@ private fun WorkerDetailBottomSheetContent(
                 TextButton(
                     onClick = {
                         showConfirmDialog = false
-                        onScoutConfirm(wage, message, selectedProjectId, selectedDate)
+                        onScoutConfirm(wage, message, selectedProjectId, selectedDates.joinToString(","))
                     }
                 ) {
                     Text("스카웃", color = Color(0xFF4B7BFF), fontWeight = FontWeight.Bold)
@@ -894,4 +890,142 @@ private fun CompanyScoutMainScreenPreview(
             onScoutConfirm = { _, _, _, _ -> onWorkerDismiss() }
         )
     }
+}
+
+@Composable
+private fun DatePickerDialog(
+    onDateSelected: (Set<java.time.LocalDate>) -> Unit,
+    onDismiss: () -> Unit,
+    projectStartDate: String?,
+    projectEndDate: String?,
+    initialSelectedDates: Set<java.time.LocalDate>
+) {
+    var selectedDates by remember { mutableStateOf(initialSelectedDates) }
+    
+    // 프로젝트 날짜 범위 설정 (기본값: 오늘부터 30일)
+    val startDate = projectStartDate?.let { java.time.LocalDate.parse(it) } ?: java.time.LocalDate.now()
+    val endDate = projectEndDate?.let { java.time.LocalDate.parse(it) } ?: java.time.LocalDate.now().plusDays(30)
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "근무 날짜 선택",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "근무할 날짜를 선택하세요 (여러 날짜 선택 가능)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // 간단한 날짜 선택기 (실제 구현에서는 더 정교한 달력 컴포넌트 사용)
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 300.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val dateRange = generateSequence(startDate) { it.plusDays(1) }
+                        .takeWhile { it <= endDate }
+                        .toList()
+                        
+                    items(dateRange) { date ->
+                        val isSelected = selectedDates.contains(date)
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selectedDates = if (isSelected) {
+                                        selectedDates - date
+                                    } else {
+                                        selectedDates + date
+                                    }
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isSelected) {
+                                    Color(0xFF4B7BFF).copy(alpha = 0.1f)
+                                } else {
+                                    Color.White
+                                }
+                            ),
+                            border = if (isSelected) {
+                                androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF4B7BFF))
+                            } else {
+                                androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray)
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${date.monthValue}월 ${date.dayOfMonth}일 (${
+                                        when (date.dayOfWeek.value) {
+                                            1 -> "월"
+                                            2 -> "화"
+                                            3 -> "수"
+                                            4 -> "목"
+                                            5 -> "금"
+                                            6 -> "토"
+                                            7 -> "일"
+                                            else -> ""
+                                        }
+                                    })",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (isSelected) Color(0xFF4B7BFF) else Color.Black,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                )
+                                
+                                if (isSelected) {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = Color(0xFF4B7BFF),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (selectedDates.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "${selectedDates.size}개 날짜 선택됨",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF4B7BFF),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("취소", color = Color.Gray)
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDateSelected(selectedDates)
+                },
+                enabled = selectedDates.isNotEmpty()
+            ) {
+                Text(
+                    "확인", 
+                    color = if (selectedDates.isNotEmpty()) Color(0xFF4B7BFF) else Color.Gray,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    )
 }

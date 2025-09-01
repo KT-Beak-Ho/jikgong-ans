@@ -16,9 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.billcorea.jikgong.network.models.ProjectPaymentData
-import com.billcorea.jikgong.network.data.CompanyMockDataFactory
-import com.billcorea.jikgong.network.models.ProjectPaymentStatus
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentData
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -414,7 +413,7 @@ private fun ComparisonItem(
 
 @Composable
 private fun WorkerPaymentItem(
-    worker: com.billcorea.jikgong.network.models.ProjectPaymentData.WorkerPaymentInfo,
+    worker: ProjectPaymentData.WorkerPaymentInfo,
     modifier: Modifier = Modifier
 ) {
     Surface(

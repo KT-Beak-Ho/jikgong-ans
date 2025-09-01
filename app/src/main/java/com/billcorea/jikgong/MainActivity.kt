@@ -323,29 +323,35 @@ class MainActivity : ComponentActivity() {
                 )
               }
               /** WorkerManagementScreen 에서 출근확인 버튼 클릭시 사용하는 Router */
-              composable("attendance_check/{workDayId}") { navBackStackEntry ->
+              composable("attendance_check/{workDayId}?selectedDate={selectedDate}") { navBackStackEntry ->
                 val workDayId = navBackStackEntry.arguments?.getString("workDayId") ?: ""
+                val selectedDate = navBackStackEntry.arguments?.getString("selectedDate")
                 AttendanceCheckScreen(
                   navController = navController,
                   workDayId = workDayId,
+                  selectedDate = selectedDate,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               /** WorkerManagementScreen 에서 퇴근확인 버튼 클릭시 사용하는 Router */
-              composable("checkout/{workDayId}") { navBackStackEntry ->
+              composable("checkout/{workDayId}?selectedDate={selectedDate}") { navBackStackEntry ->
                 val workDayId = navBackStackEntry.arguments?.getString("workDayId") ?: ""
+                val selectedDate = navBackStackEntry.arguments?.getString("selectedDate")
                 CheckoutScreen(
                   navController = navController,
                   workDayId = workDayId,
+                  selectedDate = selectedDate,
                   modifier = Modifier.padding(5.dp)
                 )
               }
               /** WorkerManagementScreen 에서 지급내역서 보기 버튼 클릭시 사용하는 Router */
-              composable("payment_summary/{workDayId}") { navBackStackEntry ->
+              composable("payment_summary/{workDayId}?selectedDate={selectedDate}") { navBackStackEntry ->
                 val workDayId = navBackStackEntry.arguments?.getString("workDayId") ?: ""
+                val selectedDate = navBackStackEntry.arguments?.getString("selectedDate")
                 PaymentSummaryScreen(
                   navController = navController,
                   workDayId = workDayId,
+                  selectedDate = selectedDate,
                   modifier = Modifier.padding(5.dp)
                 )
               }
