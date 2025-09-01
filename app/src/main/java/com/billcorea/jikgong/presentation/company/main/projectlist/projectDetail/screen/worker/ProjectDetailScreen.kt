@@ -25,7 +25,6 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Work
 import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
-import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 import kotlinx.coroutines.launch
 import java.time.LocalDate
