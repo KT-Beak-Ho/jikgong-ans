@@ -26,10 +26,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
 import com.billcorea.jikgong.presentation.company.main.common.ScoutTopBar
-import com.billcorea.jikgong.network.data.CompanyMockDataFactory
-import com.billcorea.jikgong.network.models.Worker
-import com.billcorea.jikgong.network.models.Proposal
-import com.billcorea.jikgong.network.models.ProposalStatus
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Worker
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Proposal
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProposalStatus
 import com.billcorea.jikgong.presentation.company.main.scout.pages.WorkerListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.ProposalListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.LocationSettingPage
@@ -37,7 +37,6 @@ import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Destination(route = "company_scout_main")

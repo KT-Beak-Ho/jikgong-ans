@@ -6,8 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,7 +20,7 @@ import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
-import com.billcorea.jikgong.network.data.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 

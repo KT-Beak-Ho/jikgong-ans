@@ -3,7 +3,7 @@ package com.billcorea.jikgong.presentation.company.main.projectlist.projectcreat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.model.*
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.repository.ProjectCreateRepository
+import com.billcorea.jikgong.api.repository.company.main.projectList.projectCreate.ProjectCreateRepository
 import com.billcorea.jikgong.presentation.company.main.projectlist.model.Project
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

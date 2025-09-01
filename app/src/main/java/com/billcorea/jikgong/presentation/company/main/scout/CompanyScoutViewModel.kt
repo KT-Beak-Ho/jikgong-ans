@@ -2,10 +2,10 @@ package com.billcorea.jikgong.presentation.company.main.scout
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.billcorea.jikgong.network.data.CompanyMockDataFactory
-import com.billcorea.jikgong.network.models.Worker
-import com.billcorea.jikgong.network.models.Proposal
-import com.billcorea.jikgong.network.models.ProposalStatus
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Worker
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Proposal
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProposalStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

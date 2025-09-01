@@ -1,7 +1,7 @@
 package com.billcorea.jikgong.presentation.worker.auth.join.shared
 
-import com.billcorea.jikgong.network.location.AddressFindRoadAddress
-import com.billcorea.jikgong.network.location.Coord2RoadAddress
+import com.billcorea.jikgong.api.models.location.AddressFindRoadAddress
+import com.billcorea.jikgong.api.models.location.Coord2RoadAddress
 import com.billcorea.jikgong.api.models.auth.WorkExperience
 import java.text.SimpleDateFormat
 import java.util.Locale

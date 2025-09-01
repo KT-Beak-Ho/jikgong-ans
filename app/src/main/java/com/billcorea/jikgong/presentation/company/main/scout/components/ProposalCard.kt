@@ -1,6 +1,5 @@
 package com.billcorea.jikgong.presentation.company.main.scout.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,9 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.billcorea.jikgong.network.models.Proposal
-import com.billcorea.jikgong.network.models.ProposalStatus
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Proposal
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProposalStatus
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
