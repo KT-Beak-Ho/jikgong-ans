@@ -4,7 +4,7 @@ package com.billcorea.jikgong.presentation.company.main.projectlist.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.billcorea.jikgong.presentation.company.main.projectlist.model.*
-import com.billcorea.jikgong.presentation.company.main.projectlist.repository.ProjectRepository
+import com.billcorea.jikgong.api.repository.company.main.projectList.ProjectRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

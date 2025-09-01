@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -29,13 +28,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.network.common.ApiResult
+import com.billcorea.jikgong.api.models.common.ApiResult
 import com.billcorea.jikgong.api.models.auth.LoginResponse
 import com.billcorea.jikgong.api.repository.login.LoginRepository
 import com.billcorea.jikgong.presentation.common.components.KeyboardConstants
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
-import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedEvent
 import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedEvent
 import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedViewModel
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination

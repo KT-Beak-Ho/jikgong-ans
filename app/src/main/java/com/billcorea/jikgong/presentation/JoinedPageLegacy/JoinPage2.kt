@@ -63,7 +63,7 @@ import androidx.compose.ui.unit.em
 import androidx.navigation.compose.rememberNavController
 import com.afollestad.materialdialogs.MaterialDialog
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.datepicker.WheelDatePicker
+import com.billcorea.jikgong.presentation.common.components.datepicker.WheelDatePicker
 import com.billcorea.jikgong.api.models.auth.VisaExpiryDateRequest
 import com.billcorea.jikgong.presentation.PageIndicator
 import com.billcorea.jikgong.presentation.destinations.JoinPage3Destination

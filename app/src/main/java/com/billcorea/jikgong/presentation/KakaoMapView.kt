@@ -1,7 +1,6 @@
 package com.billcorea.jikgong.presentation
 
 import android.annotation.SuppressLint
-import android.graphics.PointF
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -38,26 +37,20 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.network.location.Coord2RoadAddress
+import com.billcorea.jikgong.api.models.location.Coord2RoadAddress
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.utils.MainViewModel
-import com.kakao.vectormap.GestureType
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
-import com.kakao.vectormap.Poi
-import com.kakao.vectormap.camera.CameraPosition
 import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
-import com.kakao.vectormap.label.LabelTextStyle
-import com.kakao.vectormap.label.LodLabel
-import com.kakao.vectormap.label.LodLabelLayer
 import com.kakao.vectormap.mapwidget.InfoWindowOptions
 import com.kakao.vectormap.mapwidget.component.GuiImage
 import com.kakao.vectormap.mapwidget.component.GuiLayout
