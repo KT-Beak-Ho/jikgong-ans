@@ -2,14 +2,12 @@ package com.billcorea.jikgong.presentation.company.main.money.shared
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.billcorea.jikgong.network.models.PaymentData
-import com.billcorea.jikgong.network.data.CompanyMockDataFactory
-import com.billcorea.jikgong.network.models.PaymentStatus
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.PaymentStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 class CompanyMoneySharedViewModel : ViewModel() {
 

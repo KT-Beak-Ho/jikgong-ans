@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.network.common
+package com.billcorea.jikgong.api.models.common
 
 // ==================== 공통 응답 모델 ====================
 

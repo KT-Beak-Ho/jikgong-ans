@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.network.models
+package com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels
 
 import java.time.LocalDate
 

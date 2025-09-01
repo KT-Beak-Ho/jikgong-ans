@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.di
+package com.billcorea.jikgong.modules
 
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
 import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedViewModel

@@ -15,11 +15,11 @@ import com.billcorea.jikgong.api.models.auth.RegisterWorker
 import com.billcorea.jikgong.api.models.auth.RegisterWorkerResponse
 import com.billcorea.jikgong.api.models.auth.SmsVerificationRequest
 import com.billcorea.jikgong.api.models.auth.SmsVerificationResponse
-import com.billcorea.jikgong.network.location.AddressFindResponse
-import com.billcorea.jikgong.network.location.AddressFindRoadAddress
-import com.billcorea.jikgong.network.location.Coord2AddressResponse
-import com.billcorea.jikgong.network.location.Coord2RoadAddress
-import com.billcorea.jikgong.network.service.RetrofitAPI
+import com.billcorea.jikgong.api.models.location.AddressFindResponse
+import com.billcorea.jikgong.api.models.location.AddressFindRoadAddress
+import com.billcorea.jikgong.api.models.location.Coord2AddressResponse
+import com.billcorea.jikgong.api.models.location.Coord2RoadAddress
+import com.billcorea.jikgong.api.service.RetrofitAPI
 import com.billcorea.jikgong.presentation.worker.auth.common.constants.WorkerJoinConstants.TOTAL_PAGES
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices

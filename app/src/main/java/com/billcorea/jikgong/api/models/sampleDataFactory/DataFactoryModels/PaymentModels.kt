@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.network.models
+package com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels
 
 import androidx.compose.ui.graphics.Color
 import java.time.LocalDate

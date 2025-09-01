@@ -1,8 +1,8 @@
-package com.billcorea.jikgong.di
+package com.billcorea.jikgong.modules
 
 import android.util.Log
 import com.billcorea.jikgong.BuildConfig
-import com.billcorea.jikgong.network.service.AuthApi
+import com.billcorea.jikgong.api.service.AuthApi
 import com.billcorea.jikgong.api.service.JoinApi
 // import com.billcorea.jikgong.api.service.ProjectApi
 import okhttp3.OkHttpClient

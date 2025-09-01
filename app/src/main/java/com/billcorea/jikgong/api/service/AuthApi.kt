@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.network.service
+package com.billcorea.jikgong.api.service
 
 import com.billcorea.jikgong.api.models.auth.*
 import retrofit2.Response

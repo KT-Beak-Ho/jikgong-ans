@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.network.location
+package com.billcorea.jikgong.api.models.location
 
 import com.google.gson.annotations.SerializedName
 

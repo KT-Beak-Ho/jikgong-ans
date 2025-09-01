@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.network.common.ApiResult
+import com.billcorea.jikgong.api.models.common.ApiResult
 import com.billcorea.jikgong.api.models.auth.EmailValidationResponse
 import com.billcorea.jikgong.api.models.auth.LoginIdValidationResponse
 import com.billcorea.jikgong.api.models.auth.PhoneValidationResponse

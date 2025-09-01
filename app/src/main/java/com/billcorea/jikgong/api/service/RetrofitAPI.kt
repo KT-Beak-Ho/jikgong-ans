@@ -1,11 +1,12 @@
-package com.billcorea.jikgong.network.service
+package com.billcorea.jikgong.api.service
 
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import com.billcorea.jikgong.BuildConfig
 import com.billcorea.jikgong.api.models.auth.*
-import com.billcorea.jikgong.network.location.*
-import com.billcorea.jikgong.network.common.DefaultResponse
+import com.billcorea.jikgong.api.models.common.DefaultResponse
+import com.billcorea.jikgong.api.models.location.AddressFindResponse
+import com.billcorea.jikgong.api.models.location.Coord2AddressResponse
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.MultipartBody

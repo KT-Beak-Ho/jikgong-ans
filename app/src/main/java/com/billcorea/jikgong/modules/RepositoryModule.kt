@@ -1,15 +1,15 @@
-package com.billcorea.jikgong.di
+package com.billcorea.jikgong.modules
 
 import com.billcorea.jikgong.api.repository.join.JoinRepository
 import com.billcorea.jikgong.api.repository.join.JoinRepositoryImpl
 import com.billcorea.jikgong.api.repository.login.LoginRepository
 import com.billcorea.jikgong.api.repository.login.LoginRepositoryImpl
-import com.billcorea.jikgong.presentation.company.main.common.repository.CompanyRepository
-import com.billcorea.jikgong.presentation.company.main.common.repository.CompanyRepositoryImpl
-import com.billcorea.jikgong.presentation.company.main.projectlist.repository.ProjectRepository
-import com.billcorea.jikgong.presentation.company.main.projectlist.repository.ProjectRepositoryImpl
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.repository.ProjectCreateRepository
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.repository.ProjectCreateRepositoryImpl
+import com.billcorea.jikgong.api.repository.company.main.common.CompanyRepository
+import com.billcorea.jikgong.api.repository.company.main.common.CompanyRepositoryImpl
+import com.billcorea.jikgong.api.repository.company.main.projectList.ProjectRepository
+import com.billcorea.jikgong.api.repository.company.main.projectList.ProjectRepositoryImpl
+import com.billcorea.jikgong.api.repository.company.main.projectList.projectCreate.ProjectCreateRepository
+import com.billcorea.jikgong.api.repository.company.main.projectList.projectCreate.ProjectCreateRepositoryImpl
 import org.koin.dsl.module
 
 val repositoryModule = module {

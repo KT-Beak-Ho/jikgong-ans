@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation.company.main.projectlist.repository
+package com.billcorea.jikgong.api.repository.company.main.projectList
 
 import com.billcorea.jikgong.presentation.company.main.projectlist.model.Project
 import kotlinx.coroutines.delay

@@ -1,6 +1,6 @@
-package com.billcorea.jikgong.presentation.company.main.common.repository
+package com.billcorea.jikgong.api.repository.company.main.common
 
-import com.billcorea.jikgong.network.models.CompanyData
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.CompanyData
 import kotlinx.coroutines.flow.Flow
 
 interface CompanyRepository {
