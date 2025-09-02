@@ -151,6 +151,12 @@ class CompanyScoutViewModel : ViewModel() {
       isFilterActive = isActive
     )
   }
+  
+  fun toggleAIFilterDialog() {
+    _uiState.value = _uiState.value.copy(
+      showAIFilterDialog = !_uiState.value.showAIFilterDialog
+    )
+  }
 }
 
 data class ScoutUiState(
@@ -164,7 +170,8 @@ data class ScoutUiState(
   val searchRadius: Int = 10,
   val currentFilters: WorkerFilters = WorkerFilters(),
   val showFilterDialog: Boolean = false,
-  val isFilterActive: Boolean = false
+  val isFilterActive: Boolean = false,
+  val showAIFilterDialog: Boolean = false
 ) {
   val filteredWorkers: List<Worker>
     get() = if (isFilterActive) {

@@ -131,48 +131,17 @@ fun SearchableTopBar(
 fun ScoutTopBar(
     title: String,
     modifier: Modifier = Modifier,
-    onSettingsClick: () -> Unit = {},
-    onRefreshClick: () -> Unit = {},
-    isRefreshing: Boolean = false
+    onSettingsClick: () -> Unit = {}
 ) {
     TopAppBar(
         title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = title,
-                    style = AppTypography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = appColorScheme.onSurface
-                )
-                Text(
-                    text = "주변 8명의 인력",
-                    style = AppTypography.bodyMedium,
-                    color = Color.Gray
-                )
-                if (isRefreshing) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = Color(0xFF4B7BFF),
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    IconButton(
-                        onClick = onRefreshClick,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "새로고침",
-                            tint = Color(0xFF4B7BFF),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-            }
+            Text(
+                text = title,
+                style = AppTypography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = appColorScheme.onSurface
+            )
         },
         modifier = modifier.fillMaxWidth(),
         actions = {

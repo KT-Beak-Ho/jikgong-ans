@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,7 +29,8 @@ fun WorkerListPage(
     onScoutClick: (Worker) -> Unit,
     onRefresh: () -> Unit,
     onFilterClick: () -> Unit = {},
-    isFilterActive: Boolean = false
+    isFilterActive: Boolean = false,
+    onAIFilterClick: () -> Unit = {}
 ) {
     if (isLoading && workers.isEmpty()) {
         // 초기 로딩
@@ -93,23 +95,47 @@ fun WorkerListPage(
                         }
                     }
 
-                    // 필터 버튼
-                    TextButton(onClick = onFilterClick) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "필터",
-                                color = if (isFilterActive) Color(0xFF4B7BFF) else Color.Gray,
-                                fontWeight = if (isFilterActive) FontWeight.Bold else FontWeight.Normal
-                            )
-                            if (isFilterActive) {
-                                Surface(
-                                    shape = CircleShape,
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // AI 필터 버튼
+                        TextButton(onClick = onAIFilterClick) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AutoAwesome,
+                                    contentDescription = "AI 추천",
+                                    tint = Color(0xFF4B7BFF),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "AI 추천",
                                     color = Color(0xFF4B7BFF),
-                                    modifier = Modifier.size(6.dp)
-                                ) {}
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                        
+                        // 일반 필터 버튼
+                        TextButton(onClick = onFilterClick) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "필터",
+                                    color = if (isFilterActive) Color(0xFF4B7BFF) else Color.Gray,
+                                    fontWeight = if (isFilterActive) FontWeight.Bold else FontWeight.Normal
+                                )
+                                if (isFilterActive) {
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = Color(0xFF4B7BFF),
+                                        modifier = Modifier.size(6.dp)
+                                    ) {}
+                                }
                             }
                         }
                     }
@@ -216,7 +242,8 @@ fun WorkerListPageWithDataPreview() {
             onScoutClick = {},
             onRefresh = {},
             onFilterClick = {},
-            isFilterActive = false
+            isFilterActive = false,
+            onAIFilterClick = {}
         )
     }
 }
@@ -232,7 +259,8 @@ fun WorkerListPageEmptyPreview() {
             onScoutClick = {},
             onRefresh = {},
             onFilterClick = {},
-            isFilterActive = false
+            isFilterActive = false,
+            onAIFilterClick = {}
         )
     }
 }

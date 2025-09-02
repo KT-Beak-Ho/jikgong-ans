@@ -70,20 +70,48 @@ fun ProposalListPage(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "총 ${proposals.size}건",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold
+                    Column {
+                        Text(
+                            text = "총 ${proposals.size}건의 제안",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            )
                         )
-                    )
+                        
+                        if (proposals.isNotEmpty()) {
+                            Text(
+                                text = "대기 ${pendingProposals.size} · 수락 ${acceptedProposals.size} · 거절 ${rejectedProposals.size}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                    }
 
-                    IconButton(onClick = onRefresh) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "새로고침",
-                            tint = Color(0xFF4B7BFF)
+                    if (!isLoading) {
+                        IconButton(onClick = onRefresh) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "새로고침",
+                                tint = Color(0xFF4B7BFF)
+                            )
+                        }
+                    } else {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color(0xFF4B7BFF),
+                            strokeWidth = 2.dp
                         )
                     }
+                }
+            }
+            
+            // 로딩 인디케이터 (새로고침 중)
+            if (isLoading && proposals.isNotEmpty()) {
+                item {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color(0xFF4B7BFF)
+                    )
                 }
             }
 
@@ -171,7 +199,7 @@ fun ProposalListPagePreview() {
                     id = "1",
                     workerId = "worker1",
                     workerName = "김철수",
-                    proposedWage = "일당 20만원",
+                    proposedWage = "일당 200000원",
                     message = "프로젝트에 꼭 필요한 인력입니다.",
                     status = ProposalStatus.PENDING,
                     createdAt = LocalDateTime.now().minusHours(2),
@@ -185,7 +213,7 @@ fun ProposalListPagePreview() {
                     id = "2",
                     workerId = "worker2",
                     workerName = "이영희",
-                    proposedWage = "일당 18만원",
+                    proposedWage = "일당 152000원",
                     message = "경력이 풍부하신 분을 찾고 있습니다.",
                     status = ProposalStatus.ACCEPTED,
                     createdAt = LocalDateTime.now().minusDays(1),
@@ -199,7 +227,7 @@ fun ProposalListPagePreview() {
                     id = "3",
                     workerId = "worker3",
                     workerName = "박민수",
-                    proposedWage = "일당 15만원",
+                    proposedWage = "일당 125500원",
                     message = "함께 일하고 싶습니다.",
                     status = ProposalStatus.REJECTED,
                     createdAt = LocalDateTime.now().minusDays(2),
