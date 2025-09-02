@@ -25,15 +25,22 @@ import java.util.*
 
 // 금액에서 숫자 추출 및 형식화 함수
 private fun formatProposalWage(wageString: String): String {
-    // "일당 150000원", "일당 150000", "150000원" 등에서 숫자를 추출
-    val numberRegex = "(\\d+)".toRegex()
+    // "일당 200000원"에서 6자리 이상의 숫자를 찾아 추출
+    val numberRegex = "\\d{4,}".toRegex() // 4자리 이상 숫자 찾기
     val matchResult = numberRegex.find(wageString)
     
     return if (matchResult != null) {
         val amount = matchResult.value.toIntOrNull() ?: return wageString
         "${amount}원"
     } else {
-        wageString // 파싱 실패시 원본 반환
+        // 4자리 미만인 경우 모든 숫자 중 가장 큰 것 선택
+        val allNumbers = "\\d+".toRegex().findAll(wageString).map { it.value.toIntOrNull() ?: 0 }.toList()
+        if (allNumbers.isNotEmpty()) {
+            val maxNumber = allNumbers.maxOrNull() ?: return wageString
+            "${maxNumber}원"
+        } else {
+            wageString // 파싱 실패시 원본 반환
+        }
     }
 }
 
