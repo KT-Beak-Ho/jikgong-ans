@@ -1,9 +1,9 @@
 package com.billcorea.jikgong.api.repository.login
 
-import com.billcorea.jikgong.network.auth.LoginRequest
-import com.billcorea.jikgong.network.common.ApiResult  
-import com.billcorea.jikgong.network.auth.LoginResponse
-import com.billcorea.jikgong.network.service.AuthApi
+import com.billcorea.jikgong.api.models.auth.LoginRequest
+import com.billcorea.jikgong.api.models.common.ApiResult
+import com.billcorea.jikgong.api.models.auth.LoginResponse
+import com.billcorea.jikgong.api.service.AuthApi
 
 /**
  * API 함수 내용 override

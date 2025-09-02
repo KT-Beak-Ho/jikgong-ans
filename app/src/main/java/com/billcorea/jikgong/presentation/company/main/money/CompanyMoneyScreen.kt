@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,15 +18,16 @@ import com.billcorea.jikgong.presentation.company.main.money.components.ProjectP
 import com.billcorea.jikgong.presentation.company.main.money.components.ProjectPaymentSummaryCard
 import com.billcorea.jikgong.presentation.company.main.money.components.EmptyMoneyState
 import com.billcorea.jikgong.presentation.company.main.money.components.ScrollBar
-import com.billcorea.jikgong.network.data.CompanyMockDataFactory
-import com.billcorea.jikgong.network.models.ProjectPaymentStatus
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentStatus
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
-import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import androidx.navigation.NavController
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentData
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentSummary
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
 import com.billcorea.jikgong.presentation.company.main.common.SearchableTopBar
 
@@ -84,7 +83,7 @@ fun CompanyMoneyScreen(
         }
         
         // 우선순위에 따른 정렬: 지급 대기 > 처리중 > 연체 > 지급 실패 > 지급 완료
-        filtered.sortedWith(compareBy<com.billcorea.jikgong.network.models.ProjectPaymentData> { project ->
+        filtered.sortedWith(compareBy<ProjectPaymentData> { project ->
             when (project.status) {
                 ProjectPaymentStatus.PENDING -> 1    // 지급 대기 (최우선)
                 ProjectPaymentStatus.PROCESSING -> 2  // 처리중
@@ -149,11 +148,11 @@ fun CompanyMoneyScreen(
 
 @Composable
 private fun ScrollableContentWithScrollbar(
-    projectPayments: List<com.billcorea.jikgong.network.models.ProjectPaymentData>,
-    summary: com.billcorea.jikgong.network.models.ProjectPaymentSummary,
+    projectPayments: List<ProjectPaymentData>,
+    summary: ProjectPaymentSummary,
     selectedStatus: ProjectPaymentStatus?,
     onStatusSelected: (ProjectPaymentStatus?) -> Unit,
-    onPaymentAction: (com.billcorea.jikgong.network.models.ProjectPaymentData, String) -> Unit,
+    onPaymentAction: (ProjectPaymentData, String) -> Unit,
     modifier: Modifier = Modifier,
     showBottomBar: Boolean = true
 ) {

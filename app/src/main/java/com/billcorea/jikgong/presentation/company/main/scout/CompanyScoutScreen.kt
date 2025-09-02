@@ -3,6 +3,8 @@ package com.billcorea.jikgong.presentation.company.main.scout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,19 +20,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
 import com.billcorea.jikgong.presentation.company.main.common.ScoutTopBar
-import com.billcorea.jikgong.network.data.CompanyMockDataFactory
-import com.billcorea.jikgong.network.models.Worker
-import com.billcorea.jikgong.network.models.Proposal
-import com.billcorea.jikgong.network.models.ProposalStatus
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Worker
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Proposal
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProposalStatus
 import com.billcorea.jikgong.presentation.company.main.scout.pages.WorkerListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.ProposalListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.LocationSettingPage
+import com.billcorea.jikgong.presentation.company.main.scout.components.WorkerDetailBottomSheet
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -48,6 +52,9 @@ fun CompanyScoutMainScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
+    
+    // 새로고침 완료 알림을 위한 상태
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         modifier = modifier,
@@ -105,6 +112,9 @@ fun CompanyScoutMainScreen(
                 currentRoute = "company_scout_main"
             )
         },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         containerColor = Color(0xFFF7F8FA) // 토스 배경색
     ) { paddingValues ->
         HorizontalPager(
@@ -115,7 +125,7 @@ fun CompanyScoutMainScreen(
         ) { page ->
             when (page) {
                 0 -> WorkerListPage(
-                    workers = uiState.workers,
+                    workers = uiState.filteredWorkers,
                     isLoading = uiState.isLoading,
                     onWorkerClick = { worker ->
                         viewModel.showWorkerDetail(worker)
@@ -125,6 +135,21 @@ fun CompanyScoutMainScreen(
                     },
                     onRefresh = {
                         viewModel.refreshWorkers()
+                        // 새로고침이 완료된 후 알림 표시
+                        coroutineScope.launch {
+                            kotlinx.coroutines.delay(1200) // 새로고침 시뮬레이션
+                            snackbarHostState.showSnackbar(
+                                message = "인력 새로고침이 완료되었습니다.",
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    },
+                    onFilterClick = {
+                        viewModel.toggleFilterDialog()
+                    },
+                    isFilterActive = uiState.isFilterActive,
+                    onAIFilterClick = {
+                        viewModel.toggleAIFilterDialog()
                     }
                 )
                 1 -> ProposalListPage(
@@ -156,18 +181,56 @@ fun CompanyScoutMainScreen(
 
     // 노동자 상세 바텀시트
     uiState.selectedWorker?.let { selectedWorker ->
-        WorkerDetailBottomSheetContent(
+        WorkerDetailBottomSheet(
             worker = selectedWorker,
             onDismiss = { viewModel.dismissWorkerDetail() },
-            onScoutConfirm = { wage, message, projectId, selectedDate ->
+            onScoutClick = { wage ->
                 viewModel.confirmScoutProposal(
                     worker = selectedWorker,
                     wage = wage,
-                    message = message
+                    message = "안녕하세요! 저희 현장에서 함께 일하실 의향이 있으신지 문의드립니다."
                 )
+                
+                // 성공 메시지 표시
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "스카웃 제안을 보냈습니다!",
+                        duration = SnackbarDuration.Short
+                    )
+                }
             }
         )
     }
+
+    // 필터 다이얼로그
+    if (uiState.showFilterDialog) {
+        WorkerFilterDialog(
+            currentFilters = uiState.currentFilters,
+            onDismiss = { viewModel.toggleFilterDialog() },
+            onApplyFilters = { filters ->
+                viewModel.applyFilters(filters)
+                viewModel.toggleFilterDialog()
+            }
+        )
+    }
+    
+    // AI 필터 다이얼로그
+    if (uiState.showAIFilterDialog) {
+        AIFilterDialog(
+            onDismiss = { viewModel.toggleAIFilterDialog() },
+            onApplyFilter = { projectDescription, workConditions, preferredSkills ->
+                // TODO: AI 필터링 로직 구현
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "AI가 추천하는 인력을 찾고 있습니다...",
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                viewModel.toggleAIFilterDialog()
+            }
+        )
+    }
+    
 }
 
 @Composable
@@ -293,8 +356,10 @@ private fun WorkerDetailBottomSheetContent(
     var wage by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var selectedProjectId by remember { mutableStateOf("") }
-    var selectedDate by remember { mutableStateOf("") }
+    var selectedDates by remember { mutableStateOf(setOf<java.time.LocalDate>()) }
     var showConfirmDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var isQuickScout by remember { mutableStateOf(false) }
     
     // 진행 중인 프로젝트 목록 가져오기 (RECRUITING 또는 IN_PROGRESS 상태)
     val activeProjects = remember {
@@ -360,23 +425,226 @@ private fun WorkerDetailBottomSheetContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 경력 정보
-            WorkerInfoSection(
-                title = "경력",
-                content = "${worker.experience}년"
-            )
-
-            WorkerInfoSection(
-                title = "희망 일당",
-                content = worker.desiredWage ?: "협의 가능"
-            )
-
-            WorkerInfoSection(
-                title = "자기소개",
-                content = worker.introduction ?: "등록된 소개가 없습니다."
-            )
+            // 상세 정보 섹션
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Color(0xFFF8F9FA),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "상세 정보",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF333333)
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    WorkerInfoSection(
+                        title = "경력",
+                        content = "${worker.experience}년",
+                        modifier = Modifier.weight(1f)
+                    )
+                    WorkerInfoSection(
+                        title = "완료 프로젝트",
+                        content = "${worker.completedProjects}건",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    WorkerInfoSection(
+                        title = "키",
+                        content = "175cm", // Mock data
+                        modifier = Modifier.weight(1f)
+                    )
+                    WorkerInfoSection(
+                        title = "체형",
+                        content = "보통", // Mock data
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                
+                WorkerInfoSection(
+                    title = "희망 일당",
+                    content = worker.desiredWage ?: "협의 가능"
+                )
+                
+                WorkerInfoSection(
+                    title = "가능한 근무일",
+                    content = "월, 화, 수, 금 (주 4일)" // 더 구체적인 일정 정보
+                )
+                
+                WorkerInfoSection(
+                    title = "근무 가능 시간",
+                    content = "06:00 ~ 18:00"
+                )
+                
+                WorkerInfoSection(
+                    title = "자기소개",
+                    content = worker.introduction ?: "등록된 소개가 없습니다."
+                )
+                
+                // 보유 기술/자격증
+                if (worker.certificates.isNotEmpty()) {
+                    WorkerInfoSection(
+                        title = "보유 자격증",
+                        content = worker.certificates.joinToString(", ")
+                    )
+                }
+                
+                // 추가 정보들
+                WorkerInfoSection(
+                    title = "작업 선호도",
+                    content = "실내 작업 선호, 팀워크 중시"
+                )
+                
+                WorkerInfoSection(
+                    title = "특기사항",
+                    content = "안전교육 이수 완료, 응급처치 자격증 보유"
+                )
+                
+                WorkerInfoSection(
+                    title = "최근 프로젝트",
+                    content = "○○아파트 신축공사 (2024.11 ~ 2024.12)"
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
+            
+            // 간단한 스카웃 제안 섹션
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFF8F9FA)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "빠른 스카웃 제안",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF333333)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    // 간단한 임금 입력
+                    var quickWage by remember { mutableStateOf("") }
+                    OutlinedTextField(
+                        value = quickWage,
+                        onValueChange = { quickWage = it },
+                        label = { Text("제안 일당") },
+                        placeholder = { Text("예: 150,000원") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF4B7BFF),
+                            unfocusedBorderColor = Color(0xFFE5E8EB)
+                        )
+                    )
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    // 빠른 스카웃 버튼
+                    Button(
+                        onClick = {
+                            if (quickWage.isNotEmpty()) {
+                                // 빠른 스카웃을 위한 기본값 설정
+                                wage = quickWage
+                                message = "안녕하세요! 저희 현장에서 함께 일하실 의향이 있으신지 문의드립니다."
+                                
+                                // 첫 번째 활성 프로젝트를 자동 선택
+                                if (activeProjects.isNotEmpty()) {
+                                    selectedProjectId = activeProjects.first().id
+                                    // 오늘부터 일주일을 기본 선택
+                                    val today = java.time.LocalDate.now()
+                                    selectedDates = setOf(today, today.plusDays(1), today.plusDays(2))
+                                }
+                                
+                                isQuickScout = true
+                                showConfirmDialog = true
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4B7BFF)
+                        ),
+                        enabled = quickWage.isNotEmpty() && worker.isAvailable
+                    ) {
+                        Text(
+                            text = if (!worker.isAvailable) "진행중" else "바로 스카웃 제안하기",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+                    
+                    // 상태에 따른 안내 메시지
+                    if (!worker.isAvailable) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "현재 다른 현장에서 작업 중입니다.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // 상세 스카웃 버튼
+                    OutlinedButton(
+                        onClick = {
+                            // 기존의 상세 스카웃 섹션으로 스크롤
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF4B7BFF)
+                        )
+                    ) {
+                        Text(
+                            text = "상세 스카웃 제안하기",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Divider(color = Color(0xFFE5E8EB), thickness = 1.dp)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 상세 스카웃 제안 섹션
+            Text(
+                text = "상세 스카웃 제안",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF333333)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 임금 입력
             OutlinedTextField(
@@ -440,7 +708,7 @@ private fun WorkerDetailBottomSheetContent(
                             text = { Text(project.title) },
                             onClick = {
                                 selectedProjectId = project.id
-                                selectedDate = "" // 프로젝트 변경시 날짜 초기화
+                                selectedDates = emptySet() // 프로젝트 변경시 날짜 초기화
                                 expanded = false
                             }
                         )
@@ -450,125 +718,321 @@ private fun WorkerDetailBottomSheetContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 날짜 선택
-            if (selectedProjectId.isNotEmpty() && projectDates.isNotEmpty()) {
-                var dateExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(
-                    expanded = dateExpanded,
-                    onExpandedChange = { dateExpanded = !dateExpanded }
-                ) {
-                    OutlinedTextField(
-                        value = selectedDate,
-                        onValueChange = { },
-                        readOnly = true,
-                        label = { Text("근무 날짜 선택") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dateExpanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF4B7BFF),
-                            unfocusedBorderColor = Color(0xFFE5E8EB)
-                        )
-                    )
-                    
-                    ExposedDropdownMenu(
-                        expanded = dateExpanded,
-                        onDismissRequest = { dateExpanded = false }
-                    ) {
-                        projectDates.forEach { date ->
-                            DropdownMenuItem(
-                                text = { Text(date.toString()) },
-                                onClick = {
-                                    selectedDate = date.toString()
-                                    dateExpanded = false
-                                }
-                            )
-                        }
+            // 날짜 선택 (달력으로 여러 날짜 선택 가능)
+            OutlinedTextField(
+                value = if (selectedDates.isEmpty()) "" else 
+                    "${selectedDates.size}개 날짜 선택됨 (${selectedDates.minOrNull()}${if (selectedDates.size > 1) " 외 ${selectedDates.size - 1}개" else ""})",
+                onValueChange = { },
+                readOnly = true,
+                label = { Text("근무 날짜 선택") },
+                trailingIcon = { 
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "달력")
                     }
-                }
-                
-                Spacer(modifier = Modifier.height(12.dp))
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF4B7BFF),
+                    unfocusedBorderColor = Color(0xFFE5E8EB)
+                )
+            )
+            
+            // 달력 다이얼로그
+            if (showDatePicker) {
+                val selectedProject = activeProjects.find { it.id == selectedProjectId }
+                DatePickerDialog(
+                    onDateSelected = { dates ->
+                        selectedDates = dates
+                        showDatePicker = false
+                    },
+                    onDismiss = { showDatePicker = false },
+                    projectStartDate = selectedProject?.startDate,
+                    projectEndDate = selectedProject?.endDate,
+                    initialSelectedDates = selectedDates
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 스카웃 제안 버튼
-            Button(
-                onClick = { 
-                    showConfirmDialog = true
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4B7BFF)
-                ),
-                enabled = wage.isNotEmpty() && message.isNotEmpty() && 
-                         selectedProjectId.isNotEmpty() && selectedDate.isNotEmpty()
-            ) {
-                Text(
-                    text = "스카웃 제안하기",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold
+            // 기존 스카웃 제안 확인
+            val existingProposal: Proposal? = null // Mock data - no existing proposal
+            
+            // 스카웃 제안/취소 버튼
+            if (existingProposal != null) {
+                // 기존 제안이 있는 경우
+                when (existingProposal.status) {
+                    ProposalStatus.PENDING -> {
+                        // 대기 중인 제안 - 취소 가능
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFFFFF3CD)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        Icons.Default.HourglassEmpty,
+                                        contentDescription = null,
+                                        tint = Color(0xFFFF8C00),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "이미 스카웃 제안을 보낸 상태입니다",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color(0xFF856404),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                            
+                            OutlinedButton(
+                                onClick = { 
+                                    // 스카웃 취소 확인 다이얼로그 표시
+                                    showConfirmDialog = true
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color(0xFFE53E3E)
+                                )
+                            ) {
+                                Text(
+                                    text = "스카웃 제안 취소",
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    ProposalStatus.ACCEPTED -> {
+                        // 수락된 제안 - 취소 불가
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFD4EDDA)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF155724),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "스카웃 제안이 수락되었습니다",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color(0xFF155724),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                    ProposalStatus.REJECTED -> {
+                        // 거절된 제안 - 다시 제안 가능
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFFF8D7DA)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        Icons.Default.Cancel,
+                                        contentDescription = null,
+                                        tint = Color(0xFF721C24),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(
+                                            text = "이전 스카웃 제안이 거절되었습니다",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color(0xFF721C24),
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                        if (!existingProposal.rejectReason.isNullOrBlank()) {
+                                            Text(
+                                                text = "사유: ${existingProposal.rejectReason}",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = Color(0xFF721C24)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            Button(
+                                onClick = { 
+                                    isQuickScout = false
+                                    showConfirmDialog = true
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF4B7BFF)
+                                ),
+                                enabled = wage.isNotEmpty() && message.isNotEmpty() && 
+                                         selectedProjectId.isNotEmpty() && selectedDates.isNotEmpty()
+                            ) {
+                                Text(
+                                    text = "다시 스카웃 제안하기",
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                // 새로운 스카웃 제안
+                Button(
+                    onClick = { 
+                        isQuickScout = false
+                        showConfirmDialog = true
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4B7BFF)
+                    ),
+                    enabled = wage.isNotEmpty() && message.isNotEmpty() && 
+                             selectedProjectId.isNotEmpty() && selectedDates.isNotEmpty()
+                ) {
+                    Text(
+                        text = "스카웃 제안하기",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        )
                     )
-                )
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
         }
     }
 
-    // 최종 확인 다이얼로그
+    // 확인 다이얼로그 (스카웃 제안 또는 취소)
     if (showConfirmDialog) {
         val selectedProject = activeProjects.find { it.id == selectedProjectId }
+        val isCancelAction = false // Mock data - always new proposal
+        
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
             title = {
                 Text(
-                    text = "스카웃 제안 확인",
+                    text = if (isCancelAction) "스카웃 제안 취소" else "스카웃 제안 확인",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
             },
             text = {
                 Column {
-                    Text("다음 내용으로 스카웃 제안을 보내시겠습니까?", 
-                         style = MaterialTheme.typography.bodyMedium)
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text("• 프로젝트: ${selectedProject?.title ?: ""}",
-                         style = MaterialTheme.typography.bodyMedium,
-                         fontWeight = FontWeight.Medium)
-                    
-                    Text("• 날짜: $selectedDate",
-                         style = MaterialTheme.typography.bodyMedium,
-                         fontWeight = FontWeight.Medium)
-                    
-                    Text("• 일당: $wage",
-                         style = MaterialTheme.typography.bodyMedium,
-                         fontWeight = FontWeight.Medium)
-                         
-                    Text("• 근무시간: 06:30~15:00",
-                         style = MaterialTheme.typography.bodyMedium,
-                         fontWeight = FontWeight.Medium)
-                         
-                    Text("• 장소: ${selectedProject?.location ?: ""}",
-                         style = MaterialTheme.typography.bodyMedium,
-                         fontWeight = FontWeight.Medium)
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    Text("• 메시지: $message",
-                         style = MaterialTheme.typography.bodyMedium,
-                         fontWeight = FontWeight.Medium)
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text("⚠️ 지원 후에는 취소가 어렵습니다",
-                         style = MaterialTheme.typography.bodySmall,
-                         color = Color(0xFFFF5722))
+                    if (isCancelAction) {
+                        Text("스카웃 제안을 취소하시겠습니까?", 
+                             style = MaterialTheme.typography.bodyMedium)
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Text("⚠️ 취소된 제안은 복구할 수 없습니다",
+                             style = MaterialTheme.typography.bodySmall,
+                             color = Color(0xFFFF5722))
+                    } else {
+                        if (isQuickScout) {
+                            Text("빠른 스카웃 제안을 보내시겠습니까?", 
+                                 style = MaterialTheme.typography.bodyMedium)
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            Text("• 일당: $wage",
+                                 style = MaterialTheme.typography.bodyMedium,
+                                 fontWeight = FontWeight.Medium)
+                            
+                            Text("• 메시지: $message",
+                                 style = MaterialTheme.typography.bodyMedium,
+                                 fontWeight = FontWeight.Medium)
+                                 
+                            if (activeProjects.isNotEmpty()) {
+                                Text("• 프로젝트: ${activeProjects.first().title}",
+                                     style = MaterialTheme.typography.bodyMedium,
+                                     fontWeight = FontWeight.Medium)
+                            }
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            Text("💡 상세 정보는 나중에 조정할 수 있습니다.",
+                                 style = MaterialTheme.typography.bodySmall,
+                                 color = Color(0xFF4B7BFF))
+                        } else {
+                            Text("다음 내용으로 스카웃 제안을 보내시겠습니까?", 
+                                 style = MaterialTheme.typography.bodyMedium)
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            Text("• 프로젝트: ${selectedProject?.title ?: ""}",
+                                 style = MaterialTheme.typography.bodyMedium,
+                                 fontWeight = FontWeight.Medium)
+                            
+                            Text("• 날짜: ${selectedDates.joinToString(", ")}",
+                                 style = MaterialTheme.typography.bodyMedium,
+                                 fontWeight = FontWeight.Medium)
+                            
+                            Text("• 일당: $wage",
+                                 style = MaterialTheme.typography.bodyMedium,
+                                 fontWeight = FontWeight.Medium)
+                                 
+                            Text("• 근무시간: 06:30~15:00",
+                                 style = MaterialTheme.typography.bodyMedium,
+                                 fontWeight = FontWeight.Medium)
+                                 
+                            Text("• 장소: ${selectedProject?.location ?: ""}",
+                                 style = MaterialTheme.typography.bodyMedium,
+                                 fontWeight = FontWeight.Medium)
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            Text("• 메시지: $message",
+                                 style = MaterialTheme.typography.bodyMedium,
+                                 fontWeight = FontWeight.Medium)
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            Text("⚠️ 지원 후에는 취소가 어렵습니다",
+                                 style = MaterialTheme.typography.bodySmall,
+                                 color = Color(0xFFFF5722))
+                        }
+                    }
                 }
             },
             dismissButton = {
@@ -582,10 +1046,21 @@ private fun WorkerDetailBottomSheetContent(
                 TextButton(
                     onClick = {
                         showConfirmDialog = false
-                        onScoutConfirm(wage, message, selectedProjectId, selectedDate)
+                        if (isCancelAction) {
+                            // 스카웃 제안 취소
+                            // viewModel.cancelScoutProposal(existingProposal.id)
+                            onDismiss()
+                        } else {
+                            // 새로운 스카웃 제안
+                            onScoutConfirm(wage, message, selectedProjectId, selectedDates.joinToString(","))
+                        }
                     }
                 ) {
-                    Text("스카웃", color = Color(0xFF4B7BFF), fontWeight = FontWeight.Bold)
+                    Text(
+                        if (isCancelAction) "제안 취소" else "스카웃", 
+                        color = if (isCancelAction) Color(0xFFE53E3E) else Color(0xFF4B7BFF), 
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         )
@@ -595,18 +1070,22 @@ private fun WorkerDetailBottomSheetContent(
 @Composable
 private fun WorkerInfoSection(
     title: String,
-    content: String
+    content: String,
+    modifier: Modifier = Modifier
 ) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+    Column(modifier = modifier.padding(vertical = 4.dp)) {
         Text(
             text = title,
             style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray
+            color = Color.Gray,
+            fontWeight = FontWeight.Medium
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = content,
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(0xFF333333)
         )
     }
 }
@@ -867,7 +1346,8 @@ private fun CompanyScoutMainScreenPreview(
                     isLoading = false,
                     onWorkerClick = onWorkerSelect,
                     onScoutClick = onWorkerSelect,
-                    onRefresh = {}
+                    onRefresh = {},
+                    onAIFilterClick = {}
                 )
                 1 -> ProposalListPage(
                     proposals = mockProposals,
@@ -888,10 +1368,495 @@ private fun CompanyScoutMainScreenPreview(
 
     // Worker Detail Bottom Sheet
     selectedWorker?.let { worker ->
-        WorkerDetailBottomSheetContent(
+        WorkerDetailBottomSheet(
             worker = worker,
             onDismiss = onWorkerDismiss,
-            onScoutConfirm = { _, _, _, _ -> onWorkerDismiss() }
+            onScoutClick = { _ -> onWorkerDismiss() }
         )
     }
+}
+
+@Composable
+private fun WorkerFilterDialog(
+    currentFilters: WorkerFilters,
+    onDismiss: () -> Unit,
+    onApplyFilters: (WorkerFilters) -> Unit
+) {
+    var jobTypeFilter by remember { mutableStateOf(currentFilters.jobTypes) }
+    var minExperience by remember { mutableStateOf(currentFilters.minExperience.toString()) }
+    var selectedDistanceOption by remember { 
+        mutableStateOf(
+            when (currentFilters.maxDistance) {
+                Double.MAX_VALUE -> 0 // 상관없음
+                1.0 -> 1 // 1km이내
+                10.0 -> 2 // 10km이내
+                else -> 0
+            }
+        ) 
+    }
+    var minRating by remember { mutableStateOf(currentFilters.minRating.toString()) }
+    var availableOnly by remember { mutableStateOf(currentFilters.availableOnly) }
+    
+    val distanceOptions = listOf("상관없음", "1km이내", "10km이내")
+    
+    val allJobTypes = listOf("철근공", "형틀목공", "타일공", "전기공", "배관공", "도장공", "조적공", "미장공", "일반", "기타")
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "인력 필터",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 직종 필터
+                item {
+                    Text(
+                        text = "직종 선택",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    allJobTypes.chunked(3).forEach { rowJobTypes ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            rowJobTypes.forEach { jobType ->
+                                val isSelected = jobTypeFilter.contains(jobType)
+                                FilterChip(
+                                    onClick = {
+                                        jobTypeFilter = if (isSelected) {
+                                            jobTypeFilter - jobType
+                                        } else {
+                                            jobTypeFilter + jobType
+                                        }
+                                    },
+                                    label = { Text(jobType) },
+                                    selected = isSelected,
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = Color(0xFF4B7BFF),
+                                        selectedLabelColor = Color.White
+                                    ),
+                                    modifier = Modifier.weight(1f, false)
+                                )
+                            }
+                            // 남은 공간 채우기
+                            repeat(3 - rowJobTypes.size) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+                }
+                
+                // 경력 필터
+                item {
+                    OutlinedTextField(
+                        value = minExperience,
+                        onValueChange = { minExperience = it },
+                        label = { Text("최소 경력 (년)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF4B7BFF)
+                        )
+                    )
+                }
+                
+                // 거리 필터
+                item {
+                    Text(
+                        text = "거리 설정",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    distanceOptions.forEachIndexed { index, option ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedDistanceOption == index,
+                                onClick = { selectedDistanceOption = index },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = Color(0xFF4B7BFF)
+                                )
+                            )
+                            Text(
+                                text = option,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+                }
+                
+                // 평점 필터
+                item {
+                    OutlinedTextField(
+                        value = minRating,
+                        onValueChange = { minRating = it },
+                        label = { Text("최소 평점") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF4B7BFF)
+                        )
+                    )
+                }
+                
+                // 이용 가능한 인력만
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "이용 가능한 인력만",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Switch(
+                            checked = availableOnly,
+                            onCheckedChange = { availableOnly = it },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = Color(0xFF4B7BFF)
+                            )
+                        )
+                    }
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("취소", color = Color.Gray)
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val maxDistance = when (selectedDistanceOption) {
+                        0 -> Double.MAX_VALUE // 상관없음
+                        1 -> 1.0 // 1km이내
+                        2 -> 10.0 // 10km이내
+                        else -> Double.MAX_VALUE
+                    }
+                    
+                    val filters = WorkerFilters(
+                        jobTypes = jobTypeFilter,
+                        minExperience = minExperience.toIntOrNull() ?: 0,
+                        maxDistance = maxDistance,
+                        minRating = minRating.toFloatOrNull() ?: 0f,
+                        availableOnly = availableOnly
+                    )
+                    onApplyFilters(filters)
+                }
+            ) {
+                Text(
+                    "적용",
+                    color = Color(0xFF4B7BFF),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun DatePickerDialog(
+    onDateSelected: (Set<java.time.LocalDate>) -> Unit,
+    onDismiss: () -> Unit,
+    projectStartDate: String?,
+    projectEndDate: String?,
+    initialSelectedDates: Set<java.time.LocalDate>
+) {
+    var selectedDates by remember { mutableStateOf(initialSelectedDates) }
+    
+    // 프로젝트 날짜 범위 설정 (기본값: 오늘부터 30일)
+    val startDate = projectStartDate?.let { java.time.LocalDate.parse(it) } ?: java.time.LocalDate.now()
+    val endDate = projectEndDate?.let { java.time.LocalDate.parse(it) } ?: java.time.LocalDate.now().plusDays(30)
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "근무 날짜 선택",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "근무할 날짜를 선택하세요 (여러 날짜 선택 가능)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // 간단한 날짜 선택기 (실제 구현에서는 더 정교한 달력 컴포넌트 사용)
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 300.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val dateRange = generateSequence(startDate) { it.plusDays(1) }
+                        .takeWhile { it <= endDate }
+                        .toList()
+                        
+                    items(dateRange) { date ->
+                        val isSelected = selectedDates.contains(date)
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selectedDates = if (isSelected) {
+                                        selectedDates - date
+                                    } else {
+                                        selectedDates + date
+                                    }
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isSelected) {
+                                    Color(0xFF4B7BFF).copy(alpha = 0.1f)
+                                } else {
+                                    Color.White
+                                }
+                            ),
+                            border = if (isSelected) {
+                                androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF4B7BFF))
+                            } else {
+                                androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray)
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${date.monthValue}월 ${date.dayOfMonth}일 (${
+                                        when (date.dayOfWeek.value) {
+                                            1 -> "월"
+                                            2 -> "화"
+                                            3 -> "수"
+                                            4 -> "목"
+                                            5 -> "금"
+                                            6 -> "토"
+                                            7 -> "일"
+                                            else -> ""
+                                        }
+                                    })",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (isSelected) Color(0xFF4B7BFF) else Color.Black,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                )
+                                
+                                if (isSelected) {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = Color(0xFF4B7BFF),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (selectedDates.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "${selectedDates.size}개 날짜 선택됨",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF4B7BFF),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("취소", color = Color.Gray)
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDateSelected(selectedDates)
+                },
+                enabled = selectedDates.isNotEmpty()
+            ) {
+                Text(
+                    "확인", 
+                    color = if (selectedDates.isNotEmpty()) Color(0xFF4B7BFF) else Color.Gray,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun AIFilterDialog(
+    onDismiss: () -> Unit,
+    onApplyFilter: (String, String, String) -> Unit
+) {
+    var projectDescription by remember { mutableStateOf("") }
+    var workConditions by remember { mutableStateOf("") }
+    var preferredSkills by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = Color(0xFF4B7BFF),
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "AI 매칭 필터",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        text = {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    Text(
+                        text = "AI가 프로젝트에 가장 적합한 인력을 추천해드립니다.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                }
+                
+                item {
+                    OutlinedTextField(
+                        value = projectDescription,
+                        onValueChange = { projectDescription = it },
+                        label = { Text("프로젝트 설명") },
+                        placeholder = { Text("예: 아파트 신축 공사, 인테리어 리모델링 등") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 2,
+                        maxLines = 4,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF4B7BFF),
+                            focusedLabelColor = Color(0xFF4B7BFF)
+                        )
+                    )
+                }
+                
+                item {
+                    OutlinedTextField(
+                        value = workConditions,
+                        onValueChange = { workConditions = it },
+                        label = { Text("작업 조건") },
+                        placeholder = { Text("예: 실외 작업, 고소 작업, 정밀 작업 등") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 2,
+                        maxLines = 3,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF4B7BFF),
+                            focusedLabelColor = Color(0xFF4B7BFF)
+                        )
+                    )
+                }
+                
+                item {
+                    OutlinedTextField(
+                        value = preferredSkills,
+                        onValueChange = { preferredSkills = it },
+                        label = { Text("우대 기술 및 경험") },
+                        placeholder = { Text("예: 특정 자격증, 유사 프로젝트 경험, 전문 기술 등") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 2,
+                        maxLines = 3,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF4B7BFF),
+                            focusedLabelColor = Color(0xFF4B7BFF)
+                        )
+                    )
+                }
+                
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF4B7BFF).copy(alpha = 0.1f)
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4B7BFF).copy(alpha = 0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lightbulb,
+                                contentDescription = null,
+                                tint = Color(0xFF4B7BFF),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "입력하신 정보를 바탕으로 AI가 경험, 기술, 평점을 종합적으로 분석하여 최적의 인력을 추천합니다.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF4B7BFF),
+                                lineHeight = 18.sp
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("취소", color = Color.Gray)
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onApplyFilter(projectDescription, workConditions, preferredSkills)
+                },
+                enabled = projectDescription.isNotBlank() || workConditions.isNotBlank() || preferredSkills.isNotBlank()
+            ) {
+                Text(
+                    "AI 매칭 시작",
+                    color = if (projectDescription.isNotBlank() || workConditions.isNotBlank() || preferredSkills.isNotBlank()) {
+                        Color(0xFF4B7BFF)
+                    } else {
+                        Color.Gray
+                    },
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    )
 }

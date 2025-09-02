@@ -5,7 +5,18 @@
       "Bash(find:*)",
       "Bash(./gradlew:*)",
       "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\api\\service\\AuthApi.kt\")",
-      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\projectlist\\projectDetail\\screen\\JobRegistrationScreen.kt\")"
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\projectlist\\projectDetail\\screen\\JobRegistrationScreen.kt\")",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\api\\models\\response\\ApiResult.kt\")",
+      "Bash(powershell:*)",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\network\\auth\\AuthModels.kt\")",
+      "Bash(\"./gradlew\" build)",
+      "Bash(\"./gradlew\" compileDebugKotlin --no-daemon)",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\money\\components\\PaymentCalendar.kt\")",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\money\\components\\PaymentStatusChip.kt\")",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\money\\components\\PaymentTabBar.kt\")",
+      "Bash(git restore:*)",
+      "Bash(move:*)",
+      "Bash(\"./gradlew\" build --continue)"
     ],
     "deny": [],
     "ask": []

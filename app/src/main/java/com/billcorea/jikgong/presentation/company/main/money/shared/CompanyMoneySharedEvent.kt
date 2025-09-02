@@ -1,7 +1,6 @@
 package com.billcorea.jikgong.presentation.company.main.money.shared
 
-import com.billcorea.jikgong.network.models.PaymentData
-import com.billcorea.jikgong.network.models.PaymentStatus
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.PaymentStatus
 import java.time.LocalDate
 
 sealed class CompanyMoneySharedEvent {

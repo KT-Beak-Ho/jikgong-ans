@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.datepicker.WheelDatePicker
+import com.billcorea.jikgong.presentation.common.components.datepicker.WheelDatePicker
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.LabelText

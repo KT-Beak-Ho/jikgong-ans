@@ -18,7 +18,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.billcorea.jikgong.presentation.company.main.scout.components.MapLocationDialog
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
+import com.billcorea.jikgong.utils.MainViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LocationSettingPage(
@@ -27,8 +30,10 @@ fun LocationSettingPage(
   searchRadius: Int,
   onLocationChange: (String) -> Unit,
   onRadiusChange: (Int) -> Unit,
-  onCurrentLocationClick: () -> Unit
+  onCurrentLocationClick: () -> Unit,
+  viewModel: MainViewModel = koinViewModel()
 ) {
+  var showMapDialog by remember { mutableStateOf(false) }
   Column(
     modifier = modifier
       .fillMaxSize()
@@ -103,7 +108,7 @@ fun LocationSettingPage(
 
         // 위치 변경 버튼
         Button(
-          onClick = { /* TODO: 주소 검색 */ },
+          onClick = { showMapDialog = true },
           modifier = Modifier.fillMaxWidth(),
           colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xFF4B7BFF)
@@ -116,7 +121,7 @@ fun LocationSettingPage(
             modifier = Modifier.size(20.dp)
           )
           Spacer(modifier = Modifier.width(8.dp))
-          Text("다른 위치 검색")
+          Text("지도에서 위치 검색")
         }
       }
     }
@@ -271,6 +276,18 @@ fun LocationSettingPage(
 
     Spacer(modifier = Modifier.height(80.dp))
   }
+
+  // 지도 다이얼로그 표시
+  if (showMapDialog) {
+    MapLocationDialog(
+      onDismiss = { showMapDialog = false },
+      onLocationSelected = { selectedLocation ->
+        onLocationChange(selectedLocation)
+      },
+      viewModel = viewModel,
+      searchRadius = searchRadius
+    )
+  }
 }
 
 @Composable
@@ -305,7 +322,8 @@ fun LocationSettingPagePreview() {
       searchRadius = 10,
       onLocationChange = {},
       onRadiusChange = {},
-      onCurrentLocationClick = {}
+      onCurrentLocationClick = {},
+      viewModel = MainViewModel()
     )
   }
 }

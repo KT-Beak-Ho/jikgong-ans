@@ -2,8 +2,8 @@ package com.billcorea.jikgong.presentation.company.main.common
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.billcorea.jikgong.network.models.CompanyData
-import com.billcorea.jikgong.presentation.company.main.common.repository.CompanyRepository
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.CompanyData
+import com.billcorea.jikgong.api.repository.company.main.common.CompanyRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 

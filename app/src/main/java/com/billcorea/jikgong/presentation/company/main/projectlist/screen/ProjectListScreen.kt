@@ -30,8 +30,8 @@ import com.billcorea.jikgong.presentation.destinations.ProjectDetailScreenDestin
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.billcorea.jikgong.network.data.CompanyMockDataFactory
-import com.billcorea.jikgong.network.models.SimpleProject
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.SimpleProject
 import java.text.NumberFormat
 import java.util.*
 
@@ -64,7 +64,7 @@ fun ProjectListScreen(
     floatingActionButton = {
       ExtendedFloatingActionButton(
         onClick = { showCreateDialog = true },
-        containerColor = appColorScheme.primary,
+        containerColor = Color(0xFF4B7BFF),
         contentColor = Color.White,
         modifier = Modifier.padding(bottom = 80.dp)
       ) {
@@ -234,7 +234,7 @@ private fun ProjectCard(
             }
             Badge(
               containerColor = when(project.status) {
-                "RECRUITING" -> Color(0xFF2196F3)
+                "RECRUITING" -> Color(0xFF4B7BFF)
                 "IN_PROGRESS" -> Color(0xFF4CAF50)
                 else -> Color(0xFF9E9E9E)
               },
@@ -266,20 +266,6 @@ private fun ProjectCard(
           )
         }
 
-        // 북마크 버튼
-        IconButton(
-          onClick = { /* 북마크 토글 */ },
-          modifier = Modifier.size(24.dp)
-        ) {
-          Icon(
-            imageVector = if (project.isBookmarked)
-              Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-            contentDescription = "북마크",
-            tint = if (project.isBookmarked)
-              MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant
-          )
-        }
       }
 
       Spacer(modifier = Modifier.height(12.dp))
@@ -328,7 +314,7 @@ private fun ProjectCard(
             "${(project.currentApplicants.toFloat() / project.maxApplicants * 100).toInt()}%",
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF2196F3)
+            color = Color(0xFF4B7BFF)
           )
         }
         Spacer(modifier = Modifier.height(4.dp))
@@ -341,7 +327,7 @@ private fun ProjectCard(
           color = when {
             project.currentApplicants >= project.maxApplicants -> Color(0xFF4CAF50)
             project.currentApplicants >= project.maxApplicants * 0.8 -> Color(0xFFFFC107)
-            else -> Color(0xFF2196F3)
+            else -> Color(0xFF4B7BFF)
           },
           trackColor = Color(0xFFE0E0E0)
         )
@@ -354,7 +340,7 @@ private fun ProjectCard(
             .fillMaxWidth()
             .height(40.dp),
           colors = ButtonDefaults.buttonColors(
-            containerColor = appColorScheme.primary
+            containerColor = Color(0xFF4B7BFF)
           ),
           shape = RoundedCornerShape(8.dp)
         ) {

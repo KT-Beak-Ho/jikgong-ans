@@ -27,11 +27,11 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.api.models.response.ApiResult
-import com.billcorea.jikgong.api.models.response.EmailValidationResponse
-import com.billcorea.jikgong.api.models.response.LoginIdValidationResponse
-import com.billcorea.jikgong.api.models.response.PhoneValidationResponse
-import com.billcorea.jikgong.api.models.response.SmsVerificationResponse
+import com.billcorea.jikgong.api.models.common.ApiResult
+import com.billcorea.jikgong.api.models.auth.EmailValidationResponse
+import com.billcorea.jikgong.api.models.auth.LoginIdValidationResponse
+import com.billcorea.jikgong.api.models.auth.PhoneValidationResponse
+import com.billcorea.jikgong.api.models.auth.SmsVerificationResponse
 import com.billcorea.jikgong.api.repository.join.JoinRepository
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
