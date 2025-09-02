@@ -12,6 +12,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,18 +31,30 @@ import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
+import com.kakao.vectormap.mapwidget.InfoWindowOptions
+import com.kakao.vectormap.mapwidget.component.GuiImage
+import com.kakao.vectormap.mapwidget.component.GuiLayout
+import com.kakao.vectormap.mapwidget.component.GuiText
+import com.kakao.vectormap.mapwidget.component.Orientation
 
 @Composable
 fun MapLocationDialog(
     onDismiss: () -> Unit,
     onLocationSelected: (String) -> Unit,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    searchRadius: Int = 10
 ) {
     val context = LocalContext.current
+    val config = LocalConfiguration.current
+    val screenHeight = config.screenHeightDp
     val mapView = remember { MapView(context) }
+    var selectedPosition by remember { mutableStateOf<LatLng?>(null) }
     
     val _roadAddress1 = viewModel.roadAddress1.observeAsState(emptyList())
     val roadAddress1 = _roadAddress1.value
+    
+    // 서울 중심으로 초기 위치 설정
+    val centerPosition = remember { LatLng.from(37.5665, 126.9780) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -87,7 +100,7 @@ fun MapLocationDialog(
                 AndroidView(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
+                        .height((screenHeight * 0.6).dp)
                         .padding(horizontal = 16.dp),
                     factory = { context ->
                         mapView.apply {
@@ -104,30 +117,70 @@ fun MapLocationDialog(
                                 object : KakaoMapReadyCallback() {
                                     @SuppressLint("UseCompatLoadingForDrawables")
                                     override fun onMapReady(kakaoMap: KakaoMap) {
-                                        // 서울 중심으로 초기 위치 설정
-                                        val centerPosition = LatLng.from(37.5665, 126.9780)
-                                        
+                                        Log.d("MapLocationDialog", "Map is ready")
+
+                                        // 반경 정보를 로그로 표시 (실제 원 그리기는 향후 구현)
+                                        fun updateRadiusInfo(position: LatLng) {
+                                            Log.d("MapLocationDialog", "Selected position with ${searchRadius}km radius: ${position.latitude}, ${position.longitude}")
+                                            selectedPosition = position
+                                        }
+
+                                        // 안내 메시지 표시
+                                        val body = GuiLayout(Orientation.Horizontal)
+                                        body.setPadding(20, 20, 20, 18)
+                                        val bgImage = GuiImage(R.drawable.blue_signature, true)
+                                        bgImage.setFixedArea(7, 7, 7, 7)
+                                        body.setBackground(bgImage)
+                                        val text = GuiText("지도를 터치해서 위치를 선택하세요")
+                                        text.setTextSize(30)
+                                        text.setTextColor(R.color.color5)
+                                        body.addView(text)
+                                        val infoOptions = InfoWindowOptions.from(centerPosition)
+                                        infoOptions.setBody(body)
+                                        infoOptions.setBodyOffset(0F, -4F)
+
+                                        kakaoMap.mapWidgetManager?.infoWindowLayer?.addInfoWindow(infoOptions)
+
                                         // 카메라를 중심 위치로 이동
                                         val cameraUpdate = CameraUpdateFactory.newCenterPosition(centerPosition)
                                         kakaoMap.moveCamera(cameraUpdate)
+                                        
+                                        // 초기 위치 설정
+                                        updateRadiusInfo(centerPosition)
+
+                                        // 정보창 클릭 리스너
+                                        kakaoMap.setOnInfoWindowClickListener { kakaoMap, _, _ ->
+                                            kakaoMap.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                        }
+
+                                        // 지도 클릭 리스너
+                                        kakaoMap.setOnMapClickListener { map, _, _, _ ->
+                                            map.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                        }
 
                                         // POI 클릭 리스너
                                         kakaoMap.setOnPoiClickListener { map, latLng, title, detail ->
                                             Log.d("MapLocationDialog", "POI clicked: $title at ${latLng?.latitude}, ${latLng?.longitude}")
                                             
-                                            if (latLng != null) {
+                                            if (latLng != null && map != null) {
+                                                map.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                                
+                                                val newCameraUpdate = CameraUpdateFactory.newCenterPosition(latLng)
+                                                
                                                 // 선택된 위치에 마커 표시
-                                                val style = map?.labelManager?.addLabelStyles(
+                                                val style = map.labelManager?.addLabelStyles(
                                                     LabelStyles.from(LabelStyle.from(R.drawable.ic_mylocation_v2))
                                                 )
                                                 val options = LabelOptions.from(latLng).setStyles(style)
-                                                val layer = map?.labelManager?.layer
+                                                val layer = map.labelManager?.layer
                                                 layer?.removeAll()
                                                 layer?.addLabel(options)
                                                 
                                                 // 카메라 이동
-                                                val newCameraUpdate = CameraUpdateFactory.newCenterPosition(latLng)
-                                                map?.moveCamera(newCameraUpdate)
+                                                map.moveCamera(newCameraUpdate)
+                                                
+                                                // 위치 업데이트
+                                                updateRadiusInfo(latLng)
                                                 
                                                 // 주소 검색
                                                 viewModel.doFindAddress(latLng.latitude, latLng.longitude)
@@ -138,19 +191,25 @@ fun MapLocationDialog(
                                         kakaoMap.setOnTerrainLongClickListener { map, latLng, point ->
                                             Log.d("MapLocationDialog", "Terrain long clicked at ${latLng?.latitude}, ${latLng?.longitude}")
                                             
-                                            if (latLng != null) {
+                                            if (latLng != null && map != null) {
+                                                map.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                                
+                                                val newCameraUpdate = CameraUpdateFactory.newCenterPosition(latLng)
+                                                
                                                 // 선택된 위치에 마커 표시
-                                                val style = map?.labelManager?.addLabelStyles(
+                                                val style = map.labelManager?.addLabelStyles(
                                                     LabelStyles.from(LabelStyle.from(R.drawable.ic_mylocation_v2))
                                                 )
                                                 val options = LabelOptions.from(latLng).setStyles(style)
-                                                val layer = map?.labelManager?.layer
+                                                val layer = map.labelManager?.layer
                                                 layer?.removeAll()
                                                 layer?.addLabel(options)
                                                 
                                                 // 카메라 이동
-                                                val newCameraUpdate = CameraUpdateFactory.newCenterPosition(latLng)
-                                                map?.moveCamera(newCameraUpdate)
+                                                map.moveCamera(newCameraUpdate)
+                                                
+                                                // 위치 업데이트
+                                                updateRadiusInfo(latLng)
                                                 
                                                 // 주소 검색
                                                 viewModel.doFindAddress(latLng.latitude, latLng.longitude)
@@ -159,13 +218,38 @@ fun MapLocationDialog(
                                     }
 
                                     override fun getPosition(): LatLng {
-                                        return LatLng.from(37.5665, 126.9780)
+                                        return centerPosition
                                     }
                                 }
                             )
                         }
                     }
                 )
+
+                // 반경 정보 표시
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFF0F7FF)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "🔍 검색 반경: ${searchRadius}km",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color(0xFF4B7BFF)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // 선택된 주소 표시 및 확인 버튼
                 if (roadAddress1.isEmpty()) {

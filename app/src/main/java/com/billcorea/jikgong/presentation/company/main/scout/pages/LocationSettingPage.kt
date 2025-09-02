@@ -284,7 +284,8 @@ fun LocationSettingPage(
       onLocationSelected = { selectedLocation ->
         onLocationChange(selectedLocation)
       },
-      viewModel = viewModel
+      viewModel = viewModel,
+      searchRadius = searchRadius
     )
   }
 }

@@ -27,31 +27,7 @@ import java.util.*
 
 // 금액 형식화 함수들
 private fun formatWageDisplay(amount: Int): String {
-    return when {
-        amount >= 10000 && amount % 10000 == 0 -> {
-            "일당 ${amount / 10000}만원"
-        }
-        amount >= 10000 -> {
-            val manWon = amount / 10000
-            val remainder = amount % 10000
-            val remainderFormatted = when {
-                remainder >= 1000 -> "${remainder / 1000}천${if (remainder % 1000 != 0) "${remainder % 1000}" else ""}원"
-                else -> "${remainder}원"
-            }
-            "일당 ${manWon}만${remainderFormatted}"
-        }
-        amount >= 1000 && amount % 1000 == 0 -> {
-            "일당 ${amount / 1000}천원"
-        }
-        amount >= 1000 -> {
-            val cheonWon = amount / 1000
-            val remainder = amount % 1000
-            "일당 ${cheonWon}천${remainder}원"
-        }
-        else -> {
-            "일당 ${amount}원"
-        }
-    }
+    return "일당 ${amount}원"
 }
 
 private fun formatNumberWithCommas(number: Int): String {

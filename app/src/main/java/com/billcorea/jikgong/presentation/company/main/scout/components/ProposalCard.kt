@@ -25,42 +25,13 @@ import java.util.*
 
 // 금액에서 숫자 추출 및 형식화 함수
 private fun formatProposalWage(wageString: String): String {
-    // "일당 200000원", "일당 20만원" 등에서 숫자를 추출
+    // "일당 150000원", "일당 150000", "150000원" 등에서 숫자를 추출
     val numberRegex = "(\\d+)".toRegex()
     val matchResult = numberRegex.find(wageString)
     
     return if (matchResult != null) {
         val amount = matchResult.value.toIntOrNull() ?: return wageString
-        
-        when {
-            amount >= 10000 -> {
-                val manWon = amount / 10000
-                val remainder = amount % 10000
-                when {
-                    remainder == 0 -> "${manWon}만원"
-                    remainder >= 1000 -> {
-                        val cheonWon = remainder / 1000
-                        val baekWon = remainder % 1000
-                        if (baekWon == 0) {
-                            "${manWon}만${cheonWon}천원"
-                        } else {
-                            "${manWon}만${cheonWon}천${baekWon}원"
-                        }
-                    }
-                    else -> "${manWon}만${remainder}원"
-                }
-            }
-            amount >= 1000 -> {
-                val cheonWon = amount / 1000
-                val remainder = amount % 1000
-                if (remainder == 0) {
-                    "${cheonWon}천원"
-                } else {
-                    "${cheonWon}천${remainder}원"
-                }
-            }
-            else -> "${amount}원"
-        }
+        "${amount}원"
     } else {
         wageString // 파싱 실패시 원본 반환
     }
