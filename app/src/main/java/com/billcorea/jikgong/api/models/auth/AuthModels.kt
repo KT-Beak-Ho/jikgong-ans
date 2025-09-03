@@ -61,9 +61,15 @@ data class WorkExperience(
 )
 
 data class RegisterWorkerResponse(
-    val success: Boolean,
-    val message: String,
-    val data: Any?
+    // val success: Boolean,
+    val data: RegisterWorkerData?,
+    val message: String
+)
+
+data class RegisterWorkerData(
+    val state: String,
+    val code: String,
+    val errorMessage: String
 )
 
 
