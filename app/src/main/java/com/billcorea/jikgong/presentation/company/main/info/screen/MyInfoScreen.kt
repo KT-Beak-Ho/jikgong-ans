@@ -72,13 +72,13 @@ fun MyInfoScreen(
                             Surface(
                                 modifier = Modifier.fillMaxSize(),
                                 shape = CircleShape,
-                                color = appColorScheme.primary.copy(alpha = 0.2f)
+                                color = Color(0xFF4B7BFF).copy(alpha = 0.2f)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Business,
                                     contentDescription = null,
                                     modifier = Modifier.size(40.dp),
-                                    tint = appColorScheme.primary
+                                    tint = Color(0xFF4B7BFF)
                                 )
                             }
                         }
@@ -94,7 +94,7 @@ fun MyInfoScreen(
                         Text(
                             text = "기업회원 • 프리미엄",
                             style = AppTypography.bodyMedium,
-                            color = appColorScheme.primary
+                            color = Color(0xFF4B7BFF)
                         )
                         
                         Spacer(modifier = Modifier.height(16.dp))
@@ -103,7 +103,7 @@ fun MyInfoScreen(
                             onClick = { /* TODO: Edit profile */ },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = appColorScheme.primary
+                                contentColor = Color(0xFF4B7BFF)
                             ),
                             shape = RoundedCornerShape(8.dp)
                         ) {
@@ -307,7 +307,7 @@ fun MyInfoScreen(
                                 onCheckedChange = { dataSaveMode = it },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,
-                                    checkedTrackColor = appColorScheme.primary
+                                    checkedTrackColor = Color(0xFF4B7BFF)
                                 )
                             )
                         }

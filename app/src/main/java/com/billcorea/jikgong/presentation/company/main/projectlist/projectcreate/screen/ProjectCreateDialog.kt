@@ -114,7 +114,7 @@ fun ProjectCreateDialog(
               placeholder = { Text("예: 아파트 신축공사 철근 작업자 모집") },
               colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = Color(0xFFE0E0E0),
-                focusedBorderColor = Color(0xFF1976D2)
+                focusedBorderColor = Color(0xFF4B7BFF)
               ),
               singleLine = true
             )
@@ -177,7 +177,7 @@ fun ProjectCreateDialog(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 colors = OutlinedTextFieldDefaults.colors(
                   unfocusedBorderColor = Color(0xFFE0E0E0),
-                  focusedBorderColor = Color(0xFF1976D2)
+                  focusedBorderColor = Color(0xFF4B7BFF)
                 ),
                 singleLine = true
               )
@@ -199,7 +199,7 @@ fun ProjectCreateDialog(
               placeholder = { Text("예: 서울시 강남구 역삼동") },
               colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = Color(0xFFE0E0E0),
-                focusedBorderColor = Color(0xFF1976D2)
+                focusedBorderColor = Color(0xFF4B7BFF)
               ),
               singleLine = true
             )
@@ -315,7 +315,7 @@ fun ProjectCreateDialog(
               keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
               colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = Color(0xFFE0E0E0),
-                focusedBorderColor = Color(0xFF1976D2)
+                focusedBorderColor = Color(0xFF4B7BFF)
               ),
               singleLine = true
             )
@@ -338,7 +338,7 @@ fun ProjectCreateDialog(
               placeholder = { Text("작업 내용, 필수 요구사항, 제공 사항 등을 자세히 입력해주세요") },
               colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = Color(0xFFE0E0E0),
-                focusedBorderColor = Color(0xFF1976D2)
+                focusedBorderColor = Color(0xFF4B7BFF)
               ),
               maxLines = 5
             )
@@ -396,7 +396,7 @@ fun ProjectCreateDialog(
             },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
-              containerColor = Color(0xFF1976D2)
+              containerColor = Color(0xFF4B7BFF)
             ),
             enabled = projectName.isNotBlank() &&
               location.isNotBlank() &&

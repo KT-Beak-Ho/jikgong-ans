@@ -20,6 +20,29 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Prop
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.text.NumberFormat
+import java.util.*
+
+// 금액에서 숫자 추출 및 형식화 함수
+private fun formatProposalWage(wageString: String): String {
+    // "일당 200000원"에서 6자리 이상의 숫자를 찾아 추출
+    val numberRegex = "\\d{4,}".toRegex() // 4자리 이상 숫자 찾기
+    val matchResult = numberRegex.find(wageString)
+    
+    return if (matchResult != null) {
+        val amount = matchResult.value.toIntOrNull() ?: return wageString
+        "${amount}원"
+    } else {
+        // 4자리 미만인 경우 모든 숫자 중 가장 큰 것 선택
+        val allNumbers = "\\d+".toRegex().findAll(wageString).map { it.value.toIntOrNull() ?: 0 }.toList()
+        if (allNumbers.isNotEmpty()) {
+            val maxNumber = allNumbers.maxOrNull() ?: return wageString
+            "${maxNumber}원"
+        } else {
+            wageString // 파싱 실패시 원본 반환
+        }
+    }
+}
 
 @Composable
 fun ProposalCard(
@@ -81,26 +104,86 @@ fun ProposalCard(
 
           Text(
             text = proposal.jobTypes.joinToString(" · "),
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray
+            style = MaterialTheme.typography.bodyMedium.copy(
+              fontWeight = FontWeight.Medium
+            ),
+            color = Color.Black
           )
 
-          Spacer(modifier = Modifier.height(4.dp))
+          Spacer(modifier = Modifier.height(8.dp))
 
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          // 상세 정보 카드
+          Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            color = Color(0xFFF8F9FA)
           ) {
-            Text(
-              text = "📍 ${proposal.distance}",
-              style = MaterialTheme.typography.bodySmall,
-              color = Color.Gray
-            )
-            Text(
-              text = "💰 ${proposal.proposedWage}",
-              style = MaterialTheme.typography.bodySmall,
-              color = Color.Gray
-            )
+            Column(
+              modifier = Modifier.padding(12.dp),
+              verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+              ) {
+                InfoItem(
+                  icon = "📍",
+                  label = "거리",
+                  value = proposal.distance,
+                  modifier = Modifier.weight(1f)
+                )
+                InfoItem(
+                  icon = "⭐",
+                  label = "평점",
+                  value = "4.5", // Mock data
+                  modifier = Modifier.weight(1f)
+                )
+              }
+              
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+              ) {
+                InfoItem(
+                  icon = "💼",
+                  label = "경력",
+                  value = "5년", // Mock data
+                  modifier = Modifier.weight(1f)
+                )
+                InfoItem(
+                  icon = "✅",
+                  label = "완료",
+                  value = "52건", // Mock data
+                  modifier = Modifier.weight(1f)
+                )
+              }
+              
+              // 제안 금액을 더 눈에 띄게
+              Divider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                color = Color(0xFFE0E0E0),
+                thickness = 0.5.dp
+              )
+              
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                Text(
+                  text = "제안 일당",
+                  style = MaterialTheme.typography.bodySmall,
+                  color = Color.Gray
+                )
+                Text(
+                  text = formatProposalWage(proposal.proposedWage),
+                  style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Bold
+                  ),
+                  color = Color(0xFF4B7BFF)
+                )
+              }
+            }
           }
         }
       }
@@ -184,6 +267,39 @@ fun ProposalCard(
           )
         }
       }
+    }
+  }
+}
+
+@Composable
+private fun InfoItem(
+  icon: String,
+  label: String,
+  value: String,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier = modifier,
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(4.dp)
+  ) {
+    Text(
+      text = icon,
+      style = MaterialTheme.typography.bodySmall
+    )
+    Column {
+      Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = Color.Gray
+      )
+      Text(
+        text = value,
+        style = MaterialTheme.typography.bodySmall.copy(
+          fontWeight = FontWeight.Medium
+        ),
+        color = Color.Black
+      )
     }
   }
 }

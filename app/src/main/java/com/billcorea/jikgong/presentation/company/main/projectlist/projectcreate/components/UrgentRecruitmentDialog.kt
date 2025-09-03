@@ -62,7 +62,7 @@ fun UrgentRecruitmentDialog(
       Button(
         onClick = onConfirm,
         colors = ButtonDefaults.buttonColors(
-          containerColor = Color(0xFF2196F3)
+          containerColor = Color(0xFF4B7BFF)
         ),
         shape = RoundedCornerShape(8.dp)
       ) {

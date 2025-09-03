@@ -39,23 +39,34 @@ import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPag
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
 import com.billcorea.jikgong.presentation.company.auth.login.page1.CompanyLoginPage1Screen
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.ProjectDetailScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.AttendanceCheckScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.CheckoutScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.ExistingJobScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.project.ProjectDetailScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker.AttendanceCheckScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker.CheckoutScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker.WorkerManagementScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker.WorkerInfoScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.job.ExistingJobScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.screen.JobCreationScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.PaymentSummaryScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.TempSaveScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.WorkerInfoScreen
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.WorkerManagementScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker.payment.PaymentSummaryScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.job.TempSaveScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.job.PreviousJobPostsScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.screen.ProjectListScreen
 import com.billcorea.jikgong.presentation.company.main.scout.CompanyScoutMainScreen
 import com.billcorea.jikgong.presentation.company.main.money.CompanyMoneyScreen
 import com.billcorea.jikgong.presentation.company.main.info.screen.CompanyInfoScreen
+import com.billcorea.jikgong.presentation.company.main.info.screen.NotificationSettingsScreen
+import com.billcorea.jikgong.presentation.company.main.info.screen.AnnouncementScreen
+import com.billcorea.jikgong.presentation.company.main.info.screen.CustomerServiceScreen
+import com.billcorea.jikgong.presentation.company.main.info.screen.TermsAndPoliciesScreen
+import com.billcorea.jikgong.presentation.company.main.info.screen.MyInfoScreen
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyScoutMainScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyMoneyScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyInfoScreenDestination
+import com.billcorea.jikgong.presentation.destinations.NotificationSettingsScreenDestination
+import com.billcorea.jikgong.presentation.destinations.AnnouncementScreenDestination
+import com.billcorea.jikgong.presentation.destinations.CustomerServiceScreenDestination
+import com.billcorea.jikgong.presentation.destinations.TermsAndPoliciesScreenDestination
+import com.billcorea.jikgong.presentation.destinations.MyInfoScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage2ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyLoginPage1ScreenDestination
@@ -290,6 +301,31 @@ class MainActivity : ComponentActivity() {
                   navController = navController
                 )
               }
+              composable(NotificationSettingsScreenDestination.route) {
+                NotificationSettingsScreen(
+                  navController = navController
+                )
+              }
+              composable(AnnouncementScreenDestination.route) {
+                AnnouncementScreen(
+                  navController = navController
+                )
+              }
+              composable(CustomerServiceScreenDestination.route) {
+                CustomerServiceScreen(
+                  navController = navController
+                )
+              }
+              composable(TermsAndPoliciesScreenDestination.route) {
+                TermsAndPoliciesScreen(
+                  navController = navController
+                )
+              }
+              composable(MyInfoScreenDestination.route) {
+                MyInfoScreen(
+                  navController = navController
+                )
+              }
               /** ProjectListScreen 에서 프로젝트 관리 버튼 클릭시 사용하는 Router */
               composable(
                 route = ProjectDetailScreenDestination.route,
@@ -356,9 +392,30 @@ class MainActivity : ComponentActivity() {
                 )
               }
               /** ProjectDetailScreen 에서 일자리 등록 버튼 클릭시 사용하는 Router */
-              composable("job_registration") {
+              composable("job_registration?projectStartDate={projectStartDate}&projectEndDate={projectEndDate}") { navBackStackEntry ->
+                val projectStartDate = navBackStackEntry.arguments?.getString("projectStartDate")
+                val projectEndDate = navBackStackEntry.arguments?.getString("projectEndDate")
                 JobCreationScreen(
-                  onNavigateBack = { navController.popBackStack() }
+                  onNavigateBack = { navController.popBackStack() },
+                  projectStartDate = projectStartDate,
+                  projectEndDate = projectEndDate
+                )
+              }
+              /** ProjectDetailScreen 에서 일자리 등록 (재사용 포함) 버튼 클릭시 사용하는 Router */
+              composable("job_registration?reuseId={reuseId}") { navBackStackEntry ->
+                val reuseId = navBackStackEntry.arguments?.getString("reuseId")
+                JobCreationScreen(
+                  onNavigateBack = { navController.popBackStack() },
+                  reuseJobPostId = reuseId
+                )
+              }
+              /** ProjectDetailScreen 에서 기존 공고 재사용 버튼 클릭시 사용하는 Router */
+              composable("previous_job_posts/{projectId}") { navBackStackEntry ->
+                val projectId = navBackStackEntry.arguments?.getString("projectId") ?: ""
+                PreviousJobPostsScreen(
+                  navController = navController,
+                  projectId = projectId,
+                  modifier = Modifier.padding(5.dp)
                 )
               }
               /** JobRegistrationScreen 에서 임시 버튼 클릭시 사용하는 Router */

@@ -1,11 +1,11 @@
-package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen
+package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,33 +16,32 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-// 출근 체크용 근로자 데이터
-data class AttendanceWorker(
+// 퇴근 체크용 근로자 데이터
+data class CheckoutWorker(
   val id: String,
   val name: String,
   val age: Int,
   val gender: String, // "남", "여"
-  val phoneNumber: String,
-  var attendanceStatus: AttendanceStatus = AttendanceStatus.NONE
+  var checkoutStatus: CheckoutStatus = CheckoutStatus.NONE
 )
 
-enum class AttendanceStatus {
-  NONE,        // 아무것도 선택안됨 (출근전)
-  NOT_ARRIVED, // 결근
-  ARRIVED      // 출근
+enum class CheckoutStatus {
+  NONE,        // 아무것도 선택안됨
+  EARLY_LEAVE, // 조퇴
+  NORMAL_LEAVE // 정상퇴근
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AttendanceCheckScreen(
+fun CheckoutScreen(
   navController: NavController,
   workDayId: String,
   selectedDate: String? = null,
@@ -59,10 +58,10 @@ fun AttendanceCheckScreen(
       LocalDate.parse(it) 
     } ?: LocalDate.parse("2025-08-01")
     
-    println("=== AttendanceCheckScreen Debug ===")
+    println("=== CheckoutScreen Debug ===")
     println("selectedDate parameter: $selectedDate")
     println("effectiveDate: $parsedDate")
-    println("===================================")
+    println("===========================")
     
     parsedDate
   } catch (e: Exception) {
@@ -70,18 +69,17 @@ fun AttendanceCheckScreen(
     LocalDate.parse("2025-08-01")
   }
   
-  // 해당 날짜의 확정 근로자를 출근체크 데이터로 변환
+  // 해당 날짜의 확정 근로자를 퇴근체크 데이터로 변환
   val workers = remember(effectiveDate) {
     val confirmedWorkers = confirmedWorkersByDate[effectiveDate] ?: emptyList()
     mutableStateListOf(
       *confirmedWorkers.map { worker ->
-        AttendanceWorker(
+        CheckoutWorker(
           id = worker.id,
           name = worker.name,
           age = worker.age,
           gender = worker.gender,
-          phoneNumber = worker.phoneNumber,
-          attendanceStatus = AttendanceStatus.NONE
+          checkoutStatus = CheckoutStatus.NONE
         )
       }.toTypedArray()
     )
@@ -91,7 +89,7 @@ fun AttendanceCheckScreen(
     modifier = modifier.fillMaxSize(),
     topBar = {
       BackNavigationTopBar(
-        title = "출근확인 (${effectiveDate.format(DateTimeFormatter.ofPattern("MM/dd"))})",
+        title = "퇴근확인 (${effectiveDate.format(DateTimeFormatter.ofPattern("MM/dd"))})",
         onBackClick = { navController.popBackStack() }
       )
     }
@@ -104,8 +102,8 @@ fun AttendanceCheckScreen(
     ) {
       HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
       
-      // 총 인원수 표시
-      Box(
+      // 총 인원수와 안내 문구
+      Column(
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -125,6 +123,14 @@ fun AttendanceCheckScreen(
             color = appColorScheme.primary
           )
         }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        Text(
+          text = "! 조퇴는 임금이 지급되지 않습니다",
+          style = AppTypography.bodySmall,
+          color = Color.Gray
+        )
       }
       
       // 근로자 리스트
@@ -159,12 +165,12 @@ fun AttendanceCheckScreen(
           verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
           items(workers) { worker ->
-            AttendanceWorkerCard(
+            CheckoutWorkerCard(
               worker = worker,
-              onAttendanceChange = { newStatus ->
+              onCheckoutChange = { newStatus ->
                 val index = workers.indexOf(worker)
                 if (index >= 0) {
-                  workers[index] = worker.copy(attendanceStatus = newStatus)
+                  workers[index] = worker.copy(checkoutStatus = newStatus)
                 }
               }
             )
@@ -176,9 +182,9 @@ fun AttendanceCheckScreen(
 }
 
 @Composable
-private fun AttendanceWorkerCard(
-  worker: AttendanceWorker,
-  onAttendanceChange: (AttendanceStatus) -> Unit
+private fun CheckoutWorkerCard(
+  worker: CheckoutWorker,
+  onCheckoutChange: (CheckoutStatus) -> Unit
 ) {
   Card(
     modifier = Modifier.fillMaxWidth(),
@@ -191,7 +197,7 @@ private fun AttendanceWorkerCard(
         .fillMaxWidth()
         .padding(16.dp)
     ) {
-      // 상단: 이름과 출근 상태
+      // 상단: 이름과 퇴근 상태
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -203,20 +209,20 @@ private fun AttendanceWorkerCard(
           fontWeight = FontWeight.Bold
         )
         
-        // 출근 상태 뱃지
+        // 퇴근 상태 표시
         Surface(
           shape = RoundedCornerShape(12.dp),
-          color = when (worker.attendanceStatus) {
-            AttendanceStatus.NONE -> Color(0xFF2196F3) // 파란색 (기본)
-            AttendanceStatus.NOT_ARRIVED -> Color(0xFFF44336) // 빨간색
-            AttendanceStatus.ARRIVED -> Color(0xFF4CAF50) // 초록색
+          color = when (worker.checkoutStatus) {
+            CheckoutStatus.EARLY_LEAVE -> Color(0xFFF44336) // 빨간색
+            CheckoutStatus.NORMAL_LEAVE -> Color(0xFF2196F3) // 파란색
+            CheckoutStatus.NONE -> Color(0xFF4CAF50) // 초록색 (기본)
           }
         ) {
           Text(
-            text = when (worker.attendanceStatus) {
-              AttendanceStatus.NONE -> "출근 전"
-              AttendanceStatus.NOT_ARRIVED -> "결근"
-              AttendanceStatus.ARRIVED -> "출근"
+            text = when (worker.checkoutStatus) {
+              CheckoutStatus.EARLY_LEAVE -> "조퇴"
+              CheckoutStatus.NORMAL_LEAVE -> "정상퇴근"
+              CheckoutStatus.NONE -> "출근 중"
             },
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 3.dp),
             style = AppTypography.bodySmall,
@@ -235,58 +241,51 @@ private fun AttendanceWorkerCard(
         verticalAlignment = Alignment.CenterVertically
       ) {
         // 좌하단: 기본 정보
-        Column {
-          Text(
-            text = "만 ${worker.age}세 • ${worker.gender}",
-            style = AppTypography.bodyMedium,
-            color = Color.Gray
-          )
-          Text(
-            text = worker.phoneNumber,
-            style = AppTypography.bodySmall,
-            color = Color.Gray
-          )
-        }
+        Text(
+          text = "만 ${worker.age}세 • ${worker.gender}",
+          style = AppTypography.bodyMedium,
+          color = Color.Gray
+        )
         
-        // 우하단: 출근/결근 버튼
+        // 우하단: 조퇴/퇴근 버튼
         Row(
           horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          // 결근 버튼
+          // 조퇴 버튼
           OutlinedButton(
-            onClick = { onAttendanceChange(AttendanceStatus.NOT_ARRIVED) },
+            onClick = { onCheckoutChange(CheckoutStatus.EARLY_LEAVE) },
             modifier = Modifier.height(32.dp),
             colors = ButtonDefaults.outlinedButtonColors(
-              containerColor = if (worker.attendanceStatus == AttendanceStatus.NOT_ARRIVED) 
+              containerColor = if (worker.checkoutStatus == CheckoutStatus.EARLY_LEAVE) 
                 appColorScheme.primary else Color.Transparent,
-              contentColor = if (worker.attendanceStatus == AttendanceStatus.NOT_ARRIVED) 
+              contentColor = if (worker.checkoutStatus == CheckoutStatus.EARLY_LEAVE) 
                 Color.White else Color.Black
             ),
             border = BorderStroke(1.dp, Color.Gray),
             shape = RoundedCornerShape(6.dp)
           ) {
             Text(
-              text = "결근",
+              text = "조퇴",
               style = AppTypography.bodySmall,
               fontWeight = FontWeight.Medium
             )
           }
           
-          // 출근 버튼
+          // 퇴근 버튼
           OutlinedButton(
-            onClick = { onAttendanceChange(AttendanceStatus.ARRIVED) },
+            onClick = { onCheckoutChange(CheckoutStatus.NORMAL_LEAVE) },
             modifier = Modifier.height(32.dp),
             colors = ButtonDefaults.outlinedButtonColors(
-              containerColor = if (worker.attendanceStatus == AttendanceStatus.ARRIVED) 
+              containerColor = if (worker.checkoutStatus == CheckoutStatus.NORMAL_LEAVE) 
                 appColorScheme.primary else Color.Transparent,
-              contentColor = if (worker.attendanceStatus == AttendanceStatus.ARRIVED) 
+              contentColor = if (worker.checkoutStatus == CheckoutStatus.NORMAL_LEAVE) 
                 Color.White else Color.Black
             ),
             border = BorderStroke(1.dp, Color.Gray),
             shape = RoundedCornerShape(6.dp)
           ) {
             Text(
-              text = "출근",
+              text = "퇴근",
               style = AppTypography.bodySmall,
               fontWeight = FontWeight.Medium
             )
@@ -299,9 +298,9 @@ private fun AttendanceWorkerCard(
 
 @Preview
 @Composable
-fun AttendanceCheckScreenPreview() {
+fun CheckoutScreenPreview() {
   Jikgong1111Theme {
-    AttendanceCheckScreen(
+    CheckoutScreen(
       navController = rememberNavController(),
       workDayId = "1",
       selectedDate = "2025-08-01"

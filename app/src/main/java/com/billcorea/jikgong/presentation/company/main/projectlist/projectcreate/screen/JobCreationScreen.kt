@@ -38,25 +38,125 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 
+// 기존 공고 데이터 (PreviousJobPostsScreen과 동일한 구조)
+data class PreviousJobPost(
+  val id: String,
+  val title: String,
+  val category: String,
+  val location: String,
+  val wage: Int,
+  val workPeriod: String,
+  val maxWorkers: Int,
+  val completedDate: java.time.LocalDate,
+  val totalApplicants: Int
+)
+
+// 샘플 데이터에서 기존 공고를 ID로 찾는 함수
+fun getPreviousJobPostById(id: String): PreviousJobPost? {
+  val samplePosts = listOf(
+    PreviousJobPost(
+      id = "1",
+      title = "아파트 신축공사 철근 작업자 모집",
+      category = "철근공",
+      location = "서울시 강남구 역삼동",
+      wage = 200000,
+      workPeriod = "2025-07-15 ~ 2025-08-30",
+      maxWorkers = 15,
+      completedDate = java.time.LocalDate.now().minusDays(7),
+      totalApplicants = 23
+    ),
+    PreviousJobPost(
+      id = "2",
+      title = "사무실 인테리어 목공 인력 모집",
+      category = "목공",
+      location = "서울시 서초구 서초동",
+      wage = 180000,
+      workPeriod = "2025-06-20 ~ 2025-07-25",
+      maxWorkers = 10,
+      completedDate = java.time.LocalDate.now().minusDays(14),
+      totalApplicants = 18
+    ),
+    PreviousJobPost(
+      id = "3",
+      title = "상가건물 전기공 모집",
+      category = "전기공",
+      location = "서울시 용산구 이태원동",
+      wage = 220000,
+      workPeriod = "2025-05-10 ~ 2025-06-30",
+      maxWorkers = 8,
+      completedDate = java.time.LocalDate.now().minusDays(21),
+      totalApplicants = 15
+    ),
+    PreviousJobPost(
+      id = "4",
+      title = "아파트 리모델링 미장공 모집",
+      category = "미장공",
+      location = "서울시 마포구 홍대입구",
+      wage = 190000,
+      workPeriod = "2025-04-01 ~ 2025-05-20",
+      maxWorkers = 12,
+      completedDate = java.time.LocalDate.now().minusDays(35),
+      totalApplicants = 20
+    )
+  )
+  return samplePosts.find { it.id == id }
+}
+
 // 실제 사용될 Screen 함수 (Navigation에서 사용)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobCreationScreen(
-  onNavigateBack: () -> Unit
+  onNavigateBack: () -> Unit,
+  reuseJobPostId: String? = null,
+  projectStartDate: String? = null,
+  projectEndDate: String? = null
 ) {
+  // 기존 공고 데이터를 가져와서 초기값으로 설정
+  val initialUiState = remember(reuseJobPostId) {
+    if (reuseJobPostId != null) {
+      // 실제로는 reuseJobPostId를 사용해서 데이터를 가져와야 하지만, 
+      // 지금은 샘플 데이터를 사용
+      getPreviousJobPostById(reuseJobPostId)?.let { jobPost ->
+        ProjectCreateUiState(
+          projectName = jobPost.title,
+          category = jobPost.category,
+          workLocation = jobPost.location,
+          wage = jobPost.wage.toString(),
+          maxApplicants = jobPost.maxWorkers.toString(),
+          description = "기존 공고에서 복사된 내용입니다.",
+          isFormValid = false,
+          isLoading = false
+        )
+      } ?: ProjectCreateUiState(
+        projectName = "",
+        category = "",
+        maxApplicants = "",
+        wage = "",
+        startDate = null,
+        isFormValid = false,
+        isLoading = false
+      )
+    } else {
+      ProjectCreateUiState(
+        projectName = "",
+        category = "",
+        maxApplicants = "",
+        wage = "",
+        startDate = null,
+        isFormValid = false,
+        isLoading = false
+      )
+    }
+  }
+  
   // 실제 구현에서는 ViewModel을 사용하되, Preview에서는 사용하지 않음
   JobCreationScreenContent(
-    uiState = ProjectCreateUiState(
-      projectName = "",
-      category = "",
-      maxApplicants = "",
-      wage = "",
-      startDate = null,
-      isFormValid = false,
-      isLoading = false
-    ),
+    uiState = initialUiState,
     onEvent = { },
-    onNavigateBack = onNavigateBack
+    onNavigateBack = onNavigateBack,
+    isReuseMode = reuseJobPostId != null,
+    projectStartDate = projectStartDate,
+    projectEndDate = projectEndDate
   )
 }
 
@@ -65,12 +165,18 @@ fun JobCreationScreen(
 fun JobCreationScreenContent(
   uiState: ProjectCreateUiState,
   onEvent: (ProjectCreateEvent) -> Unit,
-  onNavigateBack: () -> Unit
+  onNavigateBack: () -> Unit,
+  isReuseMode: Boolean = false,
+  projectStartDate: String? = null,
+  projectEndDate: String? = null
 ) {
   ProjectCreateScreenContent(
     uiState = uiState,
     onEvent = onEvent,
-    onNavigateBack = onNavigateBack
+    onNavigateBack = onNavigateBack,
+    isReuseMode = isReuseMode,
+    projectStartDate = projectStartDate,
+    projectEndDate = projectEndDate
   )
 }
 
@@ -79,12 +185,15 @@ fun JobCreationScreenContent(
 internal fun ProjectCreateScreenContent(
   uiState: ProjectCreateUiState,
   onEvent: (ProjectCreateEvent) -> Unit,
-  onNavigateBack: () -> Unit
+  onNavigateBack: () -> Unit,
+  isReuseMode: Boolean = false,
+  projectStartDate: String? = null,
+  projectEndDate: String? = null
 ) {
   Scaffold(
     topBar = {
       CompanyTopBar(
-        title = "일자리 등록",
+        title = if (isReuseMode) "공고 재등록" else "일자리 등록",
         showBackButton = true,
         onBackClick = onNavigateBack,
         actions = {
@@ -132,7 +241,7 @@ internal fun ProjectCreateScreenContent(
             modifier = Modifier.weight(1f),
             enabled = !uiState.isLoading, // 항상 활성화 (로딩 중일 때만 비활성화)
             colors = ButtonDefaults.buttonColors(
-              containerColor = Color(0xFF2196F3)
+              containerColor = Color(0xFF4B7BFF)
             )
           ) {
             if (uiState.isLoading) {
@@ -442,8 +551,12 @@ internal fun ProjectCreateScreenContent(
             
             // 달력 UI
             var selectedDates by remember { mutableStateOf(setOf<LocalDate>()) }
-            val projectStartDate = LocalDate.of(2025, 1, 1) // TODO: 실제 프로젝트 시작일
-            val projectEndDate = LocalDate.of(2025, 12, 31) // TODO: 실제 프로젝트 종료일
+            val calendarStartDate = remember(projectStartDate) {
+              projectStartDate?.let { LocalDate.parse(it) } ?: LocalDate.of(2025, 1, 1)
+            }
+            val calendarEndDate = remember(projectEndDate) {
+              projectEndDate?.let { LocalDate.parse(it) } ?: LocalDate.of(2025, 12, 31)
+            }
             
             WorkDateCalendar(
               selectedDates = selectedDates,
@@ -454,8 +567,8 @@ internal fun ProjectCreateScreenContent(
                   selectedDates + date
                 }
               },
-              projectStartDate = projectStartDate,
-              projectEndDate = projectEndDate,
+              projectStartDate = calendarStartDate,
+              projectEndDate = calendarEndDate,
               modifier = Modifier.fillMaxWidth()
             )
             
