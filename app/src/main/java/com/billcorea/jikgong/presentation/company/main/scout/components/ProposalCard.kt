@@ -1,5 +1,6 @@
 package com.billcorea.jikgong.presentation.company.main.scout.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,22 +26,39 @@ import java.util.*
 
 // 금액에서 숫자 추출 및 형식화 함수
 private fun formatProposalWage(wageString: String): String {
-    // "일당 200000원"에서 6자리 이상의 숫자를 찾아 추출
-    val numberRegex = "\\d{4,}".toRegex() // 4자리 이상 숫자 찾기
-    val matchResult = numberRegex.find(wageString)
-    
-    return if (matchResult != null) {
-        val amount = matchResult.value.toIntOrNull() ?: return wageString
-        "${amount}원"
-    } else {
-        // 4자리 미만인 경우 모든 숫자 중 가장 큰 것 선택
-        val allNumbers = "\\d+".toRegex().findAll(wageString).map { it.value.toIntOrNull() ?: 0 }.toList()
-        if (allNumbers.isNotEmpty()) {
-            val maxNumber = allNumbers.maxOrNull() ?: return wageString
-            "${maxNumber}원"
-        } else {
-            wageString // 파싱 실패시 원본 반환
+    return when {
+        // "20만원" 형식 처리
+        wageString.contains("만원") -> {
+            val numberRegex = "(\\d+)만원".toRegex()
+            val matchResult = numberRegex.find(wageString)
+            if (matchResult != null) {
+                val amount = matchResult.groupValues[1].toIntOrNull()
+                if (amount != null) {
+                    "${NumberFormat.getNumberInstance(Locale.KOREA).format(amount * 10000)}원"
+                } else {
+                    wageString
+                }
+            } else {
+                wageString
+            }
         }
+        // "200000원" 형식 처리 (6자리 이상)
+        wageString.contains("원") -> {
+            val numberRegex = "(\\d{6,})원".toRegex()
+            val matchResult = numberRegex.find(wageString)
+            if (matchResult != null) {
+                val amount = matchResult.groupValues[1].toIntOrNull()
+                if (amount != null) {
+                    "${NumberFormat.getNumberInstance(Locale.KOREA).format(amount)}원"
+                } else {
+                    wageString
+                }
+            } else {
+                wageString
+            }
+        }
+        // 기타 경우 원본 반환
+        else -> wageString
     }
 }
 
@@ -54,216 +72,185 @@ fun ProposalCard(
     modifier = modifier
       .fillMaxWidth()
       .clickable { onClick() },
-    shape = RoundedCornerShape(16.dp),
+    shape = RoundedCornerShape(12.dp),
     colors = CardDefaults.cardColors(
       containerColor = Color.White
     ),
     elevation = CardDefaults.cardElevation(
-      defaultElevation = 2.dp
+      defaultElevation = 1.dp
     )
   ) {
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(16.dp)
+        .padding(12.dp)
     ) {
-      // 상단: 상태 뱃지와 날짜
+      // 상단: 이름, 업종, 상태를 한 줄에
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
-        // 상태 뱃지
-        StatusBadge(status = proposal.status)
-
-        // 제안 날짜
-        Text(
-          text = proposal.toDisplayInfo(),
-          style = MaterialTheme.typography.bodySmall,
-          color = Color.Gray
-        )
-      }
-
-      Spacer(modifier = Modifier.height(12.dp))
-
-      // 노동자 정보
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
-      ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Row(
+          modifier = Modifier.weight(1f),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          // 이름 (더 큰 폰트)
           Text(
             text = proposal.workerName,
-            style = MaterialTheme.typography.titleMedium.copy(
-              fontWeight = FontWeight.Bold
-            )
-          )
-
-          Spacer(modifier = Modifier.height(4.dp))
-
-          Text(
-            text = proposal.jobTypes.joinToString(" · "),
-            style = MaterialTheme.typography.bodyMedium.copy(
-              fontWeight = FontWeight.Medium
+            style = MaterialTheme.typography.titleLarge.copy(
+              fontWeight = FontWeight.ExtraBold
             ),
             color = Color.Black
           )
-
-          Spacer(modifier = Modifier.height(8.dp))
-
-          // 상세 정보 카드
-          Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            color = Color(0xFFF8F9FA)
-          ) {
-            Column(
-              modifier = Modifier.padding(12.dp),
-              verticalArrangement = Arrangement.spacedBy(4.dp)
+          
+          // 업종 뱃지들 (눈에 띄게)
+          proposal.jobTypes.take(2).forEach { jobType ->
+            Surface(
+              shape = RoundedCornerShape(12.dp),
+              color = Color(0xFF4B7BFF).copy(alpha = 0.15f)
             ) {
-              Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-              ) {
-                InfoItem(
-                  icon = "📍",
-                  label = "거리",
-                  value = proposal.distance,
-                  modifier = Modifier.weight(1f)
-                )
-                InfoItem(
-                  icon = "⭐",
-                  label = "평점",
-                  value = "4.5", // Mock data
-                  modifier = Modifier.weight(1f)
-                )
-              }
-              
-              Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-              ) {
-                InfoItem(
-                  icon = "💼",
-                  label = "경력",
-                  value = "5년", // Mock data
-                  modifier = Modifier.weight(1f)
-                )
-                InfoItem(
-                  icon = "✅",
-                  label = "완료",
-                  value = "52건", // Mock data
-                  modifier = Modifier.weight(1f)
-                )
-              }
-              
-              // 제안 금액을 더 눈에 띄게
-              Divider(
-                modifier = Modifier.padding(vertical = 4.dp),
-                color = Color(0xFFE0E0E0),
-                thickness = 0.5.dp
+              Text(
+                text = jobType,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                style = MaterialTheme.typography.labelMedium.copy(
+                  fontWeight = FontWeight.Bold
+                ),
+                color = Color(0xFF4B7BFF)
               )
-              
-              Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-              ) {
-                Text(
-                  text = "제안 일당",
-                  style = MaterialTheme.typography.bodySmall,
-                  color = Color.Gray
-                )
-                Text(
-                  text = formatProposalWage(proposal.proposedWage),
-                  style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.Bold
-                  ),
-                  color = Color(0xFF4B7BFF)
-                )
-              }
             }
           }
         }
+
+        StatusBadge(status = proposal.status)
       }
 
-      // 메시지
-      if (proposal.message.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(12.dp))
+      Spacer(modifier = Modifier.height(8.dp))
 
+      // 핵심 정보를 컴팩트하게 배치
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        // 왼쪽: 거리와 평점
+        Row(
+          horizontalArrangement = Arrangement.spacedBy(12.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+              text = "📍",
+              style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.width(3.dp))
+            Text(
+              text = proposal.distance,
+              style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.Medium
+              ),
+              color = Color(0xFF666666)
+            )
+          }
+          
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+              text = "⭐",
+              style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.width(3.dp))
+            Text(
+              text = "4.5",
+              style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.Medium
+              ),
+              color = Color(0xFF666666)
+            )
+          }
+        }
+
+        // 오른쪽: 제안 금액 (매우 강조)
         Surface(
-          modifier = Modifier.fillMaxWidth(),
           shape = RoundedCornerShape(8.dp),
-          color = Color(0xFFF5F5F5)
+          color = Color(0xFF4B7BFF)
         ) {
           Text(
-            text = proposal.message,
-            modifier = Modifier.padding(12.dp),
-            style = MaterialTheme.typography.bodySmall,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
+            text = formatProposalWage(proposal.proposedWage),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            style = MaterialTheme.typography.titleMedium.copy(
+              fontWeight = FontWeight.ExtraBold
+            ),
+            color = Color.White
           )
         }
       }
 
-      // 수락된 경우 연락처 표시
-      if (proposal.status == ProposalStatus.ACCEPTED && proposal.workerPhone != null) {
-        Spacer(modifier = Modifier.height(12.dp))
+      // 날짜 정보 (컴팩트하게)
+      Spacer(modifier = Modifier.height(6.dp))
+      Text(
+        text = proposal.toDisplayInfo(),
+        style = MaterialTheme.typography.labelMedium,
+        color = Color(0xFF888888)
+      )
 
-        Surface(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .clickable { /* TODO: 전화 걸기 */ },
-          color = Color(0xFF4B7BFF).copy(alpha = 0.1f)
-        ) {
-          Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-          ) {
-            Icon(
-              imageVector = Icons.Default.Phone,
-              contentDescription = "전화",
-              modifier = Modifier.size(16.dp),
-              tint = Color(0xFF4B7BFF)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-              text = proposal.workerPhone,
-              style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.Medium
-              ),
-              color = Color(0xFF4B7BFF)
-            )
-          }
-        }
-      }
-
-      // 응답 시간 (수락/거절된 경우)
-      if (proposal.respondedAt != null) {
+      // 메시지 (더 컴팩트하게)
+      if (proposal.message.isNotEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-          text = "응답: ${proposal.respondedAt.format(DateTimeFormatter.ofPattern("MM월 dd일 HH:mm"))}",
-          style = MaterialTheme.typography.labelSmall,
-          color = Color.Gray
+          text = "💬 ${proposal.message}",
+          style = MaterialTheme.typography.bodySmall.copy(
+            fontWeight = FontWeight.Medium
+          ),
+          color = Color(0xFF555555),
+          maxLines = 2,
+          overflow = TextOverflow.Ellipsis
         )
       }
 
-      // 거절 사유 (거절된 경우)
+      // 수락된 경우 연락처 표시 (인라인으로)
+      if (proposal.status == ProposalStatus.ACCEPTED && proposal.workerPhone != null) {
+        Spacer(modifier = Modifier.height(6.dp))
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(6.dp))
+            .clickable { /* TODO: 전화 걸기 */ }
+            .background(Color(0xFF4B7BFF).copy(alpha = 0.1f))
+            .padding(8.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+          Icon(
+            imageVector = Icons.Default.Phone,
+            contentDescription = "전화",
+            modifier = Modifier.size(14.dp),
+            tint = Color(0xFF4B7BFF)
+          )
+          Text(
+            text = proposal.workerPhone,
+            style = MaterialTheme.typography.bodySmall.copy(
+              fontWeight = FontWeight.Bold
+            ),
+            color = Color(0xFF4B7BFF)
+          )
+        }
+      }
+
+      // 거절 사유 (인라인으로, 더 눈에 띄게)
       if (proposal.status == ProposalStatus.REJECTED && proposal.rejectReason != null) {
-        Spacer(modifier = Modifier.height(8.dp))
-        Surface(
+        Spacer(modifier = Modifier.height(6.dp))
+        Row(
           modifier = Modifier.fillMaxWidth(),
-          shape = RoundedCornerShape(8.dp),
-          color = Color(0xFFFFEBEE)
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.Center
         ) {
           Text(
-            text = "거절 사유: ${proposal.rejectReason}",
-            modifier = Modifier.padding(12.dp),
-            style = MaterialTheme.typography.bodySmall,
-            color = Color(0xFFC62828)
+            text = "❌ ${proposal.rejectReason}",
+            style = MaterialTheme.typography.bodySmall.copy(
+              fontWeight = FontWeight.Medium
+            ),
+            color = Color(0xFFE53E3E)
           )
         }
       }
@@ -306,38 +293,58 @@ private fun InfoItem(
 
 @Composable
 private fun StatusBadge(status: ProposalStatus) {
-  val (backgroundColor, textColor, text) = when (status) {
-    ProposalStatus.PENDING -> Triple(
-      Color(0xFFFFF3E0),
+  val (backgroundColor, textColor, text, icon) = when (status) {
+    ProposalStatus.PENDING -> Quadruple(
       Color(0xFFFF6F00),
-      "대기중"
+      Color.White,
+      "대기중",
+      "⏳"
     )
-    ProposalStatus.ACCEPTED -> Triple(
-      Color(0xFFE8F5E9),
-      Color(0xFF2E7D32),
-      "수락됨"
+    ProposalStatus.ACCEPTED -> Quadruple(
+      Color(0xFF00C853),
+      Color.White,
+      "수락",
+      "✅"
     )
-    ProposalStatus.REJECTED -> Triple(
-      Color(0xFFFFEBEE),
-      Color(0xFFC62828),
-      "거절됨"
+    ProposalStatus.REJECTED -> Quadruple(
+      Color(0xFFE53E3E),
+      Color.White,
+      "거절",
+      "❌"
     )
   }
 
   Surface(
-    shape = RoundedCornerShape(12.dp),
+    shape = RoundedCornerShape(16.dp),
     color = backgroundColor
   ) {
-    Text(
-      text = text,
-      modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-      style = MaterialTheme.typography.labelSmall.copy(
-        fontWeight = FontWeight.Bold
-      ),
-      color = textColor
-    )
+    Row(
+      modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+      Text(
+        text = icon,
+        style = MaterialTheme.typography.labelSmall
+      )
+      Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium.copy(
+          fontWeight = FontWeight.ExtraBold
+        ),
+        color = textColor
+      )
+    }
   }
 }
+
+// Helper data class for 4 values
+private data class Quadruple<A, B, C, D>(
+  val first: A,
+  val second: B,
+  val third: C,
+  val fourth: D
+)
 
 @Preview(showBackground = true, backgroundColor = 0xFFF7F8FA)
 @Composable

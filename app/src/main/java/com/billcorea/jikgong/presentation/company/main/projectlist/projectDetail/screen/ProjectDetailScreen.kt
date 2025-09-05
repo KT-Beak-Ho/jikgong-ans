@@ -38,45 +38,48 @@ fun ProjectDetailScreen(
   projectId: String,
   modifier: Modifier = Modifier
 ) {
-  // 샘플 프로젝트 데이터
-  val project = remember {
-    SimpleProject(
-      id = projectId,
-      title = "아파트 신축공사 철근 작업자 모집",
-      company = "대한건설(주)",
-      location = "서울시 강남구 역삼동",
-      category = "철근공",
-      status = "IN_PROGRESS",
-      startDate = "2025-08-08",
-      endDate = "2025-09-20",
-
-      currentApplicants = 8,
-
-      isUrgent = true
-    )
+  // 실제 프로젝트 데이터 로드
+  val project = remember(projectId) {
+    val baseProject = CompanyMockDataFactory.getProjectById(projectId)
+    if (baseProject != null) {
+      SimpleProject(
+        id = baseProject.id,
+        title = baseProject.title,
+        company = baseProject.company,
+        location = baseProject.location,
+        category = baseProject.category,
+        status = baseProject.status,
+        startDate = baseProject.startDate,
+        endDate = baseProject.endDate,
+        wage = baseProject.wage,
+        currentApplicants = baseProject.currentApplicants,
+        maxApplicants = baseProject.maxApplicants,
+        isUrgent = baseProject.isUrgent,
+        isBookmarked = baseProject.isBookmarked
+      )
+    } else {
+      // 기본 프로젝트 (fallback)
+      CompanyMockDataFactory.getSimpleProjects().firstOrNull() ?: SimpleProject(
+        id = projectId,
+        title = "프로젝트를 찾을 수 없습니다",
+        company = "알 수 없음",
+        location = "알 수 없음",
+        category = "일반",
+        status = "IN_PROGRESS",
+        startDate = "2025-08-01",
+        endDate = "2025-08-31",
+        wage = 150000,
+        currentApplicants = 0,
+        maxApplicants = 10,
+        isUrgent = false,
+        isBookmarked = false
+      )
+    }
   }
 
-  // 샘플 일자별 작업 데이터 - 더 많은 데이터와 월별 분산
-  val workDays = remember {
-    listOf(
-      // 진행중 - 8월
-      WorkDay("1", "보통인부 15명 모집", LocalDate.parse("2025-08-05"), "08:00", "18:00", "2025-08-01 ~ 2025-08-07", 12, 10, 15, "IN_PROGRESS"),
-      WorkDay("2", "철근공 10명 모집", LocalDate.parse("2025-08-08"), "08:00", "18:00", "2025-08-02 ~ 2025-08-08", 8, 8, 10, "IN_PROGRESS"),
-      
-      // 예정 - 8월 중순 이후 (CompanyMockDataFactory 데이터 날짜 범위 사용)
-      WorkDay("3", "목공 20명 모집", LocalDate.parse("2025-08-15"), "08:00", "18:00", "2025-08-15 ~ 2025-08-20", 0, 0, 20, "UPCOMING"),
-      WorkDay("4", "전기공 20명 모집", LocalDate.parse("2025-08-16"), "08:00", "18:00", "2025-08-16 ~ 2025-08-18", 0, 0, 20, "UPCOMING"),
-      WorkDay("5", "미장공 15명 모집", LocalDate.parse("2025-08-17"), "09:00", "17:00", "2025-08-17 ~ 2025-08-19", 0, 0, 15, "UPCOMING"),
-      WorkDay("6", "조적공 12명 모집", LocalDate.parse("2025-08-18"), "08:00", "18:00", "2025-08-18 ~ 2025-08-20", 0, 0, 12, "UPCOMING"),
-      WorkDay("7", "설비공 8명 모집", LocalDate.parse("2025-08-19"), "08:00", "18:00", "2025-08-19 ~ 2025-08-20", 0, 0, 8, "UPCOMING"),
-      WorkDay("8", "도배공 10명 모집", LocalDate.parse("2025-08-20"), "09:00", "17:00", "2025-08-20 ~ 2025-08-22", 0, 0, 10, "UPCOMING"),
-      
-      // 마감 - 7월, 8월 (입금 상태 포함)
-      WorkDay("9", "보통인부 15명 모집", LocalDate.parse("2025-07-25"), "08:00", "18:00", "2025-07-20 ~ 2025-07-25", 15, 15, 15, "COMPLETED"),
-      WorkDay("10", "철근공 12명 모집", LocalDate.parse("2025-07-30"), "08:00", "18:00", "2025-07-25 ~ 2025-07-30", 12, 12, 12, "COMPLETED"),
-      WorkDay("11", "목공 8명 모집", LocalDate.parse("2025-08-01"), "08:00", "18:00", "2025-07-28 ~ 2025-08-01", 8, 8, 8, "COMPLETED"),
-      WorkDay("12", "미장공 6명 모집", LocalDate.parse("2025-08-03"), "09:00", "17:00", "2025-08-01 ~ 2025-08-03", 6, 6, 6, "COMPLETED")
-    )
+  // 실제 프로젝트별 작업일 데이터
+  val workDays = remember(projectId) {
+    CompanyMockDataFactory.getWorkDaysForProject(projectId)
   }
 
   var selectedTab by remember { mutableStateOf(0) }
@@ -101,16 +104,16 @@ fun ProjectDetailScreen(
     )
   }
   
-  // 지원자 데이터 (날짜별)
-  val applicantsByDate = remember {
-    CompanyMockDataFactory.getApplicantWorkersByDate().mapKeys { 
-      LocalDate.parse(it.key) 
-    }
+  // 프로젝트별 등록된 노동자들의 출퇴근 데이터
+  val projectWorkers = remember(projectId) {
+    CompanyMockDataFactory.getProjectWorkers(projectId)
   }
   
-  // 날짜별 지원자 수 계산 함수 - CompanyMockDataFactory의 실제 데이터만 사용
+  // 날짜별 지원자 수 계산 함수 - 프로젝트별 작업일에 따라 다름
   fun getApplicantsCountForDate(date: LocalDate): Int {
-    return (applicantsByDate[date] ?: emptyList()).size
+    // 해당 날짜의 WorkDay 찾기
+    val workDay = workDays.find { it.date == date }
+    return workDay?.applicants ?: 0
   }
 
   Scaffold(
@@ -214,16 +217,18 @@ fun ProjectDetailScreen(
               Text("전체", style = AppTypography.bodySmall)
             }
             
-            // 8월 예정 프로젝트이므로 08월 버튼만 표시
-            OutlinedButton(
-              onClick = { selectedMonth = "2025년 08월" },
-              colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = if (selectedMonth == "2025년 08월") Color(0xFF4B7BFF) else Color.Transparent,
-                contentColor = if (selectedMonth == "2025년 08월") Color.White else Color.Gray
-              ),
-              modifier = Modifier.height(32.dp)
-            ) {
-              Text("08월", style = AppTypography.bodySmall)
+            // 실제 예정된 월들 표시
+            availableMonths.forEach { month ->
+              OutlinedButton(
+                onClick = { selectedMonth = month },
+                colors = ButtonDefaults.outlinedButtonColors(
+                  containerColor = if (selectedMonth == month) Color(0xFF4B7BFF) else Color.Transparent,
+                  contentColor = if (selectedMonth == month) Color.White else Color.Gray
+                ),
+                modifier = Modifier.height(32.dp)
+              ) {
+                Text(month.substring(5, 7) + "월", style = AppTypography.bodySmall)
+              }
             }
           }
         }

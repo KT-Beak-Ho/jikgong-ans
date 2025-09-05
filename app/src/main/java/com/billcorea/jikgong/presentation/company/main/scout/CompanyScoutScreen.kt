@@ -35,10 +35,6 @@ import com.billcorea.jikgong.presentation.company.main.scout.pages.WorkerListPag
 import com.billcorea.jikgong.presentation.company.main.scout.pages.ProposalListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.LocationSettingPage
 import com.billcorea.jikgong.presentation.company.main.scout.components.WorkerDetailBottomSheet
-import com.billcorea.jikgong.presentation.company.main.money.popup.PaymentConfirmationDialog
-import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentData
-import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentStatus
-import com.billcorea.jikgong.presentation.company.main.money.components.ProjectPaymentCard
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -54,20 +50,11 @@ fun CompanyScoutMainScreen(
     viewModel: CompanyScoutViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val pagerState = rememberPagerState(pageCount = { 4 }) // 4개 탭으로 확장
+    val pagerState = rememberPagerState(pageCount = { 3 }) // 3개 탭: 인력 목록, 제안 목록, 위치 설정
     val coroutineScope = rememberCoroutineScope()
     
     // 새로고침 완료 알림을 위한 상태
     val snackbarHostState = remember { SnackbarHostState() }
-    
-    // 입금 관련 상태
-    var showPaymentConfirmDialog by remember { mutableStateOf(false) }
-    var selectedProjectForPayment by remember { mutableStateOf<ProjectPaymentData?>(null) }
-    
-    // 예시 프로젝트 데이터 (실제로는 viewModel에서 관리해야 함)
-    val projectPayments = remember { 
-        CompanyMockDataFactory.getProjectPayments().take(3) // 몇 개만 사용
-    }
 
     Scaffold(
         modifier = modifier,
@@ -185,15 +172,6 @@ fun CompanyScoutMainScreen(
                         viewModel.getCurrentLocation()
                     }
                 )
-                3 -> PaymentManagementPage(
-                    projectPayments = projectPayments,
-                    onPaymentAction = { project, action ->
-                        if (action == "deposit") {
-                            selectedProjectForPayment = project
-                            showPaymentConfirmDialog = true
-                        }
-                    }
-                )
             }
         }
     }
@@ -276,71 +254,9 @@ fun CompanyScoutMainScreen(
         )
     }
     
-    // 입금 확인 팝업
-    if (showPaymentConfirmDialog && selectedProjectForPayment != null) {
-        PaymentConfirmationDialog(
-            project = selectedProjectForPayment!!,
-            onDismiss = { 
-                showPaymentConfirmDialog = false
-                selectedProjectForPayment = null
-            },
-            onConfirmPayment = { project ->
-                // 입금 완료 처리
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = "${project.projectTitle} 입금이 완료되었습니다!",
-                        duration = SnackbarDuration.Short
-                    )
-                }
-                showPaymentConfirmDialog = false
-                selectedProjectForPayment = null
-            }
-        )
-    }
     
 }
 
-@Composable
-private fun PaymentManagementPage(
-    projectPayments: List<ProjectPaymentData>,
-    onPaymentAction: (ProjectPaymentData, String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            Text(
-                text = "입금 관리",
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            
-            Text(
-                text = "프로젝트별 임금 입금을 관리하세요",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
-        }
-        
-        items(
-            items = projectPayments,
-            key = { it.id }
-        ) { projectPayment ->
-            ProjectPaymentCard(
-                projectPayment = projectPayment,
-                onPaymentAction = onPaymentAction
-            )
-        }
-    }
-}
 
 @Composable
 private fun TossStyleHeader(
@@ -398,7 +314,7 @@ private fun ScoutTabBarExtended(
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val tabs = listOf("인력 목록", "제안 목록", "위치 설정", "입금 관리")
+    val tabs = listOf("인력 목록", "제안 목록", "위치 설정")
 
     Surface(
         modifier = modifier.fillMaxWidth(),

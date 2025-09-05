@@ -30,173 +30,206 @@ fun WorkerCard(
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(16.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(12.dp)
         ) {
-            // 상단 정보
+            // 상단: 이름, 업종, 상태를 한 줄에 (ProposalCard와 동일한 구조)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // 왼쪽: 노동자 정보
-                Column(
-                    modifier = Modifier.weight(1f)
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // 이름
-                        Text(
-                            text = worker.name,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
-                            )
-                        )
-
-                        // 가능 여부 뱃지
-                        if (worker.isAvailable) {
-                            Surface(
-                                shape = RoundedCornerShape(4.dp),
-                                color = Color(0xFF4B7BFF).copy(alpha = 0.1f)
-                            ) {
-                                Text(
-                                    text = "가능",
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color(0xFF4B7BFF)
-                                )
-                            }
-                        } else {
-                            Surface(
-                                shape = RoundedCornerShape(4.dp),
-                                color = Color.Gray.copy(alpha = 0.1f)
-                            ) {
-                                Text(
-                                    text = "진행중",
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.Gray
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // 직종
+                    // 이름 (더 큰 폰트로 강조)
                     Text(
-                        text = worker.jobTypes.joinToString(" · "),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Medium
+                        text = worker.name,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.ExtraBold
                         ),
                         color = Color.Black
                     )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // 거리와 경력
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = "📍 ${worker.distance}km",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
-                        Text(
-                            text = "경력 ${worker.experience}년",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
+                    
+                    // 업종 뱃지들 (눈에 띄게)
+                    worker.jobTypes.take(2).forEach { jobType ->
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFF4B7BFF).copy(alpha = 0.15f)
+                        ) {
+                            Text(
+                                text = jobType,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = Color(0xFF4B7BFF)
+                            )
+                        }
                     }
                 }
 
-                // 오른쪽: 평점
-                Column(
-                    horizontalAlignment = Alignment.End
+                // 상태 뱃지 (ProposalCard와 유사한 스타일)
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = if (worker.isAvailable) Color(0xFF00C853) else Color(0xFFFF6F00)
                 ) {
                     Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
                         Text(
-                            text = "⭐",
-                            fontSize = 14.sp
+                            text = if (worker.isAvailable) "✅" else "⏳",
+                            style = MaterialTheme.typography.labelSmall
                         )
                         Text(
-                            text = "${worker.rating}",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
-
-                    if (worker.completedProjects > 0) {
-                        Text(
-                            text = "${worker.completedProjects}건 완료",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray
+                            text = if (worker.isAvailable) "가능" else "진행중",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.ExtraBold
+                            ),
+                            color = Color.White
                         )
                     }
                 }
             }
 
-            // 자기소개 (있을 경우)
-            worker.introduction?.let { intro ->
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 핵심 정보를 컴팩트하게 배치 (ProposalCard와 동일한 구조)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 왼쪽: 거리, 경력, 평점
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "📍",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "${worker.distance}km",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color(0xFF666666)
+                        )
+                    }
+                    
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "💼",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "${worker.experience}년",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color(0xFF666666)
+                        )
+                    }
+                    
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "⭐",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "${worker.rating}",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color(0xFF666666)
+                        )
+                    }
+                }
+
+                // 오른쪽: 희망 임금 (강조)
+                worker.desiredWage?.let { wage ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF4B7BFF)
+                    ) {
+                        Text(
+                            text = wage,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold
+                            ),
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+
+            // 완료 프로젝트 수 (컴팩트하게)
+            if (worker.completedProjects > 0) {
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = intro,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    text = "✅ ${worker.completedProjects}건 완료",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color(0xFF888888)
+                )
+            }
+
+            // 자기소개 (더 컴팩트하게)
+            worker.introduction?.let { intro ->
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "💬 $intro",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = Color(0xFF555555),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
 
-            // 희망 일당
-            worker.desiredWage?.let { wage ->
-                Spacer(modifier = Modifier.height(8.dp))
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFFF5F5F5)
-                ) {
-                    Text(
-                        text = "💰 $wage",
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                }
-            }
-
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 스카웃하기 버튼
+            // 스카웃하기 버튼 (더 현대적으로)
             Button(
                 onClick = onScoutClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp),
+                    .height(40.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4B7BFF),
-                    disabledContainerColor = Color.Gray
+                    containerColor = if (worker.isAvailable) Color(0xFF4B7BFF) else Color(0xFFE0E0E0),
+                    contentColor = if (worker.isAvailable) Color.White else Color(0xFF888888)
                 ),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
                 enabled = worker.isAvailable
             ) {
-                Text(
-                    text = if (worker.isAvailable) "스카웃하기" else "진행중",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (worker.isAvailable) "🎯" else "⏳",
+                        style = MaterialTheme.typography.bodyMedium
                     )
-                )
+                    Text(
+                        text = if (worker.isAvailable) "스카웃하기" else "진행중",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
             }
         }
     }

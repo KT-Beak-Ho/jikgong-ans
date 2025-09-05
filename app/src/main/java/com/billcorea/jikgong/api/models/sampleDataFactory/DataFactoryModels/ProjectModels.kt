@@ -53,5 +53,36 @@ data class WorkDay(
   val applicants: Int,
   val confirmed: Int,
   val maxWorkers: Int,
-  val status: String // "IN_PROGRESS", "UPCOMING", "COMPLETED"
+  val status: String, // "IN_PROGRESS", "UPCOMING", "COMPLETED"
+  val projectId: String = "1" // 프로젝트 ID 추가
 )
+
+// ==================== 프로젝트별 노동자 관리 ====================
+
+data class ProjectWorker(
+  val workerId: String,
+  val workerName: String,
+  val projectId: String,
+  val workDayId: String,
+  val jobType: String,
+  val registrationDate: LocalDate,
+  val attendanceRecords: List<AttendanceRecord> = emptyList()
+)
+
+data class AttendanceRecord(
+  val date: LocalDate,
+  val status: AttendanceStatus,
+  val checkInTime: String? = null,
+  val checkOutTime: String? = null,
+  val workHours: Double = 0.0,
+  val notes: String = ""
+)
+
+enum class AttendanceStatus {
+  SCHEDULED,      // 예정됨
+  CHECKED_IN,     // 출근함
+  CHECKED_OUT,    // 퇴근함
+  ABSENT,         // 결근
+  LATE,          // 지각
+  EARLY_LEAVE     // 조퇴
+}
