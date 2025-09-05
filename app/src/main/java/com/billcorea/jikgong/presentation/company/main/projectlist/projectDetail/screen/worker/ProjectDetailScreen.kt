@@ -49,26 +49,33 @@ fun ProjectDetailScreen(
       status = "IN_PROGRESS",
       startDate = "2025-08-08",
       endDate = "2025-09-20",
-      wage = 200000,
+
       currentApplicants = 8,
-      maxApplicants = 15,
+
       isUrgent = true
     )
   }
 
-  // 샘플 일자별 작업 데이터
+  // 샘플 일자별 작업 데이터 - 더 많은 데이터와 월별 분산
   val workDays = remember {
     listOf(
-      // 진행중
-      WorkDay("1", "보통인부 15명 모집", LocalDate.now(), "08:00", "18:00", "2025-08-01 ~ 2025-08-07", 12, 10, 15, "IN_PROGRESS"),
-      WorkDay("2", "철근공 10명 모집", LocalDate.now().plusDays(1), "08:00", "18:00", "2025-08-02 ~ 2025-08-08", 8, 8, 10, "IN_PROGRESS"),
-      // 예정
-      WorkDay("3", "목공 20명 모집", LocalDate.now().plusDays(7), "08:00", "18:00", "2025-08-10 ~ 2025-08-14", 5, 0, 20, "UPCOMING"),
-      WorkDay("4", "전기공 20명 모집", LocalDate.now().plusDays(8), "08:00", "18:00", "2025-08-11 ~ 2025-08-15", 3, 0, 20, "UPCOMING"),
-      WorkDay("5", "미장공 15명 모집", LocalDate.now().plusDays(14), "09:00", "17:00", "2025-08-15 ~ 2025-08-20", 0, 0, 15, "UPCOMING"),
-      // 마감
-      WorkDay("6", "보통인부 15명 모집", LocalDate.now().minusDays(3), "08:00", "18:00", "2025-07-25 ~ 2025-08-01", 15, 15, 15, "COMPLETED"),
-      WorkDay("7", "철근공 12명 모집", LocalDate.now().minusDays(7), "08:00", "18:00", "2025-07-20 ~ 2025-07-27", 12, 12, 12, "COMPLETED")
+      // 진행중 - 8월
+      WorkDay("1", "보통인부 15명 모집", LocalDate.parse("2025-08-05"), "08:00", "18:00", "2025-08-01 ~ 2025-08-07", 12, 10, 15, "IN_PROGRESS"),
+      WorkDay("2", "철근공 10명 모집", LocalDate.parse("2025-08-08"), "08:00", "18:00", "2025-08-02 ~ 2025-08-08", 8, 8, 10, "IN_PROGRESS"),
+      
+      // 예정 - 8월 중순 이후 (CompanyMockDataFactory 데이터 날짜 범위 사용)
+      WorkDay("3", "목공 20명 모집", LocalDate.parse("2025-08-15"), "08:00", "18:00", "2025-08-15 ~ 2025-08-20", 0, 0, 20, "UPCOMING"),
+      WorkDay("4", "전기공 20명 모집", LocalDate.parse("2025-08-16"), "08:00", "18:00", "2025-08-16 ~ 2025-08-18", 0, 0, 20, "UPCOMING"),
+      WorkDay("5", "미장공 15명 모집", LocalDate.parse("2025-08-17"), "09:00", "17:00", "2025-08-17 ~ 2025-08-19", 0, 0, 15, "UPCOMING"),
+      WorkDay("6", "조적공 12명 모집", LocalDate.parse("2025-08-18"), "08:00", "18:00", "2025-08-18 ~ 2025-08-20", 0, 0, 12, "UPCOMING"),
+      WorkDay("7", "설비공 8명 모집", LocalDate.parse("2025-08-19"), "08:00", "18:00", "2025-08-19 ~ 2025-08-20", 0, 0, 8, "UPCOMING"),
+      WorkDay("8", "도배공 10명 모집", LocalDate.parse("2025-08-20"), "09:00", "17:00", "2025-08-20 ~ 2025-08-22", 0, 0, 10, "UPCOMING"),
+      
+      // 마감 - 7월, 8월 (입금 상태 포함)
+      WorkDay("9", "보통인부 15명 모집", LocalDate.parse("2025-07-25"), "08:00", "18:00", "2025-07-20 ~ 2025-07-25", 15, 15, 15, "COMPLETED"),
+      WorkDay("10", "철근공 12명 모집", LocalDate.parse("2025-07-30"), "08:00", "18:00", "2025-07-25 ~ 2025-07-30", 12, 12, 12, "COMPLETED"),
+      WorkDay("11", "목공 8명 모집", LocalDate.parse("2025-08-01"), "08:00", "18:00", "2025-07-28 ~ 2025-08-01", 8, 8, 8, "COMPLETED"),
+      WorkDay("12", "미장공 6명 모집", LocalDate.parse("2025-08-03"), "09:00", "17:00", "2025-08-01 ~ 2025-08-03", 6, 6, 6, "COMPLETED")
     )
   }
 
@@ -80,6 +87,20 @@ fun ProjectDetailScreen(
   var showJobRegistrationBottomSheet by remember { mutableStateOf(false) }
   val jobRegistrationBottomSheetState = rememberModalBottomSheetState()
   
+  // 월별 필터링을 위한 상태
+  var selectedMonth by remember { mutableStateOf<String?>(null) }
+  var showMonthSelector by remember { mutableStateOf(false) }
+  
+  // 임금 입금 상태 데이터
+  val paymentStatus = remember {
+    mapOf(
+      "9" to true,  // 입금 완료
+      "10" to false, // 입금 대기
+      "11" to true,  // 입금 완료
+      "12" to false  // 입금 대기
+    )
+  }
+  
   // 지원자 데이터 (날짜별)
   val applicantsByDate = remember {
     CompanyMockDataFactory.getApplicantWorkersByDate().mapKeys { 
@@ -87,7 +108,7 @@ fun ProjectDetailScreen(
     }
   }
   
-  // 날짜별 지원자 수 계산 함수
+  // 날짜별 지원자 수 계산 함수 - CompanyMockDataFactory의 실제 데이터만 사용
   fun getApplicantsCountForDate(date: LocalDate): Int {
     return (applicantsByDate[date] ?: emptyList()).size
   }
@@ -129,32 +150,83 @@ fun ProjectDetailScreen(
         .padding(innerPadding)
         .background(Color(0xFFF8F9FA))
     ) {
-      // 탭
-      TabRow(
-        selectedTabIndex = selectedTab,
-        containerColor = Color.White
-      ) {
-        Tab(
-          selected = selectedTab == 0,
-          onClick = { selectedTab = 0 },
-          text = { 
-            Text("진행중 (${workDays.count { it.status == "IN_PROGRESS" }})")
+      // 탭과 월별 필터
+      Column {
+        TabRow(
+          selectedTabIndex = selectedTab,
+          containerColor = Color.White
+        ) {
+          Tab(
+            selected = selectedTab == 0,
+            onClick = { 
+              selectedTab = 0
+              selectedMonth = null
+            },
+            text = { 
+              Text("진행중 (${workDays.count { it.status == "IN_PROGRESS" }})")
+            }
+          )
+          Tab(
+            selected = selectedTab == 1,
+            onClick = { 
+              selectedTab = 1
+              selectedMonth = null
+            },
+            text = { 
+              Text("예정 (${workDays.count { it.status == "UPCOMING" }})")
+            }
+          )
+          Tab(
+            selected = selectedTab == 2,
+            onClick = { 
+              selectedTab = 2
+              selectedMonth = null
+            },
+            text = { 
+              Text("임금입금 (${workDays.count { it.status == "COMPLETED" }})")
+            }
+          )
+        }
+        
+        // 월별 필터 버튼 (예정 탭일 때만 표시)
+        if (selectedTab == 1) {
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .background(Color.White)
+              .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            val availableMonths = workDays
+              .filter { it.status == "UPCOMING" }
+              .map { it.date.format(DateTimeFormatter.ofPattern("yyyy년 MM월")) }
+              .distinct()
+              .sorted()
+            
+            OutlinedButton(
+              onClick = { selectedMonth = null },
+              colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = if (selectedMonth == null) Color(0xFF4B7BFF) else Color.Transparent,
+                contentColor = if (selectedMonth == null) Color.White else Color.Gray
+              ),
+              modifier = Modifier.height(32.dp)
+            ) {
+              Text("전체", style = AppTypography.bodySmall)
+            }
+            
+            // 8월 예정 프로젝트이므로 08월 버튼만 표시
+            OutlinedButton(
+              onClick = { selectedMonth = "2025년 08월" },
+              colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = if (selectedMonth == "2025년 08월") Color(0xFF4B7BFF) else Color.Transparent,
+                contentColor = if (selectedMonth == "2025년 08월") Color.White else Color.Gray
+              ),
+              modifier = Modifier.height(32.dp)
+            ) {
+              Text("08월", style = AppTypography.bodySmall)
+            }
           }
-        )
-        Tab(
-          selected = selectedTab == 1,
-          onClick = { selectedTab = 1 },
-          text = { 
-            Text("예정 (${workDays.count { it.status == "UPCOMING" }})")
-          }
-        )
-        Tab(
-          selected = selectedTab == 2,
-          onClick = { selectedTab = 2 },
-          text = { 
-            Text("마감 (${workDays.count { it.status == "COMPLETED" }})")
-          }
-        )
+        }
       }
 
       // 작업 일자 목록
@@ -165,7 +237,16 @@ fun ProjectDetailScreen(
       ) {
         val filteredWorkDays = when (selectedTab) {
           0 -> workDays.filter { it.status == "IN_PROGRESS" }
-          1 -> workDays.filter { it.status == "UPCOMING" }
+          1 -> {
+            val upcomingDays = workDays.filter { it.status == "UPCOMING" }
+            if (selectedMonth != null) {
+              upcomingDays.filter { 
+                it.date.format(DateTimeFormatter.ofPattern("yyyy년 MM월")) == selectedMonth 
+              }
+            } else {
+              upcomingDays
+            }
+          }
           2 -> workDays.filter { it.status == "COMPLETED" }
           else -> workDays
         }
@@ -175,37 +256,99 @@ fun ProjectDetailScreen(
           it.date.format(DateTimeFormatter.ofPattern("yyyy년 MM월"))
         }
 
-        groupedByMonth.forEach { (month, daysInMonth) ->
-          // 월 섹션 헤더
+        if (filteredWorkDays.isEmpty()) {
+          // 빈 상태 표시
           item {
             Box(
               modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(vertical = 64.dp),
+              contentAlignment = Alignment.Center
             ) {
-              Text(
-                text = month,
-                style = AppTypography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF4B7BFF)
-              )
+              Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+              ) {
+                Icon(
+                  Icons.Default.Work,
+                  contentDescription = null,
+                  modifier = Modifier.size(64.dp),
+                  tint = Color(0xFFE0E0E0)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                  text = when (selectedTab) {
+                    0 -> "진행 중인 일자리가 없습니다"
+                    1 -> if (selectedMonth != null) "${selectedMonth}에 예정된 일자리가 없습니다" else "예정된 일자리가 없습니다"
+                    2 -> "완료된 일자리가 없습니다"
+                    else -> "일자리가 없습니다"
+                  },
+                  style = AppTypography.bodyLarge,
+                  color = Color.Gray,
+                  fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                  text = when (selectedTab) {
+                    0 -> "새로운 일자리를 등록해보세요"
+                    1 -> if (selectedMonth != null) "다른 월을 선택하거나 새 일자리를 등록해보세요" else "새로운 일자리를 등록해보세요"
+                    2 -> "완료된 프로젝트의 임금 입금 내역을 확인하세요"
+                    else -> "새로운 일자리를 등록해보세요"
+                  },
+                  style = AppTypography.bodyMedium,
+                  color = Color.Gray
+                )
+              }
             }
           }
-
-          // 해당 월의 작업 카드들
-          items(daysInMonth) { workDay ->
-            WorkDayCard(
-              workDay = workDay,
-              wage = project.wage,
-              applicantsCount = getApplicantsCountForDate(workDay.date),
-              onMenuClick = {
-                selectedWorkDay = workDay
-                showBottomSheet = true
-              },
-              onWorkerManageClick = {
-                navController.navigate("worker_management/${workDay.id}")
+        } else {
+          groupedByMonth.forEach { (month, daysInMonth) ->
+            // 월 섹션 헤더
+            item {
+              Box(
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .padding(horizontal = 16.dp, vertical = 8.dp)
+              ) {
+                Text(
+                  text = month,
+                  style = AppTypography.titleMedium,
+                  fontWeight = FontWeight.Bold,
+                  color = Color(0xFF4B7BFF)
+                )
               }
-            )
+            }
+
+            // 해당 월의 작업 카드들
+            items(daysInMonth) { workDay ->
+              if (selectedTab == 2) {
+                // 임금입금 확인 카드
+                PaymentStatusCard(
+                  workDay = workDay,
+                  wage = project.wage,
+                  isPaymentCompleted = paymentStatus[workDay.id] ?: false,
+                  onPaymentStatusChange = { 
+                    // 임금 상태 변경 처리
+                  },
+                  onPaymentDetailsClick = {
+                    // 임금 내역서 확인 - PaymentSummaryScreen으로 네비게이션
+                    navController.navigate("payment_summary/${workDay.id}?selectedDate=${workDay.date}")
+                  }
+                )
+              } else {
+                WorkDayCard(
+                  workDay = workDay,
+                  wage = project.wage,
+                  applicantsCount = getApplicantsCountForDate(workDay.date),
+                  onMenuClick = {
+                    selectedWorkDay = workDay
+                    showBottomSheet = true
+                  },
+                  onWorkerManageClick = {
+                    navController.navigate("worker_management/${workDay.id}")
+                  }
+                )
+              }
+            }
           }
         }
       }
@@ -253,7 +396,7 @@ fun ProjectDetailScreen(
           )
         }
         
-        Divider(modifier = Modifier.padding(horizontal = 20.dp))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
         
         // 일자리 삭제
         Row(
@@ -282,7 +425,7 @@ fun ProjectDetailScreen(
           )
         }
         
-        Divider(modifier = Modifier.padding(horizontal = 20.dp))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
         
         // 일자리 재등록
         Row(
@@ -471,6 +614,138 @@ fun ProjectDetailScreen(
 }
 
 @Composable
+private fun PaymentStatusCard(
+  workDay: WorkDay,
+  wage: Int,
+  isPaymentCompleted: Boolean,
+  onPaymentStatusChange: (Boolean) -> Unit,
+  onPaymentDetailsClick: () -> Unit
+) {
+  Card(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 16.dp),
+    shape = RoundedCornerShape(12.dp),
+    colors = CardDefaults.cardColors(
+      containerColor = Color.White
+    ),
+    elevation = CardDefaults.cardElevation(
+      defaultElevation = 2.dp
+    )
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp)
+    ) {
+      // 헤더
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
+      ) {
+        Column(modifier = Modifier.weight(1f)) {
+          // 모집 제목
+          Text(
+            text = workDay.title,
+            style = AppTypography.titleMedium,
+            fontWeight = FontWeight.Bold
+          )
+          
+          Spacer(modifier = Modifier.height(4.dp))
+          
+          // 프로젝트 날짜
+          Text(
+            text = workDay.date.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")),
+            style = AppTypography.bodySmall,
+            color = Color.Gray
+          )
+        }
+        
+        // 입금 상태 뱃지
+        Surface(
+          shape = RoundedCornerShape(12.dp),
+          color = if (isPaymentCompleted) Color(0xFF4CAF50) else Color(0xFFFF9800)
+        ) {
+          Text(
+            text = if (isPaymentCompleted) "입금완료" else "입금대기",
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            style = AppTypography.bodySmall,
+            color = Color.White,
+            fontWeight = FontWeight.Medium
+          )
+        }
+      }
+
+      Spacer(modifier = Modifier.height(12.dp))
+
+      // 입금 정보
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Column {
+          Text(
+            text = "확정 인원: ${workDay.confirmed}명",
+            style = AppTypography.bodyMedium,
+            color = Color.Gray
+          )
+          Text(
+            text = "예상 입금액: ${java.text.NumberFormat.getNumberInstance(java.util.Locale.KOREA).format(wage * workDay.confirmed)}원",
+            style = AppTypography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = Color.Black
+          )
+        }
+        
+        // 입금 확인 버튼
+        Button(
+          onClick = { onPaymentStatusChange(!isPaymentCompleted) },
+          colors = ButtonDefaults.buttonColors(
+            containerColor = if (isPaymentCompleted) Color(0xFF4CAF50) else Color(0xFF4B7BFF)
+          ),
+          shape = RoundedCornerShape(8.dp)
+        ) {
+          Icon(
+            if (isPaymentCompleted) Icons.Default.Check else Icons.Default.AttachMoney,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp)
+          )
+          Spacer(modifier = Modifier.width(4.dp))
+          Text(
+            text = if (isPaymentCompleted) "입금됨" else "입금하기",
+            style = AppTypography.bodySmall,
+            fontWeight = FontWeight.Medium
+          )
+        }
+      }
+
+      Spacer(modifier = Modifier.height(8.dp))
+
+      // 임금 내역 상세보기 버튼
+      OutlinedButton(
+        onClick = onPaymentDetailsClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp)
+      ) {
+        Icon(
+          Icons.Outlined.Receipt,
+          contentDescription = null,
+          modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+          text = "임금 내역서 확인",
+          style = AppTypography.bodyMedium,
+          fontWeight = FontWeight.Medium
+        )
+      }
+    }
+  }
+}
+
+@Composable
 private fun WorkDayCard(
   workDay: WorkDay,
   wage: Int,
@@ -478,6 +753,7 @@ private fun WorkDayCard(
   onMenuClick: () -> Unit,
   onWorkerManageClick: () -> Unit
 ) {
+  val isUpcoming = workDay.status == "UPCOMING"
   Card(
     modifier = Modifier
       .fillMaxWidth()
@@ -550,7 +826,11 @@ private fun WorkDayCard(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-              text = "수락 대기 중인 지원자 ${applicantsCount}명이 있습니다",
+              text = if (isUpcoming) {
+                "새로운 지원자 ${applicantsCount}명이 지원했습니다"
+              } else {
+                "수락 대기 중인 지원자 ${applicantsCount}명이 있습니다"
+              },
               style = AppTypography.bodySmall,
               color = Color(0xFF856404),
               fontWeight = FontWeight.Medium

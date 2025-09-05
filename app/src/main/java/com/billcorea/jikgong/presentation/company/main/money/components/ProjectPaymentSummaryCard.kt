@@ -1,5 +1,7 @@
 package com.billcorea.jikgong.presentation.company.main.money.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,9 +27,22 @@ import com.billcorea.jikgong.ui.theme.appColorScheme
 import java.text.NumberFormat
 import java.util.*
 
+// 금액 포맷팅 함수
+private fun formatAmount(amount: Long): String {
+    return when {
+        amount >= 100000000 -> "${String.format("%.1f", amount / 100000000.0)}억원"
+        amount >= 10000 -> "${String.format("%.0f", amount / 10000.0)}만원"
+        else -> "${NumberFormat.getNumberInstance(Locale.KOREA).format(amount)}원"
+    }
+}
+
 @Composable
 fun ProjectPaymentSummaryCard(
     summary: ProjectPaymentSummary,
+    onPendingPaymentsClick: () -> Unit = {},
+    onCompletedPaymentsClick: () -> Unit = {},
+    onAllProjectsClick: () -> Unit = {},
+    onCompletedAmountClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -43,11 +58,12 @@ fun ProjectPaymentSummaryCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally // 가운데 정렬 추가
         ) {
             // 헤더 - 제목만
             Text(
-                text = "직직직으로 절약한 금액",
+                text = "이때까지 절약한 총 금액",
                 style = AppTypography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -69,7 +85,7 @@ fun ProjectPaymentSummaryCard(
             
             // 절약 설명
             Text(
-                text = "기존 중개업체 대비 수수료 절약",
+                text = "기존 중개업체 수수료 대비 절약",
                 style = AppTypography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium
                 ),
@@ -81,26 +97,30 @@ fun ProjectPaymentSummaryCard(
             // 통계 그리드
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 지급 대기
-                SummaryStatItem(
-                    title = "지급 대기",
+                // 바로지급하기 버튼
+                ClickableSummaryStatItem(
+                    title = "바로지급하기",
                     count = summary.pendingPayments,
                     amount = summary.pendingAmount,
                     icon = Icons.Default.Pending,
-                    color = Color(0xFFFFA726),
-                    modifier = Modifier.weight(1f)
+                    color = Color(0xFFFF5722), // 더 눈에 띄는 주황색
+                    onClick = onPendingPaymentsClick,
+                    modifier = Modifier.weight(1f),
+                    isActionButton = true
                 )
 
                 // 지급 완료
-                SummaryStatItem(
+                ClickableSummaryStatItem(
                     title = "지급 완료",
                     count = summary.completedPayments,
                     amount = summary.paidAmount,
                     icon = Icons.Default.CheckCircle,
                     color = Color(0xFF66BB6A),
-                    modifier = Modifier.weight(1f)
+                    onClick = onCompletedPaymentsClick,
+                    modifier = Modifier.weight(1f),
+                    isActionButton = true
                 )
             }
 
@@ -108,26 +128,30 @@ fun ProjectPaymentSummaryCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // 전체 현장
-                SummaryStatItem(
+                ClickableSummaryStatItem(
                     title = "전체 현장",
                     count = summary.totalProjects,
                     amount = summary.totalAmount,
                     icon = Icons.Default.Assignment,
                     color = appColorScheme.primary,
-                    modifier = Modifier.weight(1f)
+                    onClick = onAllProjectsClick,
+                    modifier = Modifier.weight(1f),
+                    isActionButton = true
                 )
 
-                // 지급 완료액 (이번달 절약 금액 포함)
-                SummaryStatItemWithSavings(
-                    title = "지급 완료액",
-                    amount = summary.paidAmount,
-                    monthlySavings = summary.monthlySavingsAmount,
+                // 이번달 절약한 금액
+                ClickableSummaryStatItem(
+                    title = "이번달 절약금액",
+                    count = null,
+                    amount = summary.monthlySavingsAmount,
                     icon = Icons.Default.TrendingUp,
                     color = Color(0xFF4CAF50),
-                    modifier = Modifier.weight(1f)
+                    onClick = onCompletedAmountClick,
+                    modifier = Modifier.weight(1f),
+                    isActionButton = true
                 )
             }
         }
@@ -299,7 +323,7 @@ private fun SummaryStatItemWithSavings(
                 imageVector = icon,
                 contentDescription = title,
                 tint = color,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(28.dp)
             )
 
             Text(
@@ -307,7 +331,7 @@ private fun SummaryStatItemWithSavings(
                 style = AppTypography.labelLarge.copy(
                     fontWeight = FontWeight.Medium
                 ),
-                color = appColorScheme.onSurfaceVariant
+                color = Color(0xFF374151)
             )
 
             Text(
@@ -318,9 +342,141 @@ private fun SummaryStatItemWithSavings(
                 color = color
             )
             
-            // 이번달 절약 금액 표시
+            // 총 절약 금액 표시
             Text(
-                text = "이달 절약 +${NumberFormat.getNumberInstance(Locale.KOREA).format(monthlySavings)}원",
+                text = "총 절약 +${NumberFormat.getNumberInstance(Locale.KOREA).format(monthlySavings)}원",
+                style = AppTypography.labelSmall,
+                color = Color(0xFF4CAF50)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ClickableSummaryStatItem(
+    title: String,
+    count: Int?,
+    amount: Long,
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isActionButton: Boolean = false
+) {
+    Surface(
+        modifier = modifier
+            .height(120.dp)
+            .clickable { onClick() }, // 클릭 가능
+        shape = RoundedCornerShape(12.dp),
+        color = if (isActionButton) Color.White else Color.White,
+        shadowElevation = if (isActionButton) 6.dp else 4.dp,
+        border = if (isActionButton) BorderStroke(
+            width = 2.dp,
+            color = color
+        ) else null
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = color,
+                modifier = Modifier.size(24.dp)
+            )
+
+            Text(
+                text = title,
+                style = AppTypography.labelMedium.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                color = Color(0xFF374151),
+                maxLines = 1
+            )
+
+            if (count != null) {
+                // 건수와 금액을 한 줄에 표시
+                Text(
+                    text = "${count}건 ${formatAmount(amount)}",
+                    style = AppTypography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = color,
+                    maxLines = 1
+                )
+            } else {
+                Text(
+                    text = formatAmount(amount),
+                    style = AppTypography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = color,
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ClickableSummaryStatItemWithSavings(
+    title: String,
+    amount: Long,
+    monthlySavings: Long,
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .height(120.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White,
+        shadowElevation = 6.dp,
+        border = BorderStroke(
+            width = 2.dp,
+            color = color
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = color,
+                modifier = Modifier.size(28.dp)
+            )
+
+            Text(
+                text = title,
+                style = AppTypography.labelLarge.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                color = Color(0xFF374151)
+            )
+
+            Text(
+                text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(amount)}원",
+                style = AppTypography.bodyLarge.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = color
+            )
+            
+            // 총 절약 금액 표시
+            Text(
+                text = "총 절약 +${NumberFormat.getNumberInstance(Locale.KOREA).format(monthlySavings)}원",
                 style = AppTypography.labelSmall,
                 color = Color(0xFF4CAF50)
             )
@@ -354,7 +510,7 @@ private fun SummaryStatItem(
                 imageVector = icon,
                 contentDescription = title,
                 tint = color,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(28.dp)
             )
 
             Text(
@@ -362,7 +518,7 @@ private fun SummaryStatItem(
                 style = AppTypography.labelLarge.copy(
                     fontWeight = FontWeight.Medium
                 ),
-                color = appColorScheme.onSurfaceVariant
+                color = Color(0xFF374151)
             )
 
             if (count != null) {
@@ -371,7 +527,7 @@ private fun SummaryStatItem(
                     style = AppTypography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
                     ),
-                    color = appColorScheme.onSurface
+                    color = Color(0xFF1F2937)
                 )
             }
 

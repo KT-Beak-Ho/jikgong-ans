@@ -281,22 +281,22 @@ private fun InfoItem(
   Row(
     modifier = modifier,
     verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(4.dp)
+    horizontalArrangement = Arrangement.spacedBy(6.dp)
   ) {
     Text(
       text = icon,
-      style = MaterialTheme.typography.bodySmall
+      style = MaterialTheme.typography.bodyMedium
     )
     Column {
       Text(
         text = label,
-        style = MaterialTheme.typography.labelSmall,
+        style = MaterialTheme.typography.labelMedium,
         color = Color.Gray
       )
       Text(
         text = value,
-        style = MaterialTheme.typography.bodySmall.copy(
-          fontWeight = FontWeight.Medium
+        style = MaterialTheme.typography.bodyMedium.copy(
+          fontWeight = FontWeight.Bold
         ),
         color = Color.Black
       )

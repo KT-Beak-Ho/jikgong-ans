@@ -2,6 +2,7 @@ package com.billcorea.jikgong.presentation.company.main.scout.components
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -20,7 +21,21 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.billcorea.jikgong.R
+import com.billcorea.jikgong.presentation.location.LocationPermissionHandler
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.runtime.LaunchedEffect
 import com.billcorea.jikgong.api.models.location.Coord2RoadAddress
+import com.billcorea.jikgong.api.models.location.AddressFindRoadAddress
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.text.style.TextOverflow
 import com.billcorea.jikgong.utils.MainViewModel
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
@@ -49,12 +64,59 @@ fun MapLocationDialog(
     val screenHeight = config.screenHeightDp
     val mapView = remember { MapView(context) }
     var selectedPosition by remember { mutableStateOf<LatLng?>(null) }
+    var isGpsLocationLoaded by remember { mutableStateOf(false) }
+    var kakaoMapInstance by remember { mutableStateOf<KakaoMap?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
     
     val _roadAddress1 = viewModel.roadAddress1.observeAsState(emptyList())
     val roadAddress1 = _roadAddress1.value
+    val _roadAddress = viewModel.roadAddress.observeAsState(emptyList())
+    val searchResults = _roadAddress.value
+    val currentLat by viewModel.lat.observeAsState(37.5665)
+    val currentLon by viewModel.lon.observeAsState(126.9780)
     
-    // 서울 중심으로 초기 위치 설정
-    val centerPosition = remember { LatLng.from(37.5665, 126.9780) }
+    // GPS 위치가 로드되면 현재 위치로, 아니면 서울 중심으로 설정
+    val centerPosition = remember(currentLat, currentLon, isGpsLocationLoaded) { 
+        if (isGpsLocationLoaded && currentLat != 0.0 && currentLon != 0.0) {
+            LatLng.from(currentLat, currentLon)
+        } else {
+            LatLng.from(37.5665, 126.9780)
+        }
+    }
+
+    // GPS 위치 업데이트를 위한 LaunchedEffect
+    LaunchedEffect(currentLat, currentLon, isGpsLocationLoaded, kakaoMapInstance) {
+        if (isGpsLocationLoaded && currentLat != 0.0 && currentLon != 0.0) {
+            val mapInstance = kakaoMapInstance
+            if (mapInstance != null) {
+                try {
+                    val gpsPosition = LatLng.from(currentLat, currentLon)
+                    
+                    // 카메라 이동
+                    val cameraUpdate = CameraUpdateFactory.newCenterPosition(gpsPosition)
+                    mapInstance.moveCamera(cameraUpdate)
+                    
+                    // 마커 표시
+                    mapInstance.labelManager?.let { labelManager ->
+                        val style = labelManager.addLabelStyles(
+                            LabelStyles.from(LabelStyle.from(R.drawable.ic_mylocation_v2))
+                        )
+                        if (style != null) {
+                            val options = LabelOptions.from(gpsPosition).setStyles(style)
+                            val layer = labelManager.layer
+                            layer?.removeAll()
+                            layer?.addLabel(options)
+                        }
+                    }
+                    
+                    // GPS 위치로 주소 검색
+                    viewModel.doFindAddress(currentLat, currentLon)
+                } catch (e: Exception) {
+                    Log.e("MapLocationDialog", "GPS location update error: ${e.message}")
+                }
+            }
+        }
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -88,12 +150,141 @@ fun MapLocationDialog(
                             fontWeight = FontWeight.Bold
                         )
                     )
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "닫기"
-                        )
+                    
+                    Row {
+                        // GPS 현재 위치 버튼
+                        IconButton(
+                            onClick = {
+                                viewModel.setLocation(context)
+                                isGpsLocationLoaded = true
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MyLocation,
+                                contentDescription = "현재 위치",
+                                tint = Color(0xFF4B7BFF)
+                            )
+                        }
+                        
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "닫기"
+                            )
+                        }
                     }
+                }
+
+                // 주소 검색 바
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    placeholder = { Text("주소나 건물명을 검색하세요") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "검색",
+                            tint = Color(0xFF4B7BFF)
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Search
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
+                            if (searchQuery.trim().isNotEmpty()) {
+                                try {
+                                    viewModel.doKakaoGeocoding(searchQuery.trim())
+                                } catch (e: Exception) {
+                                    Log.e("MapLocationDialog", "Search error: ${e.message}")
+                                }
+                            }
+                        }
+                    ),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedBorderColor = Color(0xFF4B7BFF)
+                    ),
+                    singleLine = true
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // 검색 결과 표시
+                if (searchResults.isNotEmpty() && searchQuery.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .height(120.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        )
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            items(searchResults) { address ->
+                                SearchResultItem(
+                                    address = address,
+                                    onClick = {
+                                        try {
+                                            // 검색 결과 클릭시 지도로 이동하고 주소 설정
+                                            val lat = address.y.toDoubleOrNull()
+                                            val lon = address.x.toDoubleOrNull()
+                                            
+                                            if (lat != null && lon != null) {
+                                                val position = LatLng.from(lat, lon)
+                                                val mapInstance = kakaoMapInstance
+                                                if (mapInstance != null) {
+                                                    try {
+                                                        val cameraUpdate = CameraUpdateFactory.newCenterPosition(position)
+                                                        mapInstance.moveCamera(cameraUpdate)
+                                                        
+                                                        // 마커 표시
+                                                        mapInstance.labelManager?.let { labelManager ->
+                                                            val style = labelManager.addLabelStyles(
+                                                                LabelStyles.from(LabelStyle.from(R.drawable.ic_mylocation_v2))
+                                                            )
+                                                            if (style != null) {
+                                                                val options = LabelOptions.from(position).setStyles(style)
+                                                                val layer = labelManager.layer
+                                                                layer?.removeAll()
+                                                                layer?.addLabel(options)
+                                                            }
+                                                        }
+                                                        
+                                                        // 좌표로 상세 주소 검색
+                                                        viewModel.doFindAddress(lat, lon)
+                                                    } catch (e: Exception) {
+                                                        Log.e("MapLocationDialog", "Map operation error: ${e.message}")
+                                                    }
+                                                }
+                                                
+                                                // 검색 결과 리스트 숨기기
+                                                try {
+                                                    viewModel._roadAddress.value = emptyList()
+                                                    searchQuery = ""
+                                                } catch (e: Exception) {
+                                                    Log.e("MapLocationDialog", "Clear search results error: ${e.message}")
+                                                }
+                                            }
+                                        } catch (e: Exception) {
+                                            Log.e("MapLocationDialog", "Address selection error: ${e.message}")
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 // 지도 뷰
@@ -118,6 +309,7 @@ fun MapLocationDialog(
                                     @SuppressLint("UseCompatLoadingForDrawables")
                                     override fun onMapReady(kakaoMap: KakaoMap) {
                                         Log.d("MapLocationDialog", "Map is ready")
+                                        kakaoMapInstance = kakaoMap
 
                                         // 반경 정보를 로그로 표시 (실제 원 그리기는 향후 구현)
                                         fun updateRadiusInfo(position: LatLng) {
@@ -139,81 +331,114 @@ fun MapLocationDialog(
                                         infoOptions.setBody(body)
                                         infoOptions.setBodyOffset(0F, -4F)
 
-                                        kakaoMap.mapWidgetManager?.infoWindowLayer?.addInfoWindow(infoOptions)
+                                        try {
+                                            kakaoMap.mapWidgetManager?.infoWindowLayer?.addInfoWindow(infoOptions)
+                                        } catch (e: Exception) {
+                                            Log.e("MapLocationDialog", "Info window add error: ${e.message}")
+                                        }
 
-                                        // 카메라를 중심 위치로 이동
-                                        val cameraUpdate = CameraUpdateFactory.newCenterPosition(centerPosition)
-                                        kakaoMap.moveCamera(cameraUpdate)
+                                        // 초기 카메라 위치 설정
+                                        try {
+                                            val initialCameraUpdate = CameraUpdateFactory.newCenterPosition(centerPosition)
+                                            kakaoMap.moveCamera(initialCameraUpdate)
+                                            updateRadiusInfo(centerPosition)
+                                        } catch (e: Exception) {
+                                            Log.e("MapLocationDialog", "Initial camera setup error: ${e.message}")
+                                        }
                                         
-                                        // 초기 위치 설정
-                                        updateRadiusInfo(centerPosition)
 
                                         // 정보창 클릭 리스너
                                         kakaoMap.setOnInfoWindowClickListener { kakaoMap, _, _ ->
-                                            kakaoMap.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                            try {
+                                                kakaoMap.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                            } catch (e: Exception) {
+                                                Log.e("MapLocationDialog", "Info window click error: ${e.message}")
+                                            }
                                         }
 
                                         // 지도 클릭 리스너
                                         kakaoMap.setOnMapClickListener { map, _, _, _ ->
-                                            map.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                            try {
+                                                map.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                            } catch (e: Exception) {
+                                                Log.e("MapLocationDialog", "Map click error: ${e.message}")
+                                            }
                                         }
 
                                         // POI 클릭 리스너
                                         kakaoMap.setOnPoiClickListener { map, latLng, title, detail ->
-                                            Log.d("MapLocationDialog", "POI clicked: $title at ${latLng?.latitude}, ${latLng?.longitude}")
-                                            
-                                            if (latLng != null && map != null) {
-                                                map.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                            try {
+                                                Log.d("MapLocationDialog", "POI clicked: $title at ${latLng?.latitude}, ${latLng?.longitude}")
                                                 
-                                                val newCameraUpdate = CameraUpdateFactory.newCenterPosition(latLng)
-                                                
-                                                // 선택된 위치에 마커 표시
-                                                val style = map.labelManager?.addLabelStyles(
-                                                    LabelStyles.from(LabelStyle.from(R.drawable.ic_mylocation_v2))
-                                                )
-                                                val options = LabelOptions.from(latLng).setStyles(style)
-                                                val layer = map.labelManager?.layer
-                                                layer?.removeAll()
-                                                layer?.addLabel(options)
-                                                
-                                                // 카메라 이동
-                                                map.moveCamera(newCameraUpdate)
-                                                
-                                                // 위치 업데이트
-                                                updateRadiusInfo(latLng)
-                                                
-                                                // 주소 검색
-                                                viewModel.doFindAddress(latLng.latitude, latLng.longitude)
+                                                if (latLng != null && map != null) {
+                                                    map.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                                    
+                                                    val newCameraUpdate = CameraUpdateFactory.newCenterPosition(latLng)
+                                                    
+                                                    // 선택된 위치에 마커 표시
+                                                    map.labelManager?.let { labelManager ->
+                                                        val style = labelManager.addLabelStyles(
+                                                            LabelStyles.from(LabelStyle.from(R.drawable.ic_mylocation_v2))
+                                                        )
+                                                        if (style != null) {
+                                                            val options = LabelOptions.from(latLng).setStyles(style)
+                                                            val layer = labelManager.layer
+                                                            layer?.removeAll()
+                                                            layer?.addLabel(options)
+                                                        }
+                                                    }
+                                                    
+                                                    // 카메라 이동
+                                                    map.moveCamera(newCameraUpdate)
+                                                    
+                                                    // 위치 업데이트
+                                                    updateRadiusInfo(latLng)
+                                                    
+                                                    // 주소 검색
+                                                    viewModel.doFindAddress(latLng.latitude, latLng.longitude)
+                                                }
+                                            } catch (e: Exception) {
+                                                Log.e("MapLocationDialog", "POI click error: ${e.message}")
                                             }
+                                            false
                                         }
 
                                         // 지형 롱클릭 리스너
                                         kakaoMap.setOnTerrainLongClickListener { map, latLng, point ->
-                                            Log.d("MapLocationDialog", "Terrain long clicked at ${latLng?.latitude}, ${latLng?.longitude}")
-                                            
-                                            if (latLng != null && map != null) {
-                                                map.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                            try {
+                                                Log.d("MapLocationDialog", "Terrain long clicked at ${latLng?.latitude}, ${latLng?.longitude}")
                                                 
-                                                val newCameraUpdate = CameraUpdateFactory.newCenterPosition(latLng)
-                                                
-                                                // 선택된 위치에 마커 표시
-                                                val style = map.labelManager?.addLabelStyles(
-                                                    LabelStyles.from(LabelStyle.from(R.drawable.ic_mylocation_v2))
-                                                )
-                                                val options = LabelOptions.from(latLng).setStyles(style)
-                                                val layer = map.labelManager?.layer
-                                                layer?.removeAll()
-                                                layer?.addLabel(options)
-                                                
-                                                // 카메라 이동
-                                                map.moveCamera(newCameraUpdate)
-                                                
-                                                // 위치 업데이트
-                                                updateRadiusInfo(latLng)
-                                                
-                                                // 주소 검색
-                                                viewModel.doFindAddress(latLng.latitude, latLng.longitude)
+                                                if (latLng != null && map != null) {
+                                                    map.mapWidgetManager?.infoWindowLayer?.removeAll()
+                                                    
+                                                    val newCameraUpdate = CameraUpdateFactory.newCenterPosition(latLng)
+                                                    
+                                                    // 선택된 위치에 마커 표시
+                                                    map.labelManager?.let { labelManager ->
+                                                        val style = labelManager.addLabelStyles(
+                                                            LabelStyles.from(LabelStyle.from(R.drawable.ic_mylocation_v2))
+                                                        )
+                                                        if (style != null) {
+                                                            val options = LabelOptions.from(latLng).setStyles(style)
+                                                            val layer = labelManager.layer
+                                                            layer?.removeAll()
+                                                            layer?.addLabel(options)
+                                                        }
+                                                    }
+                                                    
+                                                    // 카메라 이동
+                                                    map.moveCamera(newCameraUpdate)
+                                                    
+                                                    // 위치 업데이트
+                                                    updateRadiusInfo(latLng)
+                                                    
+                                                    // 주소 검색
+                                                    viewModel.doFindAddress(latLng.latitude, latLng.longitude)
+                                                }
+                                            } catch (e: Exception) {
+                                                Log.e("MapLocationDialog", "Terrain long click error: ${e.message}")
                                             }
+                                            false
                                         }
                                     }
 
@@ -252,7 +477,7 @@ fun MapLocationDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // 선택된 주소 표시 및 확인 버튼
-                if (roadAddress1.isEmpty()) {
+                if (roadAddress1.isNullOrEmpty()) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -260,7 +485,10 @@ fun MapLocationDialog(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "지도를 탭하거나 길게 눌러 위치를 선택하세요",
+                            text = if (!isGpsLocationLoaded) 
+                                "📍 버튼을 눌러 현재 위치를 확인하거나\n지도를 탭하여 위치를 선택하세요" 
+                            else 
+                                "지도를 탭하거나 길게 눌러 위치를 선택하세요",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.Gray
                         )
@@ -271,7 +499,9 @@ fun MapLocationDialog(
                             .fillMaxWidth()
                             .padding(16.dp)
                     ) {
-                        DisplaySelectedAddress(roadAddress1[0])
+                        roadAddress1.firstOrNull()?.let { address ->
+                            DisplaySelectedAddress(address)
+                        }
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
@@ -289,11 +519,17 @@ fun MapLocationDialog(
                             
                             Button(
                                 onClick = {
-                                    val selectedAddress = roadAddress1[0].addressName
-                                    onLocationSelected(selectedAddress)
-                                    // 상태 초기화
-                                    viewModel._roadAddress1.value = emptyList()
-                                    onDismiss()
+                                    roadAddress1.firstOrNull()?.let { address ->
+                                        val selectedAddress = address.addressName
+                                        onLocationSelected(selectedAddress)
+                                        // 상태 초기화
+                                        try {
+                                            viewModel._roadAddress1.value = emptyList()
+                                        } catch (e: Exception) {
+                                            Log.e("MapLocationDialog", "Clear address error: ${e.message}")
+                                        }
+                                        onDismiss()
+                                    }
                                 },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(
@@ -306,6 +542,43 @@ fun MapLocationDialog(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchResultItem(
+    address: AddressFindRoadAddress,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(
+                text = address.addressName,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (address.roadName.isNotEmpty()) {
+                Text(
+                    text = address.roadName + if (address.buildingName.isNotEmpty()) " (${address.buildingName})" else "",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }

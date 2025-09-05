@@ -308,6 +308,7 @@ class MainActivity : ComponentActivity() {
               }
               composable(AnnouncementScreenDestination.route) {
                 AnnouncementScreen(
+                  navigator = navigator,
                   navController = navController
                 )
               }
@@ -318,11 +319,13 @@ class MainActivity : ComponentActivity() {
               }
               composable(TermsAndPoliciesScreenDestination.route) {
                 TermsAndPoliciesScreen(
+                  navigator = navigator,
                   navController = navController
                 )
               }
               composable(MyInfoScreenDestination.route) {
                 MyInfoScreen(
+                  navigator = navigator,
                   navController = navController
                 )
               }

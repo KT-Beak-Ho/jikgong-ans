@@ -35,6 +35,10 @@ import com.billcorea.jikgong.presentation.company.main.scout.pages.WorkerListPag
 import com.billcorea.jikgong.presentation.company.main.scout.pages.ProposalListPage
 import com.billcorea.jikgong.presentation.company.main.scout.pages.LocationSettingPage
 import com.billcorea.jikgong.presentation.company.main.scout.components.WorkerDetailBottomSheet
+import com.billcorea.jikgong.presentation.company.main.money.popup.PaymentConfirmationDialog
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentData
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentStatus
+import com.billcorea.jikgong.presentation.company.main.money.components.ProjectPaymentCard
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -50,11 +54,20 @@ fun CompanyScoutMainScreen(
     viewModel: CompanyScoutViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    val pagerState = rememberPagerState(pageCount = { 4 }) // 4개 탭으로 확장
     val coroutineScope = rememberCoroutineScope()
     
     // 새로고침 완료 알림을 위한 상태
     val snackbarHostState = remember { SnackbarHostState() }
+    
+    // 입금 관련 상태
+    var showPaymentConfirmDialog by remember { mutableStateOf(false) }
+    var selectedProjectForPayment by remember { mutableStateOf<ProjectPaymentData?>(null) }
+    
+    // 예시 프로젝트 데이터 (실제로는 viewModel에서 관리해야 함)
+    val projectPayments = remember { 
+        CompanyMockDataFactory.getProjectPayments().take(3) // 몇 개만 사용
+    }
 
     Scaffold(
         modifier = modifier,
@@ -62,10 +75,7 @@ fun CompanyScoutMainScreen(
             Column {
                 // 통일된 상단바
                 ScoutTopBar(
-                    title = "스카웃",
-                    onSettingsClick = {
-                        // TODO: 설정 화면으로 이동
-                    }
+                    title = "스카웃"
                 )
 
                 // 현재 위치 표시
@@ -175,6 +185,15 @@ fun CompanyScoutMainScreen(
                         viewModel.getCurrentLocation()
                     }
                 )
+                3 -> PaymentManagementPage(
+                    projectPayments = projectPayments,
+                    onPaymentAction = { project, action ->
+                        if (action == "deposit") {
+                            selectedProjectForPayment = project
+                            showPaymentConfirmDialog = true
+                        }
+                    }
+                )
             }
         }
     }
@@ -218,19 +237,109 @@ fun CompanyScoutMainScreen(
     if (uiState.showAIFilterDialog) {
         AIFilterDialog(
             onDismiss = { viewModel.toggleAIFilterDialog() },
-            onApplyFilter = { projectDescription, workConditions, preferredSkills ->
-                // TODO: AI 필터링 로직 구현
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = "AI가 추천하는 인력을 찾고 있습니다...",
-                        duration = SnackbarDuration.Short
-                    )
-                }
+            onApplyFilter = {
+                viewModel.applyAIFiltering()
                 viewModel.toggleAIFilterDialog()
             }
         )
     }
     
+    // AI 필터링 진행중 다이얼로그
+    if (uiState.isAIFiltering) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color(0xFF4B7BFF)
+                    )
+                    Text(
+                        text = "AI 필터링이 진행중입니다",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            text = {
+                Text(
+                    text = "평점과 경험을 바탕으로 최적의 인력을 찾고 있습니다...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            },
+            confirmButton = { },
+            dismissButton = { }
+        )
+    }
+    
+    // 입금 확인 팝업
+    if (showPaymentConfirmDialog && selectedProjectForPayment != null) {
+        PaymentConfirmationDialog(
+            project = selectedProjectForPayment!!,
+            onDismiss = { 
+                showPaymentConfirmDialog = false
+                selectedProjectForPayment = null
+            },
+            onConfirmPayment = { project ->
+                // 입금 완료 처리
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "${project.projectTitle} 입금이 완료되었습니다!",
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                showPaymentConfirmDialog = false
+                selectedProjectForPayment = null
+            }
+        )
+    }
+    
+}
+
+@Composable
+private fun PaymentManagementPage(
+    projectPayments: List<ProjectPaymentData>,
+    onPaymentAction: (ProjectPaymentData, String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp),
+        contentPadding = PaddingValues(vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(
+                text = "입금 관리",
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
+            Text(
+                text = "프로젝트별 임금 입금을 관리하세요",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
+        }
+        
+        items(
+            items = projectPayments,
+            key = { it.id }
+        ) { projectPayment ->
+            ProjectPaymentCard(
+                projectPayment = projectPayment,
+                onPaymentAction = onPaymentAction
+            )
+        }
+    }
 }
 
 @Composable
@@ -289,7 +398,7 @@ private fun ScoutTabBarExtended(
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val tabs = listOf("인력 목록", "제안 목록", "위치 설정")
+    val tabs = listOf("인력 목록", "제안 목록", "위치 설정", "입금 관리")
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -1280,10 +1389,7 @@ private fun CompanyScoutMainScreenPreview(
         topBar = {
             Column {
                 ScoutTopBar(
-                    title = "스카웃",
-                    onSettingsClick = {
-                        // TODO: 설정 화면으로 이동
-                    }
+                    title = "스카웃"
                 )
 
                 // 현재 위치 표시
@@ -1714,12 +1820,8 @@ private fun DatePickerDialog(
 @Composable
 private fun AIFilterDialog(
     onDismiss: () -> Unit,
-    onApplyFilter: (String, String, String) -> Unit
+    onApplyFilter: () -> Unit
 ) {
-    var projectDescription by remember { mutableStateOf("") }
-    var workConditions by remember { mutableStateOf("") }
-    var preferredSkills by remember { mutableStateOf("") }
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -1734,103 +1836,48 @@ private fun AIFilterDialog(
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = "AI 매칭 필터",
+                    text = "AI 매칭",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
             }
         },
         text = {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 400.dp),
+            Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item {
-                    Text(
-                        text = "AI가 프로젝트에 가장 적합한 인력을 추천해드립니다.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
-                    )
-                }
+                Text(
+                    text = "AI가 평점이 높은 순서로 최적의 인력을 추천해드립니다.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
                 
-                item {
-                    OutlinedTextField(
-                        value = projectDescription,
-                        onValueChange = { projectDescription = it },
-                        label = { Text("프로젝트 설명") },
-                        placeholder = { Text("예: 아파트 신축 공사, 인테리어 리모델링 등") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 2,
-                        maxLines = 4,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF4B7BFF),
-                            focusedLabelColor = Color(0xFF4B7BFF)
-                        )
-                    )
-                }
-                
-                item {
-                    OutlinedTextField(
-                        value = workConditions,
-                        onValueChange = { workConditions = it },
-                        label = { Text("작업 조건") },
-                        placeholder = { Text("예: 실외 작업, 고소 작업, 정밀 작업 등") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 2,
-                        maxLines = 3,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF4B7BFF),
-                            focusedLabelColor = Color(0xFF4B7BFF)
-                        )
-                    )
-                }
-                
-                item {
-                    OutlinedTextField(
-                        value = preferredSkills,
-                        onValueChange = { preferredSkills = it },
-                        label = { Text("우대 기술 및 경험") },
-                        placeholder = { Text("예: 특정 자격증, 유사 프로젝트 경험, 전문 기술 등") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 2,
-                        maxLines = 3,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF4B7BFF),
-                            focusedLabelColor = Color(0xFF4B7BFF)
-                        )
-                    )
-                }
-                
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFF4B7BFF).copy(alpha = 0.1f)
-                        ),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4B7BFF).copy(alpha = 0.3f))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF4B7BFF).copy(alpha = 0.1f)
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4B7BFF).copy(alpha = 0.3f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.Top
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Lightbulb,
-                                contentDescription = null,
-                                tint = Color(0xFF4B7BFF),
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = "입력하신 정보를 바탕으로 AI가 경험, 기술, 평점을 종합적으로 분석하여 최적의 인력을 추천합니다.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF4B7BFF),
-                                lineHeight = 18.sp
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.Lightbulb,
+                            contentDescription = null,
+                            tint = Color(0xFF4B7BFF),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "평점, 경험, 완료 프로젝트 수를 종합적으로 분석하여 우수한 인력을 우선 표시합니다.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF4B7BFF),
+                            lineHeight = 18.sp
+                        )
                     }
                 }
             }
@@ -1842,18 +1889,11 @@ private fun AIFilterDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = {
-                    onApplyFilter(projectDescription, workConditions, preferredSkills)
-                },
-                enabled = projectDescription.isNotBlank() || workConditions.isNotBlank() || preferredSkills.isNotBlank()
+                onClick = onApplyFilter
             ) {
                 Text(
                     "AI 매칭 시작",
-                    color = if (projectDescription.isNotBlank() || workConditions.isNotBlank() || preferredSkills.isNotBlank()) {
-                        Color(0xFF4B7BFF)
-                    } else {
-                        Color.Gray
-                    },
+                    color = Color(0xFF4B7BFF),
                     fontWeight = FontWeight.Bold
                 )
             }

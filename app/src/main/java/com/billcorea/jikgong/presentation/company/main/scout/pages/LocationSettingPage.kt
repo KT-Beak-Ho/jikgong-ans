@@ -10,15 +10,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.billcorea.jikgong.presentation.company.main.scout.components.MapLocationDialog
+import com.billcorea.jikgong.presentation.location.LocationPermissionHandler
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -34,6 +37,27 @@ fun LocationSettingPage(
   viewModel: MainViewModel = koinViewModel()
 ) {
   var showMapDialog by remember { mutableStateOf(false) }
+  val context = LocalContext.current
+  
+  // MainViewModel의 위치 정보 실시간 관찰
+  val respAddress by viewModel.respAddress.observeAsState("")
+  val roadAddress1 by viewModel.roadAddress1.observeAsState(emptyList())
+  
+  // MainViewModel에서 위치 정보가 업데이트되면 상위 컴포넌트에 알림
+  LaunchedEffect(respAddress) {
+    if (respAddress.isNotEmpty() && respAddress != currentLocation) {
+      onLocationChange(respAddress)
+    }
+  }
+  
+  LaunchedEffect(roadAddress1) {
+    if (roadAddress1.isNotEmpty()) {
+      val newAddress = roadAddress1[0].addressName
+      if (newAddress != currentLocation && newAddress.isNotEmpty()) {
+        onLocationChange(newAddress)
+      }
+    }
+  }
   Column(
     modifier = modifier
       .fillMaxSize()
@@ -68,7 +92,11 @@ fun LocationSettingPage(
           modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .clickable { onCurrentLocationClick() },
+            .clickable { 
+              // GPS 위치 요청 및 주소 변환
+              viewModel.setLocation(context)
+              onCurrentLocationClick() 
+            },
           color = Color(0xFFF5F5F5)
         ) {
           Row(
@@ -277,16 +305,25 @@ fun LocationSettingPage(
     Spacer(modifier = Modifier.height(80.dp))
   }
 
-  // 지도 다이얼로그 표시
+  // 지도 다이얼로그 표시 (위치 권한 확인 포함)
   if (showMapDialog) {
-    MapLocationDialog(
-      onDismiss = { showMapDialog = false },
-      onLocationSelected = { selectedLocation ->
-        onLocationChange(selectedLocation)
+    LocationPermissionHandler(
+      onPermissionGranted = {
+        // 권한이 승인되면 지도 다이얼로그 표시
       },
-      viewModel = viewModel,
-      searchRadius = searchRadius
-    )
+      onPermissionDenied = {
+        showMapDialog = false
+      }
+    ) {
+      MapLocationDialog(
+        onDismiss = { showMapDialog = false },
+        onLocationSelected = { selectedLocation ->
+          onLocationChange(selectedLocation)
+        },
+        viewModel = viewModel,
+        searchRadius = searchRadius
+      )
+    }
   }
 }
 

@@ -112,7 +112,9 @@ data class ProjectPaymentData(
         val hourlyRate: Int,
         val totalAmount: Long,
         val isPaid: Boolean,
-        val paidAt: LocalDateTime? = null
+        val paidAt: LocalDateTime? = null,
+        val bankName: String,
+        val accountNumber: String
     )
 
     // 총 작업자 수

@@ -13,9 +13,9 @@ data class SimpleProject(
     val status: String,
     val startDate: String,
     val endDate: String,
-    val wage: Int,
     val currentApplicants: Int,
-    val maxApplicants: Int,
+    val maxApplicants: Int = 20,
+    val wage: Int = 150000,
     val isUrgent: Boolean = false,
     val isBookmarked: Boolean = false
 )

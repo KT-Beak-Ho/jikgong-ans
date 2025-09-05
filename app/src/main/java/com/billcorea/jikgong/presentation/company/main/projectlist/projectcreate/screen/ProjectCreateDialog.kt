@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -19,17 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
-import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 @Composable
 fun ProjectCreateDialog(
@@ -37,14 +33,9 @@ fun ProjectCreateDialog(
   onConfirm: (ProjectCreateData) -> Unit
 ) {
   var projectName by remember { mutableStateOf("") }
-  var category by remember { mutableStateOf("철근공") }
-  var wage by remember { mutableStateOf("200000") }
   var location by remember { mutableStateOf("") }
   var startDate by remember { mutableStateOf<LocalDate?>(null) }
   var endDate by remember { mutableStateOf<LocalDate?>(null) }
-  var maxApplicants by remember { mutableStateOf("15") }
-  var description by remember { mutableStateOf("") }
-  var isUrgent by remember { mutableStateOf(false) }
 
   val context = LocalContext.current
   val scrollState = rememberScrollState()
@@ -120,74 +111,11 @@ fun ProjectCreateDialog(
             )
           }
 
-          // 작업 카테고리와 일당
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-          ) {
-            // 작업 카테고리
-            Column(modifier = Modifier.weight(1f)) {
-              Text(
-                text = "작업 카테고리",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
-              )
-              Box {
-                OutlinedTextField(
-                  value = category,
-                  onValueChange = { },
-                  modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { /* 드롭다운 열기 */ },
-                  enabled = false,
-                  readOnly = true,
-                  trailingIcon = {
-                    Icon(
-                      Icons.Default.ArrowDropDown,
-                      contentDescription = null
-                    )
-                  },
-                  colors = OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledBorderColor = Color(0xFFE0E0E0),
-                    disabledTrailingIconColor = Color.Gray
-                  )
-                )
-              }
-            }
 
-            // 일당
-            Column(modifier = Modifier.weight(1f)) {
-              Text(
-                text = "일당",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
-              )
-              OutlinedTextField(
-                value = if (wage.isNotEmpty()) {
-                  NumberFormat.getNumberInstance(Locale.KOREA).format(wage.toLongOrNull() ?: 0)
-                } else "",
-                onValueChange = { input ->
-                  wage = input.replace(",", "").filter { it.isDigit() }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("200000") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = OutlinedTextFieldDefaults.colors(
-                  unfocusedBorderColor = Color(0xFFE0E0E0),
-                  focusedBorderColor = Color(0xFF4B7BFF)
-                ),
-                singleLine = true
-              )
-            }
-          }
-
-          // 작업 위치
+          // 작업장소 (지도에서 위치추가)
           Column {
             Text(
-              text = "작업 위치",
+              text = "작업장소",
               fontSize = 14.sp,
               color = Color.Gray,
               modifier = Modifier.padding(bottom = 8.dp)
@@ -196,12 +124,21 @@ fun ProjectCreateDialog(
               value = location,
               onValueChange = { location = it },
               modifier = Modifier.fillMaxWidth(),
-              placeholder = { Text("예: 서울시 강남구 역삼동") },
+              placeholder = { Text("지도에서 위치를 선택하세요") },
               colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = Color(0xFFE0E0E0),
                 focusedBorderColor = Color(0xFF4B7BFF)
               ),
-              singleLine = true
+              singleLine = true,
+              trailingIcon = {
+                IconButton(onClick = { /* TODO: 지도 다이얼로그 열기 */ }) {
+                  Icon(
+                    Icons.Default.LocationOn,
+                    contentDescription = "지도에서 선택",
+                    tint = Color(0xFF4B7BFF)
+                  )
+                }
+              }
             )
           }
 
@@ -210,10 +147,10 @@ fun ProjectCreateDialog(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
           ) {
-            // 시작일
+            // 착공일
             Column(modifier = Modifier.weight(1f)) {
               Text(
-                text = "시작일",
+                text = "착공일",
                 fontSize = 14.sp,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -253,10 +190,10 @@ fun ProjectCreateDialog(
               )
             }
 
-            // 종료일
+            // 준공일
             Column(modifier = Modifier.weight(1f)) {
               Text(
-                text = "종료일",
+                text = "준공일",
                 fontSize = 14.sp,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -297,67 +234,8 @@ fun ProjectCreateDialog(
             }
           }
 
-          // 필요 인원
-          Column {
-            Text(
-              text = "필요 인원",
-              fontSize = 14.sp,
-              color = Color.Gray,
-              modifier = Modifier.padding(bottom = 8.dp)
-            )
-            OutlinedTextField(
-              value = maxApplicants,
-              onValueChange = { input ->
-                maxApplicants = input.filter { it.isDigit() }
-              },
-              modifier = Modifier.fillMaxWidth(),
-              placeholder = { Text("15") },
-              keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-              colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color(0xFFE0E0E0),
-                focusedBorderColor = Color(0xFF4B7BFF)
-              ),
-              singleLine = true
-            )
-          }
 
-          // 상세 설명
-          Column {
-            Text(
-              text = "상세 설명",
-              fontSize = 14.sp,
-              color = Color.Gray,
-              modifier = Modifier.padding(bottom = 8.dp)
-            )
-            OutlinedTextField(
-              value = description,
-              onValueChange = { description = it },
-              modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp),
-              placeholder = { Text("작업 내용, 필수 요구사항, 제공 사항 등을 자세히 입력해주세요") },
-              colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color(0xFFE0E0E0),
-                focusedBorderColor = Color(0xFF4B7BFF)
-              ),
-              maxLines = 5
-            )
-          }
 
-          // 긴급 모집
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Checkbox(
-              checked = isUrgent,
-              onCheckedChange = { isUrgent = it }
-            )
-            Text(
-              text = "긴급 모집으로 표시",
-              fontSize = 14.sp
-            )
-          }
         }
 
         // 하단 버튼
@@ -383,14 +261,14 @@ fun ProjectCreateDialog(
             onClick = {
               val data = ProjectCreateData(
                 projectName = projectName,
-                category = category,
-                wage = wage.toIntOrNull() ?: 0,
+                category = "",
+                wage = 0,
                 location = location,
                 startDate = startDate,
                 endDate = endDate,
-                maxApplicants = maxApplicants.toIntOrNull() ?: 0,
-                description = description,
-                isUrgent = isUrgent
+                maxApplicants = 0,
+                description = "",
+                isUrgent = false
               )
               onConfirm(data)
             },
