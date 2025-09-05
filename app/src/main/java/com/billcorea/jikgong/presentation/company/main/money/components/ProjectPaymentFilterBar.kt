@@ -28,6 +28,7 @@ fun ProjectPaymentFilterBar(
         null to "전체",
         ProjectPaymentStatus.PENDING to "지급 대기",
         ProjectPaymentStatus.PROCESSING to "처리중",
+        ProjectPaymentStatus.OVERDUE to "연체 임금",
         ProjectPaymentStatus.COMPLETED to "지급 완료"
     )
 

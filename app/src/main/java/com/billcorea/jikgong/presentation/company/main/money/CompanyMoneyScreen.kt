@@ -27,6 +27,7 @@ import com.billcorea.jikgong.presentation.company.main.money.popup.ProjectListDi
 import com.billcorea.jikgong.presentation.company.main.money.popup.CompletedAmountDialog
 import com.billcorea.jikgong.presentation.company.main.money.popup.BulkPaymentConfirmationDialog
 import com.billcorea.jikgong.presentation.company.main.money.popup.ProjectWorkerListDialog
+import com.billcorea.jikgong.presentation.company.main.money.popup.CompletedPaymentDetailDialog
 import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentStatus
 import com.billcorea.jikgong.ui.theme.AppTypography
@@ -113,6 +114,8 @@ fun CompanyMoneyScreen(
     var showBulkPaymentConfirmDialog by remember { mutableStateOf(false) }
     var showProjectWorkerListDialog by remember { mutableStateOf(false) }
     var selectedProjectForWorkerList by remember { mutableStateOf<ProjectPaymentData?>(null) }
+    var showCompletedPaymentDetailDialog by remember { mutableStateOf(false) }
+    var selectedProjectForCompletedDetail by remember { mutableStateOf<ProjectPaymentData?>(null) }
 
     // 프로젝트 상태를 지급 완료로 변경하는 함수
     fun markProjectAsCompleted(projectId: String) {
@@ -160,14 +163,14 @@ fun CompanyMoneyScreen(
             projectPayments.filter { it.status == selectedStatus }
         }
         
-        // 우선순위에 따른 정렬: 지급 대기 > 처리중 > 연체 > 지급 실패 > 지급 완료
+        // 우선순위에 따른 정렬: 연체 > 지급 대기 > 처리중 > 지급 실패 > 지급 완료
         filtered.sortedWith(compareBy<ProjectPaymentData> { project ->
             when (project.status) {
-                ProjectPaymentStatus.PENDING -> 1    // 지급 대기 (최우선)
+                ProjectPaymentStatus.OVERDUE -> 0     // 연체 (최우선 - 신뢰도 영향)
+                ProjectPaymentStatus.PENDING -> 1     // 지급 대기
                 ProjectPaymentStatus.PROCESSING -> 2  // 처리중
-                ProjectPaymentStatus.OVERDUE -> 3     // 연체
-                ProjectPaymentStatus.FAILED -> 4      // 지급 실패
-                ProjectPaymentStatus.COMPLETED -> 5   // 지급 완료 (마지막)
+                ProjectPaymentStatus.FAILED -> 3      // 지급 실패
+                ProjectPaymentStatus.COMPLETED -> 4   // 지급 완료 (마지막)
             }
         }.thenByDescending { it.createdAt }) // 같은 상태 내에서는 최신 순으로 정렬
     }
@@ -214,9 +217,15 @@ fun CompanyMoneyScreen(
                     selectedStatus = selectedStatus,
                     onStatusSelected = { status -> selectedStatus = status },
                     onPaymentAction = { project, action ->
-                        if (action == "deposit") {
-                            selectedProjectForPayment = project
-                            showPaymentConfirmDialog = true
+                        when (action) {
+                            "deposit" -> {
+                                selectedProjectForPayment = project
+                                showPaymentConfirmDialog = true
+                            }
+                            "view_completed" -> {
+                                selectedProjectForCompletedDetail = project
+                                showCompletedPaymentDetailDialog = true
+                            }
                         }
                     },
                     onPendingPaymentsClick = { showPendingPaymentsDialog = true },
@@ -341,6 +350,17 @@ fun CompanyMoneyScreen(
                 showProjectWorkerListDialog = false
                 selectedProjectForWorkerList = null
                 showAllProjectsDialog = false
+            }
+        )
+    }
+
+    // 입금 완료 상세 정보 팝업
+    if (showCompletedPaymentDetailDialog && selectedProjectForCompletedDetail != null) {
+        CompletedPaymentDetailDialog(
+            project = selectedProjectForCompletedDetail!!,
+            onDismiss = {
+                showCompletedPaymentDetailDialog = false
+                selectedProjectForCompletedDetail = null
             }
         )
     }

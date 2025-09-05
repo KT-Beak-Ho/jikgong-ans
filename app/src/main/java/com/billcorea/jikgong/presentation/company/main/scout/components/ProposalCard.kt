@@ -134,7 +134,7 @@ fun ProposalCard(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
-        // 왼쪽: 거리와 평점
+        // 왼쪽: 거리, 평점, 경력
         Row(
           horizontalArrangement = Arrangement.spacedBy(12.dp),
           verticalAlignment = Alignment.CenterVertically
@@ -162,6 +162,21 @@ fun ProposalCard(
             Spacer(modifier = Modifier.width(3.dp))
             Text(
               text = "4.5",
+              style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.Medium
+              ),
+              color = Color(0xFF666666)
+            )
+          }
+          
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+              text = "💼",
+              style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.width(3.dp))
+            Text(
+              text = "5년", // Mock data - 실제로는 proposal에서 가져와야 함
               style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Medium
               ),

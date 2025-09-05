@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -138,9 +139,47 @@ fun ProjectPaymentCard(
             DepositButton(
                 status = projectPayment.status,
                 totalAmount = projectPayment.totalAmount,
-                onDepositClick = { onPaymentAction(projectPayment, "deposit") },
+                onDepositClick = { 
+                    if (projectPayment.status == com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentStatus.COMPLETED) {
+                        onPaymentAction(projectPayment, "view_completed")
+                    } else {
+                        onPaymentAction(projectPayment, "deposit")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
+            
+            // 입금 완료 상태일 때 보관함 안내문구 표시
+            if (projectPayment.status == com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentStatus.COMPLETED) {
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    color = androidx.compose.ui.graphics.Color(0xFFF0F9FF)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = "시간",
+                            tint = androidx.compose.ui.graphics.Color(0xFF0EA5E9),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        
+                        Text(
+                            text = "일주일 후에 보관함으로 이동됩니다",
+                            style = AppTypography.bodySmall.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = androidx.compose.ui.graphics.Color(0xFF0C4A6E)
+                        )
+                    }
+                }
+            }
 
             // 확장된 상세 정보
             AnimatedVisibility(

@@ -1,5 +1,6 @@
 package com.billcorea.jikgong.presentation.company.main.scout.pages
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,16 +16,75 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.material.icons.filled.LocationOn
+import com.billcorea.jikgong.R
+import com.kakao.vectormap.KakaoMap
+import com.kakao.vectormap.KakaoMapReadyCallback
+import com.kakao.vectormap.LatLng
+import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.MapView
+import com.kakao.vectormap.camera.CameraUpdateFactory
+import com.kakao.vectormap.label.LabelOptions
+import com.kakao.vectormap.label.LabelStyle
+import com.kakao.vectormap.label.LabelStyles
 import com.billcorea.jikgong.presentation.company.main.scout.components.MapLocationDialog
 import com.billcorea.jikgong.presentation.location.LocationPermissionHandler
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
 import org.koin.androidx.compose.koinViewModel
+
+// 위치 데이터 저장/불러오기 유틸리티
+object LocationPreferenceManager {
+  private const val PREF_NAME = "location_settings"
+  private const val KEY_CURRENT_LOCATION = "current_location"
+  private const val KEY_SEARCH_RADIUS = "search_radius"
+  private const val KEY_LATITUDE = "latitude"
+  private const val KEY_LONGITUDE = "longitude"
+  
+  fun saveLocationData(
+    context: Context,
+    location: String,
+    radius: Int,
+    latitude: Double = 0.0,
+    longitude: Double = 0.0
+  ) {
+    val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    prefs.edit().apply {
+      putString(KEY_CURRENT_LOCATION, location)
+      putInt(KEY_SEARCH_RADIUS, radius)
+      putFloat(KEY_LATITUDE, latitude.toFloat())
+      putFloat(KEY_LONGITUDE, longitude.toFloat())
+      apply()
+    }
+  }
+  
+  fun getLocationData(context: Context): LocationData {
+    val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    return LocationData(
+      location = prefs.getString(KEY_CURRENT_LOCATION, "서울특별시 강남구") ?: "서울특별시 강남구",
+      radius = prefs.getInt(KEY_SEARCH_RADIUS, 10),
+      latitude = prefs.getFloat(KEY_LATITUDE, 37.5665f).toDouble(),
+      longitude = prefs.getFloat(KEY_LONGITUDE, 126.9780f).toDouble()
+    )
+  }
+}
+
+data class LocationData(
+  val location: String,
+  val radius: Int,
+  val latitude: Double,
+  val longitude: Double
+)
 
 @Composable
 fun LocationSettingPage(
@@ -39,14 +99,28 @@ fun LocationSettingPage(
   var showMapDialog by remember { mutableStateOf(false) }
   val context = LocalContext.current
   
+  // 저장된 위치 데이터 로드 및 초기화
+  LaunchedEffect(Unit) {
+    val savedData = LocationPreferenceManager.getLocationData(context)
+    if (currentLocation.isEmpty() || currentLocation == "서울특별시 강남구") {
+      onLocationChange(savedData.location)
+      onRadiusChange(savedData.radius)
+    }
+  }
+  
   // MainViewModel의 위치 정보 실시간 관찰
   val respAddress by viewModel.respAddress.observeAsState("")
   val roadAddress1 by viewModel.roadAddress1.observeAsState(emptyList())
   
-  // MainViewModel에서 위치 정보가 업데이트되면 상위 컴포넌트에 알림
+  // MainViewModel에서 위치 정보가 업데이트되면 상위 컴포넌트에 알림 및 저장
   LaunchedEffect(respAddress) {
     if (respAddress.isNotEmpty() && respAddress != currentLocation) {
       onLocationChange(respAddress)
+      LocationPreferenceManager.saveLocationData(
+        context = context,
+        location = respAddress,
+        radius = searchRadius
+      )
     }
   }
   
@@ -55,7 +129,24 @@ fun LocationSettingPage(
       val newAddress = roadAddress1[0].addressName
       if (newAddress != currentLocation && newAddress.isNotEmpty()) {
         onLocationChange(newAddress)
+        // 위치 변경 시 저장
+        LocationPreferenceManager.saveLocationData(
+          context = context,
+          location = newAddress,
+          radius = searchRadius
+        )
       }
+    }
+  }
+  
+  // 반경 변경 시에도 저장
+  LaunchedEffect(searchRadius) {
+    if (currentLocation.isNotEmpty()) {
+      LocationPreferenceManager.saveLocationData(
+        context = context,
+        location = currentLocation,
+        radius = searchRadius
+      )
     }
   }
   Column(
@@ -265,6 +356,89 @@ fun LocationSettingPage(
 
     Spacer(modifier = Modifier.height(20.dp))
 
+    // 지도 미리보기 섹션
+    Card(
+      modifier = Modifier.fillMaxWidth(),
+      shape = RoundedCornerShape(16.dp),
+      colors = CardDefaults.cardColors(
+        containerColor = Color.White
+      ),
+      elevation = CardDefaults.cardElevation(
+        defaultElevation = 2.dp
+      )
+    ) {
+      Column(
+        modifier = Modifier.padding(20.dp)
+      ) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = "현재 위치 미리보기",
+            style = MaterialTheme.typography.titleMedium.copy(
+              fontWeight = FontWeight.Bold
+            )
+          )
+          TextButton(
+            onClick = { showMapDialog = true }
+          ) {
+            Icon(
+              imageVector = Icons.Default.Fullscreen,
+              contentDescription = "전체화면",
+              modifier = Modifier.size(16.dp),
+              tint = Color(0xFF4B7BFF)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+              text = "크게 보기",
+              color = Color(0xFF4B7BFF),
+              style = MaterialTheme.typography.bodySmall
+            )
+          }
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // 지도 미리보기
+        CompactMapView(
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .clip(RoundedCornerShape(12.dp)),
+          viewModel = viewModel,
+          currentLocation = currentLocation,
+          searchRadius = searchRadius,
+          onLocationSelected = { selectedLocation ->
+            onLocationChange(selectedLocation)
+          }
+        )
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // 지도 안내 텍스트
+        Row(
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Icon(
+            imageVector = Icons.Default.TouchApp,
+            contentDescription = "터치",
+            modifier = Modifier.size(16.dp),
+            tint = Color.Gray
+          )
+          Spacer(modifier = Modifier.width(8.dp))
+          Text(
+            text = "지도를 터치하여 정확한 위치를 선택하세요",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray
+          )
+        }
+      }
+    }
+
+    Spacer(modifier = Modifier.height(20.dp))
+
     // 안내 메시지
     Card(
       modifier = Modifier.fillMaxWidth(),
@@ -348,6 +522,188 @@ private fun RadiusChip(
       color = if (isSelected) Color.White else Color.Gray
     )
   }
+}
+
+@SuppressLint("UseCompatLoadingForDrawables")
+@Composable
+private fun CompactMapView(
+  modifier: Modifier = Modifier,
+  viewModel: MainViewModel,
+  currentLocation: String,
+  searchRadius: Int,
+  onLocationSelected: (String) -> Unit
+) {
+  val context = LocalContext.current
+  
+  // KakaoMap SDK 초기화 확인
+  var isMapInitialized by remember { mutableStateOf(false) }
+  
+  LaunchedEffect(Unit) {
+    try {
+      // SDK가 초기화되었는지 확인
+      isMapInitialized = true
+    } catch (e: Exception) {
+      isMapInitialized = false
+      android.util.Log.e("CompactMapView", "Map initialization check failed", e)
+    }
+  }
+  
+  if (!isMapInitialized) {
+    // 지도를 사용할 수 없는 경우 대체 UI 표시
+    Box(
+      modifier = modifier
+        .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
+        .padding(20.dp),
+      contentAlignment = Alignment.Center
+    ) {
+      Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Default.LocationOn,
+          contentDescription = "위치",
+          tint = Color(0xFF9CA3AF),
+          modifier = Modifier.size(48.dp)
+        )
+        Text(
+          text = "지도를 불러올 수 없습니다",
+          style = MaterialTheme.typography.bodyMedium,
+          color = Color(0xFF6B7280)
+        )
+        Text(
+          text = currentLocation,
+          style = MaterialTheme.typography.bodySmall,
+          color = Color(0xFF9CA3AF),
+          textAlign = TextAlign.Center
+        )
+      }
+    }
+    return
+  }
+  
+  val mapView = remember { MapView(context) }
+  
+  // 현재 위치 좌표 (기본값: 서울 시청)
+  var centerPosition by remember { mutableStateOf(LatLng.from(37.5665, 126.9780)) }
+  var kakaoMap: KakaoMap? by remember { mutableStateOf(null) }
+  
+  // 주소 검색 결과 관찰
+  val roadAddress by viewModel.roadAddress1.observeAsState(emptyList())
+  
+  // 주소가 업데이트되면 콜백 호출
+  LaunchedEffect(roadAddress) {
+    if (roadAddress.isNotEmpty()) {
+      onLocationSelected(roadAddress[0].addressName)
+    }
+  }
+  
+  // 컴포넌트가 해제될 때 지도 정리
+  DisposableEffect(mapView) {
+    onDispose {
+      try {
+        mapView.finish()
+      } catch (e: Exception) {
+        // 이미 해제된 경우 무시
+      }
+    }
+  }
+  
+  AndroidView(
+    modifier = modifier,
+    factory = { context ->
+      mapView.apply {
+        start(
+          object : MapLifeCycleCallback() {
+            override fun onMapDestroy() {
+              kakaoMap = null
+            }
+            override fun onMapError(exception: Exception?) {
+              // 지도 오류 로그
+              android.util.Log.e("CompactMapView", "Map error: ${exception?.message}")
+            }
+          },
+          object : KakaoMapReadyCallback() {
+            override fun onMapReady(map: KakaoMap) {
+              kakaoMap = map
+              
+              try {
+                // 카메라를 현재 위치로 이동
+                val cameraUpdate = CameraUpdateFactory.newCenterPosition(centerPosition, 15)
+                map.moveCamera(cameraUpdate)
+                
+                // 현재 위치에 마커 표시
+                val style = map.labelManager?.addLabelStyles(
+                  LabelStyles.from(LabelStyle.from(R.drawable.ic_mylocation_v2))
+                )
+                
+                if (style != null) {
+                  val options = LabelOptions.from(centerPosition).setStyles(style)
+                  map.labelManager?.layer?.addLabel(options)
+                }
+                
+                // 지도 롱클릭 리스너 (터치 후 꾹 누르기)
+                map.setOnTerrainLongClickListener { _, latLng, _ ->
+                  latLng?.let { newLatLng ->
+                    centerPosition = newLatLng
+                    
+                    try {
+                      // 기존 마커 제거 후 새 마커 추가
+                      map.labelManager?.layer?.removeAll()
+                      if (style != null) {
+                        val newOptions = LabelOptions.from(newLatLng).setStyles(style)
+                        map.labelManager?.layer?.addLabel(newOptions)
+                      }
+                      
+                      // 카메라 이동
+                      val newCameraUpdate = CameraUpdateFactory.newCenterPosition(newLatLng, 15)
+                      map.moveCamera(newCameraUpdate)
+                      
+                      // 주소 검색
+                      viewModel.doFindAddress(newLatLng.latitude, newLatLng.longitude)
+                    } catch (e: Exception) {
+                      android.util.Log.e("CompactMapView", "Error updating marker: ${e.message}")
+                    }
+                  }
+                }
+                
+                // POI 클릭 리스너
+                map.setOnPoiClickListener { _, latLng, _, _ ->
+                  latLng?.let { newLatLng ->
+                    centerPosition = newLatLng
+                    
+                    try {
+                      // 기존 마커 제거 후 새 마커 추가
+                      map.labelManager?.layer?.removeAll()
+                      if (style != null) {
+                        val newOptions = LabelOptions.from(newLatLng).setStyles(style)
+                        map.labelManager?.layer?.addLabel(newOptions)
+                      }
+                      
+                      // 카메라 이동
+                      val newCameraUpdate = CameraUpdateFactory.newCenterPosition(newLatLng, 15)
+                      map.moveCamera(newCameraUpdate)
+                      
+                      // 주소 검색
+                      viewModel.doFindAddress(newLatLng.latitude, newLatLng.longitude)
+                    } catch (e: Exception) {
+                      android.util.Log.e("CompactMapView", "Error updating marker: ${e.message}")
+                    }
+                  }
+                }
+              } catch (e: Exception) {
+                android.util.Log.e("CompactMapView", "Error initializing map: ${e.message}")
+              }
+            }
+            
+            override fun getPosition(): LatLng {
+              return centerPosition
+            }
+          }
+        )
+      }
+    }
+  )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF7F8FA)

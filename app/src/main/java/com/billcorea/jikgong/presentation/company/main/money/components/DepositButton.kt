@@ -69,11 +69,11 @@ fun DepositButton(
         ProjectPaymentStatus.COMPLETED -> {
             ButtonConfig(
                 text = "입금 완료",
-                subText = "모든 작업자에게 지급이 완료되었습니다",
+                subText = "클릭하여 지급 내역을 확인하세요",
                 backgroundColor = Color(0xFFE8F5E8),
                 contentColor = Color(0xFF2E7D32),
                 icon = Icons.Default.Check,
-                enabled = false,
+                enabled = true,
                 showAmount = false
             )
         }
