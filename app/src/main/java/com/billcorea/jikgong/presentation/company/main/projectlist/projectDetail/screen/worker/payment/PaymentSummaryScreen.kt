@@ -1,13 +1,16 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.worker.payment
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,7 +39,10 @@ data class PaymentWorker(
   val age: Int,
   val gender: String, // "남", "여"
   val paymentAmount: Int, // 지급 금액 (0이면 미지급)
-  val attendanceStatus: String // "정상출근", "조퇴", "결근"
+  val attendanceStatus: String, // "정상출근", "조퇴", "결근"
+  val jobRole: String, // 직무 (예: "철근공", "형틀목공", "토공", "미장공")
+  val workDescription: String, // 수행 업무 내용
+  val rating: Float = 0.0f // 평점 (0~5점, 0은 미평가)
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,29 +75,41 @@ fun PaymentSummaryScreen(
     LocalDate.parse("2025-08-01")
   }
   
-  // 해당 날짜의 확정 근로자를 지급 데이터로 변환 (임의로 일부는 정상출근, 일부는 조퇴/결근 설정)
+  // 해당 날짜의 확정 근로자를 지급 데이터로 변환 (완료된 작업이므로 모든 근로자가 정상 출근)
   val workers = remember(effectiveDate) {
     val confirmedWorkers = confirmedWorkersByDate[effectiveDate] ?: emptyList()
+    val jobRoles = listOf("철근공", "형틀목공", "토공", "미장공", "조적공", "설비공", "전기공")
+    val workDescriptions = listOf(
+      "철근 배근 및 결속 작업",
+      "형틀 설치 및 해체 작업", 
+      "터파기 및 되메우기 작업",
+      "미장 및 마감 작업",
+      "벽돌 쌓기 및 조적 작업",
+      "급배수 설비 설치 작업",
+      "전기 배선 및 조명 설치 작업"
+    )
+    
     confirmedWorkers.mapIndexed { index, worker ->
-      // 임의로 80%는 정상출근, 20%는 조퇴/결근으로 설정
-      val isNormalAttendance = index % 5 != 4 // 5명 중 4명은 정상출근
+      // 완료된 프로젝트이므로 모든 근로자가 정상 출근하고 임금을 받음
       PaymentWorker(
         id = worker.id,
         name = worker.name,
         age = worker.age,
         gender = worker.gender,
-        paymentAmount = if (isNormalAttendance) 200000 else 0,
-        attendanceStatus = if (isNormalAttendance) "정상출근" else if (index % 2 == 0) "조퇴" else "결근"
+        paymentAmount = 200000, // 모든 근로자가 일당 20만원 받음
+        attendanceStatus = "정상출근", // 모든 근로자가 정상출근
+        jobRole = jobRoles[index % jobRoles.size],
+        workDescription = workDescriptions[index % workDescriptions.size],
+        rating = 3.5f + (index % 15) * 0.1f // 모든 근로자가 3.5~5.0 평점 받음
       )
     }
   }
   
-  // 정상출근자와 조퇴/결근자 분리
-  val normalAttendanceWorkers = workers.filter { it.paymentAmount > 0 }
-  val absentWorkers = workers.filter { it.paymentAmount == 0 }
+  // 완료된 작업이므로 모든 근로자가 정상 출근 (조퇴/결근자 없음)
+  val normalAttendanceWorkers = workers // 모든 근로자가 정상 출근
   
   // 총 지급액 계산
-  val totalPayment = normalAttendanceWorkers.sumOf { it.paymentAmount }
+  val totalPayment = workers.sumOf { it.paymentAmount }
   
   // 숫자 포맷터
   val numberFormat = NumberFormat.getNumberInstance(Locale.KOREA)
@@ -189,7 +207,7 @@ fun PaymentSummaryScreen(
         }
       }
       
-      // 정상출근 섹션
+      // 정상출근 섹션 (완료된 작업이므로 모든 근로자가 정상 출근)
       if (normalAttendanceWorkers.isNotEmpty()) {
         item {
           Row(
@@ -206,37 +224,44 @@ fun PaymentSummaryScreen(
               fontWeight = FontWeight.Bold,
               color = appColorScheme.primary
             )
+            Spacer(modifier = Modifier.width(8.dp))
+            Surface(
+              shape = RoundedCornerShape(12.dp),
+              color = Color(0xFF4CAF50)
+            ) {
+              Text(
+                text = "작업완료",
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                style = AppTypography.bodySmall,
+                color = Color.White,
+                fontWeight = FontWeight.Medium
+              )
+            }
           }
         }
         
         items(normalAttendanceWorkers) { worker ->
           PaymentWorkerCard(worker = worker)
         }
-      }
-      
-      // 조퇴 및 결근 섹션
-      if (absentWorkers.isNotEmpty()) {
+      } else {
+        // 빈 상태 표시
         item {
-          Spacer(modifier = Modifier.height(8.dp))
-          Row(
-            verticalAlignment = Alignment.CenterVertically
+          Box(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(vertical = 48.dp),
+            contentAlignment = Alignment.Center
           ) {
-            Text(
-              text = "조퇴 및 결근 ",
-              style = AppTypography.bodyMedium,
-              color = Color.Black
-            )
-            Text(
-              text = "${absentWorkers.size}명",
-              style = AppTypography.bodyMedium,
-              fontWeight = FontWeight.Bold,
-              color = Color(0xFFF44336) // 빨간색
-            )
+            Column(
+              horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+              Text(
+                text = "해당 날짜에 확정된 근로자가 없습니다",
+                style = AppTypography.bodyLarge,
+                color = Color.Gray
+              )
+            }
           }
-        }
-        
-        items(absentWorkers) { worker ->
-          PaymentWorkerCard(worker = worker)
         }
       }
       
@@ -253,6 +278,8 @@ private fun PaymentWorkerCard(
   worker: PaymentWorker
 ) {
   val numberFormat = NumberFormat.getNumberInstance(Locale.KOREA)
+  var expanded by remember { mutableStateOf(false) }
+  var currentRating by remember { mutableFloatStateOf(worker.rating) }
   
   Card(
     modifier = Modifier.fillMaxWidth(),
@@ -260,57 +287,192 @@ private fun PaymentWorkerCard(
     colors = CardDefaults.cardColors(containerColor = Color.White),
     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
   ) {
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp),
-      verticalAlignment = Alignment.CenterVertically
+    Column(
+      modifier = Modifier.fillMaxWidth()
     ) {
-      // 아바타
-      Box(
+      // 기본 정보 행
+      Row(
         modifier = Modifier
-          .size(48.dp)
-          .clip(CircleShape)
-          .background(appColorScheme.primary.copy(alpha = 0.1f)),
-        contentAlignment = Alignment.Center
+          .fillMaxWidth()
+          .clickable { expanded = !expanded }
+          .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
       ) {
-        Icon(
-          Icons.Default.Person,
-          contentDescription = null,
-          modifier = Modifier.size(28.dp),
-          tint = appColorScheme.primary
-        )
+        // 아바타
+        Box(
+          modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(appColorScheme.primary.copy(alpha = 0.1f)),
+          contentAlignment = Alignment.Center
+        ) {
+          Icon(
+            Icons.Default.Person,
+            contentDescription = null,
+            modifier = Modifier.size(28.dp),
+            tint = appColorScheme.primary
+          )
+        }
+        
+        Spacer(modifier = Modifier.width(12.dp))
+        
+        // 근로자 기본 정보
+        Column(
+          modifier = Modifier.weight(1f)
+        ) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Text(
+              text = worker.name,
+              style = AppTypography.titleMedium,
+              fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Surface(
+              shape = RoundedCornerShape(4.dp),
+              color = appColorScheme.primary.copy(alpha = 0.1f)
+            ) {
+              Text(
+                text = worker.jobRole,
+                style = AppTypography.bodySmall,
+                color = appColorScheme.primary,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+              )
+            }
+          }
+          
+          Text(
+            text = "만 ${worker.age}세 • ${worker.gender}",
+            style = AppTypography.bodySmall,
+            color = Color.Gray
+          )
+          
+          // 평점 표시 (정상출근자만)
+          if (worker.paymentAmount > 0 && worker.rating > 0) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              modifier = Modifier.padding(top = 4.dp)
+            ) {
+              repeat(5) { index ->
+                Icon(
+                  if (index < currentRating.toInt()) Icons.Filled.Star else Icons.Outlined.Star,
+                  contentDescription = null,
+                  modifier = Modifier.size(16.dp),
+                  tint = Color(0xFFFFC107)
+                )
+              }
+              Spacer(modifier = Modifier.width(4.dp))
+              Text(
+                text = String.format("%.1f", currentRating),
+                style = AppTypography.bodySmall,
+                color = Color.Gray
+              )
+            }
+          }
+        }
+        
+        // 지급 금액
+        Column(
+          horizontalAlignment = Alignment.End
+        ) {
+          Text(
+            text = if (worker.paymentAmount > 0) {
+              "${numberFormat.format(worker.paymentAmount)}원"
+            } else {
+              "-원"
+            },
+            style = AppTypography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (worker.paymentAmount > 0) Color.Black else Color.Gray
+          )
+          
+          // 확장 아이콘
+          Icon(
+            if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+            contentDescription = if (expanded) "접기" else "펼치기",
+            modifier = Modifier.size(20.dp),
+            tint = Color.Gray
+          )
+        }
       }
       
-      Spacer(modifier = Modifier.width(12.dp))
-      
-      // 근로자 정보
-      Column(
-        modifier = Modifier.weight(1f)
-      ) {
-        Text(
-          text = worker.name,
-          style = AppTypography.titleMedium,
-          fontWeight = FontWeight.Bold
-        )
-        Text(
-          text = "만 ${worker.age}세 • ${worker.gender}",
-          style = AppTypography.bodySmall,
-          color = Color.Gray
-        )
+      // 확장된 상세 정보
+      if (expanded) {
+        Column(
+          modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp)
+        ) {
+          HorizontalDivider(color = Color.LightGray)
+          
+          Spacer(modifier = Modifier.height(12.dp))
+          
+          // 업무 내용
+          Text(
+            text = "수행 업무",
+            style = AppTypography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = Color.Black
+          )
+          
+          Text(
+            text = worker.workDescription,
+            style = AppTypography.bodyMedium,
+            color = Color.Gray,
+            modifier = Modifier.padding(top = 4.dp)
+          )
+          
+          // 평점 부여 (정상출근자만)
+          if (worker.paymentAmount > 0) {
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+              text = "평점 부여",
+              style = AppTypography.bodyMedium,
+              fontWeight = FontWeight.Medium,
+              color = Color.Black
+            )
+            
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              modifier = Modifier.padding(top = 8.dp)
+            ) {
+              Text(
+                text = "작업 품질:",
+                style = AppTypography.bodySmall,
+                color = Color.Gray,
+                modifier = Modifier.width(60.dp)
+              )
+              
+              LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+              ) {
+                items(5) { index ->
+                  val starIndex = index + 1
+                  Icon(
+                    if (starIndex <= currentRating.toInt()) Icons.Filled.Star else Icons.Outlined.Star,
+                    contentDescription = "${starIndex}점",
+                    modifier = Modifier
+                      .size(32.dp)
+                      .clickable { currentRating = starIndex.toFloat() },
+                    tint = if (starIndex <= currentRating.toInt()) Color(0xFFFFC107) else Color.LightGray
+                  )
+                }
+              }
+              
+              Spacer(modifier = Modifier.width(8.dp))
+              
+              Text(
+                text = String.format("%.1f점", currentRating),
+                style = AppTypography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = appColorScheme.primary
+              )
+            }
+          }
+          
+          Spacer(modifier = Modifier.height(16.dp))
+        }
       }
-      
-      // 지급 금액
-      Text(
-        text = if (worker.paymentAmount > 0) {
-          "${numberFormat.format(worker.paymentAmount)}원"
-        } else {
-          "-원"
-        },
-        style = AppTypography.bodyMedium,
-        fontWeight = FontWeight.Bold,
-        color = if (worker.paymentAmount > 0) Color.Black else Color.Gray
-      )
     }
   }
 }

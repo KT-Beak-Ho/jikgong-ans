@@ -147,10 +147,20 @@ class MainViewModel : ViewModel() {
             override fun onResponse(request: Call<AddressFindResponse>, response: Response<AddressFindResponse>) {
                 Log.e("", "response ${response.code()} / ${response.body()?.meta?.totalCount}")
                 val recordList = mutableStateListOf<AddressFindRoadAddress>()
-                for (document in response.body()?.documents!!) {
-                    recordList.add(document.roadAddress!!)
+                try {
+                    val responseBody = response.body()
+                    if (responseBody != null && responseBody.documents.isNotEmpty()) {
+                        for (document in responseBody.documents) {
+                            document.roadAddress?.let { roadAddress ->
+                                recordList.add(roadAddress)
+                            }
+                        }
+                    }
+                    _roadAddress.value = recordList.toList()
+                } catch (e: Exception) {
+                    Log.e("", "doKakaoGeocoding error: ${e.localizedMessage}")
+                    _roadAddress.value = emptyList()
                 }
-                _roadAddress.value = recordList.toList()
             }
             override fun onFailure(req: Call<AddressFindResponse>, t: Throwable) {
                 Log.e("", "error ${t.localizedMessage}")

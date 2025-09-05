@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -31,6 +32,20 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Work
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+// 출근/퇴근 상태를 나타내는 데이터 클래스
+data class WorkerAttendanceInfo(
+  val hasCheckedIn: Boolean = false,
+  val hasCheckedOut: Boolean = false,
+  val hasPaymentRecord: Boolean = false
+)
+
+// 날짜 상태를 나타내는 enum
+enum class DateStatus {
+  PAST,    // 과거 날짜
+  TODAY,   // 오늘 날짜
+  FUTURE   // 미래 날짜
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkerManagementScreen(
@@ -38,6 +53,9 @@ fun WorkerManagementScreen(
   workDayId: String,
   modifier: Modifier = Modifier
 ) {
+  // 오늘 날짜 정의 (8월 3일로 고정하되, 과거 데이터는 항상 표시)
+  val TODAY = LocalDate.parse("2025-08-03")
+  
   // 임시 데이터 - 실제로는 workDayId를 통해 데이터를 가져와야 함
   val workDay = remember {
     WorkDay(
@@ -51,6 +69,24 @@ fun WorkerManagementScreen(
       confirmed = 10,
       maxWorkers = 15,
       status = "IN_PROGRESS"
+    )
+  }
+  
+  // 출근/퇴근 상태 데이터 (날짜별) - 8월 4일 이후도 과거 완료된 데이터로 안전화
+  var attendanceStatus by remember {
+    mutableStateOf<Map<LocalDate, WorkerAttendanceInfo>>(
+      mapOf(
+        LocalDate.parse("2025-08-01") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true),
+        LocalDate.parse("2025-08-02") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true),
+        LocalDate.parse("2025-08-03") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = false, hasPaymentRecord = false), // 오늘: 출근만 완료
+        LocalDate.parse("2025-08-04") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true), // 미래지만 완료된 업무
+        LocalDate.parse("2025-08-05") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true),
+        LocalDate.parse("2025-08-06") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true),
+        LocalDate.parse("2025-08-07") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true),
+        LocalDate.parse("2025-08-08") to WorkerAttendanceInfo(hasCheckedIn = false, hasCheckedOut = false, hasPaymentRecord = false), // 실제 미래 날짜
+        LocalDate.parse("2025-08-09") to WorkerAttendanceInfo(hasCheckedIn = false, hasCheckedOut = false, hasPaymentRecord = false),
+        LocalDate.parse("2025-08-10") to WorkerAttendanceInfo(hasCheckedIn = false, hasCheckedOut = false, hasPaymentRecord = false)
+      )
     )
   }
   
@@ -118,6 +154,25 @@ fun WorkerManagementScreen(
   // 날짜별 확정인부 수 계산
   fun getConfirmedWorkersCount(date: LocalDate): Int {
     return (confirmedWorkersByDate[date] ?: emptyList()).size
+  }
+  
+  // 날짜 상태 판단 함수
+  fun getDateStatus(date: LocalDate): DateStatus {
+    return when {
+      date.isBefore(TODAY) -> DateStatus.PAST
+      date.isEqual(TODAY) -> DateStatus.TODAY
+      else -> DateStatus.FUTURE
+    }
+  }
+  
+  // 특정 날짜의 출근/퇴근 상태 가져오기
+  fun getAttendanceStatusForDate(date: LocalDate): WorkerAttendanceInfo {
+    return attendanceStatus[date] ?: WorkerAttendanceInfo()
+  }
+  
+  // 출근 상태 업데이트 함수
+  fun updateAttendanceStatus(date: LocalDate, status: WorkerAttendanceInfo) {
+    attendanceStatus = attendanceStatus + (date to status)
   }
   
   // 디버깅: 현재 데이터 상태 확인
@@ -287,9 +342,12 @@ fun WorkerManagementScreen(
                 }
               }
             } else {
-              // 확정인부가 있는 경우 - 4개 카드 표시
+              // 확정인부가 있는 경우 - 날짜별로 다른 카드 표시
+              val dateStatus = getDateStatus(currentDate)
+              val attendanceStatus = getAttendanceStatusForDate(currentDate)
+              
               item {
-                // 출근 확정된 근로자 카드
+                // 출근 확정된 근로자 카드 (모든 날짜에 표시)
                 Card(
                   modifier = Modifier.fillMaxWidth(),
                   shape = RoundedCornerShape(8.dp),
@@ -316,90 +374,145 @@ fun WorkerManagementScreen(
                 }
               }
               
-              item {
-                // 출근 여부 확인 카드
-                Card(
-                  modifier = Modifier.fillMaxWidth(),
-                  shape = RoundedCornerShape(8.dp),
-                  colors = CardDefaults.cardColors(containerColor = Color.White),
-                  elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                  Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                      "근로자의 출근 여부 확인하기",
-                      style = AppTypography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                      onClick = { 
-                        navController.navigate("attendance_check/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
-                      },
-                      modifier = Modifier.fillMaxWidth(),
-                      shape = RoundedCornerShape(4.dp),
-                      colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7BFF))
+              // 출근 여부 확인 카드 (모든 날짜에 표시 - 과거 데이터는 항상 열람 가능)
+              if (dateStatus != DateStatus.FUTURE || attendanceStatus.hasCheckedIn || attendanceStatus.hasCheckedOut || attendanceStatus.hasPaymentRecord) {
+                item {
+                  AttendanceCheckCard(
+                    type = "출근",
+                    description = when {
+                      attendanceStatus.hasCheckedIn -> "출근 확인 완료"
+                      dateStatus == DateStatus.PAST -> "출근 확인 필요"
+                      dateStatus == DateStatus.TODAY -> "근로자의 출근 여부 확인하기"
+                      else -> "출근 확인 대기"
+                    },
+                    buttonText = when {
+                      attendanceStatus.hasCheckedIn -> "출근확인 완료"
+                      dateStatus == DateStatus.PAST -> "출근확인 누락"
+                      dateStatus == DateStatus.TODAY -> "출근확인"
+                      else -> "출근확인 대기"
+                    },
+                    buttonColor = when {
+                      attendanceStatus.hasCheckedIn && dateStatus == DateStatus.FUTURE -> Color(0xFF81C784) // 미래 날짜 완료 - 연한 초록
+                      attendanceStatus.hasCheckedIn -> Color(0xFF4CAF50) // 과거/오늘 완료 - 진한 초록
+                      dateStatus == DateStatus.PAST && !attendanceStatus.hasCheckedIn -> Color(0xFFFF5722) // 과거 누락 - 빨강
+                      dateStatus == DateStatus.FUTURE -> Color(0xFF90CAF9) // 미래 대기 - 연한 파랑
+                      else -> Color(0xFF4B7BFF) // 오늘/기본 - 진한 파랑
+                    },
+                    isEnabled = true, // 모든 날짜에서 정보 열람 가능
+                    onClick = {
+                      if (dateStatus == DateStatus.TODAY) {
+                        // 출근 확인 처리
+                        updateAttendanceStatus(currentDate, attendanceStatus.copy(hasCheckedIn = true))
+                      }
+                      navController.navigate("attendance_check/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
+                    }
+                  )
+                }
+              }
+              
+              // 퇴근 여부 확인 카드 (출근 확인이 완료된 경우 또는 기존 데이터가 있는 경우)
+              if (attendanceStatus.hasCheckedIn || attendanceStatus.hasCheckedOut || dateStatus == DateStatus.PAST || (dateStatus == DateStatus.TODAY && attendanceStatus.hasCheckedIn)) {
+                item {
+                  AttendanceCheckCard(
+                    type = "퇴근",
+                    description = when {
+                      attendanceStatus.hasCheckedOut -> "퇴근 확인 완료"
+                      dateStatus == DateStatus.PAST -> "퇴근 확인 필요"
+                      dateStatus == DateStatus.TODAY -> "근로자 퇴근여부 확인하기"
+                      else -> "퇴근 확인 대기"
+                    },
+                    buttonText = when {
+                      attendanceStatus.hasCheckedOut -> "퇴근확인 완료"
+                      dateStatus == DateStatus.PAST -> "퇴근확인 누락"
+                      dateStatus == DateStatus.TODAY -> "퇴근확인"
+                      else -> "퇴근확인 대기"
+                    },
+                    buttonColor = when {
+                      attendanceStatus.hasCheckedOut && dateStatus == DateStatus.FUTURE -> Color(0xFF81C784) // 미래 날짜 완료 - 연한 초록
+                      attendanceStatus.hasCheckedOut -> Color(0xFF4CAF50) // 과거/오늘 완료 - 진한 초록
+                      dateStatus == DateStatus.PAST && !attendanceStatus.hasCheckedOut -> Color(0xFFFF5722) // 과거 누락 - 빨강
+                      dateStatus == DateStatus.FUTURE -> Color(0xFF90CAF9) // 미래 대기 - 연한 파랑
+                      else -> Color(0xFF4B7BFF) // 오늘/기본 - 진한 파랑
+                    },
+                    isEnabled = true, // 모든 날짜에서 정보 열람 가능
+                    onClick = {
+                      if (dateStatus == DateStatus.TODAY) {
+                        // 퇴근 확인 처리
+                        updateAttendanceStatus(currentDate, attendanceStatus.copy(hasCheckedOut = true))
+                      }
+                      navController.navigate("checkout/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
+                    }
+                  )
+                }
+              }
+              
+              // 지급내역 확인 카드 (과거 날짜 또는 기존 지급내역이 있는 경우)
+              if (dateStatus == DateStatus.PAST || attendanceStatus.hasPaymentRecord) {
+                item {
+                  AttendanceCheckCard(
+                    type = "지급내역",
+                    description = if (attendanceStatus.hasPaymentRecord) "지급내역 확인 완료" else "지급내역 확인 필요",
+                    buttonText = if (attendanceStatus.hasPaymentRecord) "지급내역서 확인완료" else "지급내역서 보기",
+                    buttonColor = when {
+                      attendanceStatus.hasPaymentRecord && dateStatus == DateStatus.FUTURE -> Color(0xFF81C784) // 미래 날짜 완료 - 연한 초록
+                      attendanceStatus.hasPaymentRecord -> Color(0xFF4CAF50) // 과거/오늘 완료 - 진한 초록
+                      dateStatus == DateStatus.FUTURE -> Color(0xFF90CAF9) // 미래 대기 - 연한 파랑
+                      else -> Color(0xFF4B7BFF) // 오늘/기본 - 진한 파랑
+                    },
+                    isEnabled = true,
+                    onClick = {
+                      if (!attendanceStatus.hasPaymentRecord) {
+                        // 지급내역 확인 처리
+                        updateAttendanceStatus(currentDate, attendanceStatus.copy(hasPaymentRecord = true))
+                      }
+                      navController.navigate("payment_summary/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
+                    }
+                  )
+                }
+              }
+              
+              // 미래 날짜에 대한 안내 메시지 (과거 데이터가 없는 경우에만 표시)
+              if (dateStatus == DateStatus.FUTURE && !attendanceStatus.hasCheckedIn && !attendanceStatus.hasCheckedOut && !attendanceStatus.hasPaymentRecord) {
+                item {
+                  Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                  ) {
+                    Column(
+                      modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                      horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                      Text("출근확인")
+                      Icon(
+                        Icons.Default.Schedule,
+                        contentDescription = null,
+                        modifier = Modifier.size(32.dp),
+                        tint = Color(0xFF9E9E9E)
+                      )
+                      Spacer(modifier = Modifier.height(8.dp))
+                      Text(
+                        text = "아직 해당 날짜가 되지 않았습니다",
+                        style = AppTypography.bodyMedium,
+                        color = Color(0xFF6B7280),
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                      )
+                      Spacer(modifier = Modifier.height(4.dp))
+                      Text(
+                        text = "출근/퇴근 확인 및 지급내역은\n해당 날짜 이후에 확인 가능합니다",
+                        style = AppTypography.bodySmall,
+                        color = Color(0xFF9E9E9E),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                      )
                     }
                   }
                 }
               }
-              
-              item {
-                // 퇴근 여부 확인 카드
-                Card(
-                  modifier = Modifier.fillMaxWidth(),
-                  shape = RoundedCornerShape(8.dp),
-                  colors = CardDefaults.cardColors(containerColor = Color.White),
-                  elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                  Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                      "근로자 퇴근여부 확인하기",
-                      style = AppTypography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                      onClick = { 
-                        navController.navigate("checkout/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
-                      },
-                      modifier = Modifier.fillMaxWidth(),
-                      shape = RoundedCornerShape(4.dp),
-                      colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7BFF))
-                    ) {
-                      Text("퇴근확인")
-                    }
-                  }
-                }
-              }
-              
-              item {
-                // 지급내역 확인 카드
-                Card(
-                  modifier = Modifier.fillMaxWidth(),
-                  shape = RoundedCornerShape(8.dp),
-                  colors = CardDefaults.cardColors(containerColor = Color.White),
-                  elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                  Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                      "지급내역 확인하기",
-                      style = AppTypography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                      onClick = { 
-                        navController.navigate("payment_summary/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
-                      },
-                      modifier = Modifier.fillMaxWidth(),
-                      shape = RoundedCornerShape(4.dp),
-                      colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7BFF))
-                    ) {
-                      Text("지급내역서 보기")
-                    }
-                  }
-                }
-              }
-              
             }
           }
           1 -> { // 인부지원 현황 탭
@@ -505,6 +618,46 @@ fun WorkerManagementScreen(
         showDialog = false
       }
     )
+  }
+}
+
+@Composable
+private fun AttendanceCheckCard(
+  type: String,
+  description: String,
+  buttonText: String,
+  buttonColor: Color,
+  isEnabled: Boolean,
+  onClick: () -> Unit
+) {
+  Card(
+    modifier = Modifier.fillMaxWidth(),
+    shape = RoundedCornerShape(8.dp),
+    colors = CardDefaults.cardColors(containerColor = Color.White),
+    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+  ) {
+    Column(modifier = Modifier.padding(16.dp)) {
+      Text(
+        text = description,
+        style = AppTypography.bodyMedium
+      )
+      Spacer(modifier = Modifier.height(12.dp))
+      Button(
+        onClick = onClick,
+        enabled = isEnabled,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(4.dp),
+        colors = ButtonDefaults.buttonColors(
+          containerColor = if (isEnabled) buttonColor else Color.Gray,
+          disabledContainerColor = Color.Gray
+        )
+      ) {
+        Text(
+          text = buttonText,
+          color = if (isEnabled) Color.White else Color.White.copy(alpha = 0.6f)
+        )
+      }
+    }
   }
 }
 

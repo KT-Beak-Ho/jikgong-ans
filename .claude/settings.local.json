@@ -16,7 +16,9 @@
       "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\money\\components\\PaymentTabBar.kt\")",
       "Bash(git restore:*)",
       "Bash(move:*)",
-      "Bash(\"./gradlew\" build --continue)"
+      "Bash(\"./gradlew\" build --continue)",
+      "Bash(kotlinc-jvm --version)",
+      "Bash(\"./gradlew\" assembleDebug --no-daemon)"
     ],
     "deny": [],
     "ask": []

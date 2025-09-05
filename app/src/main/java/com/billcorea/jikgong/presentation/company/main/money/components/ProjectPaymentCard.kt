@@ -55,13 +55,13 @@ fun ProjectPaymentCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = projectPayment.projectTitle,
-                        style = AppTypography.headlineSmall.copy(
+                        style = AppTypography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
                         ),
                         color = appColorScheme.onSurface,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        lineHeight = AppTypography.headlineSmall.lineHeight * 1.2
+                        lineHeight = AppTypography.titleLarge.lineHeight * 1.1
                     )
 
                     Spacer(modifier = Modifier.height(6.dp))
@@ -98,12 +98,12 @@ fun ProjectPaymentCard(
                 Column {
                     Text(
                         text = "총 결제금액",
-                        style = AppTypography.titleMedium,
+                        style = AppTypography.bodyLarge,
                         color = appColorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(projectPayment.totalAmount)}원",
-                        style = AppTypography.headlineLarge.copy(
+                        style = AppTypography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold
                         ),
                         color = appColorScheme.primary
@@ -113,12 +113,12 @@ fun ProjectPaymentCard(
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = "작업자",
-                        style = AppTypography.titleMedium,
+                        style = AppTypography.bodyLarge,
                         color = appColorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "${projectPayment.completedWorkers}/${projectPayment.totalWorkers}명",
-                        style = AppTypography.headlineSmall.copy(
+                        style = AppTypography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
                         ),
                         color = appColorScheme.onSurface
@@ -170,7 +170,7 @@ fun ProjectPaymentCard(
                     ) {
                         Text(
                             text = "작업자별 상세 내역",
-                            style = AppTypography.titleLarge.copy(
+                            style = AppTypography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold
                             ),
                             color = appColorScheme.onSurface
@@ -182,7 +182,7 @@ fun ProjectPaymentCard(
                         ) {
                             Text(
                                 text = "${projectPayment.completedWorkers}/${projectPayment.totalWorkers} 지급완료",
-                                style = AppTypography.bodyLarge.copy(
+                                style = AppTypography.bodyMedium.copy(
                                     fontWeight = FontWeight.Medium
                                 ),
                                 color = appColorScheme.primary,
@@ -431,7 +431,7 @@ private fun WorkerPaymentItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = worker.workerName,
-                    style = AppTypography.titleMedium.copy(
+                    style = AppTypography.titleSmall.copy(
                         fontWeight = FontWeight.Bold
                     ),
                     color = appColorScheme.onSurface
@@ -441,7 +441,7 @@ private fun WorkerPaymentItem(
 
                 Text(
                     text = "${worker.jobType} • ${worker.hoursWorked}시간 근무",
-                    style = AppTypography.bodyMedium,
+                    style = AppTypography.bodySmall,
                     color = appColorScheme.onSurfaceVariant
                 )
             }
@@ -449,7 +449,7 @@ private fun WorkerPaymentItem(
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = "${NumberFormat.getNumberInstance(Locale.KOREA).format(worker.totalAmount)}원",
-                    style = AppTypography.titleMedium.copy(
+                    style = AppTypography.titleSmall.copy(
                         fontWeight = FontWeight.Bold
                     ),
                     color = appColorScheme.onSurface

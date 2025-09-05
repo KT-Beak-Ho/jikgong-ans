@@ -428,16 +428,26 @@ object CompanyMockDataFactory {
     // ==================== 임금 관리 데이터 ====================
     
     fun getProjectPaymentSummary(): ProjectPaymentSummary {
+        val projects = getProjectPayments()
+        
+        val completedProjects = projects.filter { it.status == ProjectPaymentStatus.COMPLETED }
+        val pendingProjects = projects.filter { it.status == ProjectPaymentStatus.PENDING }
+        val overdueProjects = projects.filter { it.status == ProjectPaymentStatus.OVERDUE }
+        
+        val totalAmount = projects.sumOf { it.totalAmount }
+        val paidAmount = projects.sumOf { it.paidAmount }
+        val pendingAmount = projects.sumOf { it.pendingAmount }
+        
         return ProjectPaymentSummary(
-            totalProjects = 5,
-            completedPayments = 3,
-            pendingPayments = 2,
-            totalAmount = 15750000L,
-            paidAmount = 9450000L,
-            pendingAmount = 6300000L,
-            overdueCount = 0,
-            totalSavingsAmount = 5420000L, // 직직직 사용하면서 총 절약한 금액
-            monthlySavingsAmount = 850000L // 이번달 절약한 금액
+            totalProjects = projects.size,
+            completedPayments = completedProjects.size,
+            pendingPayments = pendingProjects.size,
+            totalAmount = totalAmount,
+            paidAmount = paidAmount,
+            pendingAmount = pendingAmount,
+            overdueCount = overdueProjects.size,
+            totalSavingsAmount = 5420000L, // 직직직 사용하면서 총 절약한 금액 (예시)
+            monthlySavingsAmount = 850000L // 이번달 절약한 금액 (예시)
         )
     }
 
@@ -455,193 +465,214 @@ object CompanyMockDataFactory {
         )
     }
 
+    // ==================== 동적 은행 및 계좌 정보 생성 ====================
+    
+    private val bankNames = listOf(
+        "국민은행", "신한은행", "우리은행", "하나은행", 
+        "농협은행", "기업은행", "카카오뱅크", "토스뱅크"
+    )
+    
+    /**
+     * 작업자 ID를 기반으로 일관된 은행/계좌 정보 생성
+     */
+    private fun generateBankInfo(workerId: String, workerName: String): Pair<String, String> {
+        val random = Random(workerId.hashCode())
+        val bankName = bankNames[random.nextInt(bankNames.size)]
+        
+        // 은행별 계좌번호 패턴 생성
+        val accountNumber = when (bankName) {
+            "국민은행" -> "${random.nextInt(100, 1000)}-${random.nextInt(10, 100)}-${random.nextInt(100000, 1000000)}"
+            "신한은행" -> "${random.nextInt(100, 1000)}-${random.nextInt(10, 100)}-${random.nextInt(100000, 1000000)}"
+            "우리은행" -> "${random.nextInt(1000, 10000)}-${random.nextInt(100, 1000)}-${random.nextInt(100000, 1000000)}"
+            "하나은행" -> "${random.nextInt(100, 1000)}-${random.nextInt(100, 1000)}-${random.nextInt(10000, 100000)}-${random.nextInt(10, 100)}"
+            "농협은행" -> "${random.nextInt(100, 1000)}-${random.nextInt(1000, 10000)}-${random.nextInt(10, 100)}-${random.nextInt(10, 100)}"
+            "기업은행" -> "${random.nextInt(100, 1000)}-${random.nextInt(100, 1000)}-${random.nextInt(10, 100)}-${random.nextInt(100, 1000)}"
+            "카카오뱅크" -> "${random.nextInt(1000, 10000)}-${random.nextInt(10, 100)}-${random.nextInt(100000, 1000000)}"
+            "토스뱅크" -> "${random.nextInt(1000, 10000)}-${random.nextInt(100000, 1000000)}"
+            else -> "${random.nextInt(100, 1000)}-${random.nextInt(10, 100)}-${random.nextInt(100000, 1000000)}"
+        }
+        
+        return Pair(bankName, accountNumber)
+    }
+    
+    /**
+     * WorkerPaymentInfo 생성 헬퍼 함수
+     */
+    private fun generateWorkerPaymentInfo(
+        workerId: String,
+        workerName: String,
+        jobType: String,
+        hoursWorked: Double,
+        hourlyRate: Int,
+        isPaid: Boolean,
+        paidAt: LocalDateTime?
+    ): ProjectPaymentData.WorkerPaymentInfo {
+        val (bankName, accountNumber) = generateBankInfo(workerId, workerName)
+        val totalAmount = (hoursWorked * hourlyRate).toLong()
+        
+        return ProjectPaymentData.WorkerPaymentInfo(
+            workerId = workerId,
+            workerName = workerName,
+            jobType = jobType,
+            hoursWorked = hoursWorked,
+            hourlyRate = hourlyRate,
+            totalAmount = totalAmount,
+            isPaid = isPaid,
+            paidAt = paidAt,
+            bankName = bankName,
+            accountNumber = accountNumber
+        )
+    }
+
     fun getProjectPayments(): List<ProjectPaymentData> {
         return listOf(
-            // 강남구 아파트 신축공사 프로젝트
-            ProjectPaymentData(
-                id = "payment_001",
-                projectTitle = "강남구 아파트 신축공사",
-                projectId = "project_001",
-                company = "대한건설(주)",
-                location = "서울시 강남구 역삼동",
-                workDate = LocalDate.of(2025, 8, 15),
-                status = ProjectPaymentStatus.COMPLETED,
-                workers = listOf(
-                    ProjectPaymentData.WorkerPaymentInfo(
-                        workerId = "worker_001",
-                        workerName = "김철수",
-                        jobType = "철근공",
-                        hoursWorked = 8.0,
-                        hourlyRate = 18000,
-                        totalAmount = 144000,
-                        isPaid = true,
-                        paidAt = LocalDateTime.now().minusDays(5)
-                    ),
-                    ProjectPaymentData.WorkerPaymentInfo(
-                        workerId = "worker_006",
-                        workerName = "최수진",
-                        jobType = "목수",
-                        hoursWorked = 8.0,
-                        hourlyRate = 19000,
-                        totalAmount = 152000,
-                        isPaid = true,
-                        paidAt = LocalDateTime.now().minusDays(5)
-                    )
-                ),
-                totalAmount = 296000,
-                paidAmount = 296000,
-                pendingAmount = 0,
-                createdAt = LocalDateTime.now().minusDays(10),
-                completedAt = LocalDateTime.now().minusDays(5)
-            ),
-            // 인천 물류센터 건설공사 프로젝트
-            ProjectPaymentData(
-                id = "payment_002",
-                projectTitle = "인천 물류센터 건설공사",
-                projectId = "project_002",
-                company = "현대건설",
-                location = "인천 연수구",
-                workDate = LocalDate.of(2025, 8, 20),
-                status = ProjectPaymentStatus.PENDING,
-                workers = listOf(
-                    ProjectPaymentData.WorkerPaymentInfo(
-                        workerId = "worker_002",
-                        workerName = "이영희",
-                        jobType = "타일공",
-                        hoursWorked = 8.0,
-                        hourlyRate = 17000,
-                        totalAmount = 136000,
-                        isPaid = false,
-                        paidAt = null
-                    ),
-                    ProjectPaymentData.WorkerPaymentInfo(
-                        workerId = "worker_007",
-                        workerName = "정대수",
-                        jobType = "용접공",
-                        hoursWorked = 8.0,
-                        hourlyRate = 21000,
-                        totalAmount = 168000,
-                        isPaid = false,
-                        paidAt = null
-                    )
-                ),
-                totalAmount = 304000,
-                paidAmount = 0,
-                pendingAmount = 304000,
-                createdAt = LocalDateTime.now().minusDays(3),
-                completedAt = null
-            ),
-            // 부산 교량 보수공사 프로젝트
-            ProjectPaymentData(
-                id = "payment_003",
-                projectTitle = "부산 교량 보수공사",
-                projectId = "project_003",
-                company = "태영건설",
-                location = "부산 해운대구",
-                workDate = LocalDate.of(2025, 8, 18),
-                status = ProjectPaymentStatus.COMPLETED,
-                workers = listOf(
-                    ProjectPaymentData.WorkerPaymentInfo(
-                        workerId = "worker_003",
-                        workerName = "박민수",
-                        jobType = "전기공",
-                        hoursWorked = 8.0,
-                        hourlyRate = 22000,
-                        totalAmount = 176000,
-                        isPaid = true,
-                        paidAt = LocalDateTime.now().minusDays(2)
-                    ),
-                    ProjectPaymentData.WorkerPaymentInfo(
-                        workerId = "worker_005",
-                        workerName = "최영호",
-                        jobType = "조적공",
-                        hoursWorked = 8.0,
-                        hourlyRate = 20000,
-                        totalAmount = 160000,
-                        isPaid = true,
-                        paidAt = LocalDateTime.now().minusDays(2)
-                    )
-                ),
-                totalAmount = 336000,
-                paidAmount = 336000,
-                pendingAmount = 0,
-                createdAt = LocalDateTime.now().minusDays(7),
-                completedAt = LocalDateTime.now().minusDays(2)
-            ),
-            // 사하구 온도측정센터 신축공사 프로젝트
-            ProjectPaymentData(
-                id = "payment_004",
-                projectTitle = "사하구 낙동5블럭 온도측정센터 신축공사",
-                projectId = "project_004",
-                company = "삼성건설",
-                location = "부산 사하구",
-                workDate = LocalDate.of(2025, 8, 22),
-                status = ProjectPaymentStatus.PENDING,
-                workers = listOf(
-                    ProjectPaymentData.WorkerPaymentInfo(
-                        workerId = "worker_004",
-                        workerName = "정수진",
-                        jobType = "도장공",
-                        hoursWorked = 8.0,
-                        hourlyRate = 15000,
-                        totalAmount = 120000,
-                        isPaid = false,
-                        paidAt = null
-                    ),
-                    ProjectPaymentData.WorkerPaymentInfo(
-                        workerId = "worker_008",
-                        workerName = "송기원",
-                        jobType = "보통인부",
-                        hoursWorked = 8.0,
-                        hourlyRate = 16000,
-                        totalAmount = 128000,
-                        isPaid = false,
-                        paidAt = null
-                    )
-                ),
-                totalAmount = 248000,
-                paidAmount = 0,
-                pendingAmount = 248000,
-                createdAt = LocalDateTime.now().minusDays(1),
-                completedAt = null
-            ),
-            // 대전 공장 건설공사 프로젝트
-            ProjectPaymentData(
-                id = "payment_005",
-                projectTitle = "대전 공장 건설공사",
-                projectId = "project_005",
-                company = "롯데건설",
-                location = "대전 유성구",
-                workDate = LocalDate.of(2025, 8, 25),
-                status = ProjectPaymentStatus.OVERDUE,
-                workers = listOf(
-                    ProjectPaymentData.WorkerPaymentInfo(
-                        workerId = "worker_001",
-                        workerName = "김철수",
-                        jobType = "철근공",
-                        hoursWorked = 8.0,
-                        hourlyRate = 18000,
-                        totalAmount = 144000,
-                        isPaid = false,
-                        paidAt = null
-                    ),
-                    ProjectPaymentData.WorkerPaymentInfo(
-                        workerId = "worker_002",
-                        workerName = "이영희",
-                        jobType = "타일공",
-                        hoursWorked = 6.0,
-                        hourlyRate = 17000,
-                        totalAmount = 102000,
-                        isPaid = false,
-                        paidAt = null
-                    )
-                ),
-                totalAmount = 246000,
-                paidAmount = 0,
-                pendingAmount = 246000,
-                createdAt = LocalDateTime.now().minusDays(8),
-                completedAt = null
-            )
+            // 강남구 아파트 신축공사 프로젝트 - 지급 완료
+            run {
+                val workers = listOf(
+                    generateWorkerPaymentInfo("worker_001", "김철수", "철근공", 8.0, 18000, true, LocalDateTime.now().minusDays(5)),
+                    generateWorkerPaymentInfo("worker_006", "최수진", "목수", 8.0, 19000, true, LocalDateTime.now().minusDays(5))
+                )
+                val totalAmount = workers.sumOf { it.totalAmount }
+                
+                ProjectPaymentData(
+                    id = "payment_001",
+                    projectTitle = "강남구 아파트 신축공사",
+                    projectId = "project_001",
+                    company = "대한건설(주)",
+                    location = "서울시 강남구 역삼동",
+                    workDate = LocalDate.of(2025, 8, 15),
+                    status = ProjectPaymentStatus.COMPLETED,
+                    workers = workers,
+                    totalAmount = totalAmount,
+                    paidAmount = totalAmount,
+                    pendingAmount = 0,
+                    createdAt = LocalDateTime.now().minusDays(10),
+                    completedAt = LocalDateTime.now().minusDays(5)
+                )
+            },
+            // 인천 물류센터 건설공사 프로젝트 - 지급 대기
+            run {
+                val workers = listOf(
+                    generateWorkerPaymentInfo("worker_002", "이영희", "타일공", 8.0, 17000, false, null),
+                    generateWorkerPaymentInfo("worker_007", "정대수", "용접공", 8.0, 21000, false, null),
+                    generateWorkerPaymentInfo("worker_008", "송기원", "보통인부", 8.0, 16000, false, null)
+                )
+                val totalAmount = workers.sumOf { it.totalAmount }
+                
+                ProjectPaymentData(
+                    id = "payment_002",
+                    projectTitle = "인천 물류센터 건설공사",
+                    projectId = "project_002",
+                    company = "현대건설",
+                    location = "인천 연수구",
+                    workDate = LocalDate.of(2025, 8, 20),
+                    status = ProjectPaymentStatus.PENDING,
+                    workers = workers,
+                    totalAmount = totalAmount,
+                    paidAmount = 0,
+                    pendingAmount = totalAmount,
+                    createdAt = LocalDateTime.now().minusDays(3),
+                    completedAt = null
+                )
+            },
+            // 부산 교량 보수공사 프로젝트 - 지급 완료
+            run {
+                val workers = listOf(
+                    generateWorkerPaymentInfo("worker_003", "박민수", "전기공", 8.0, 22000, true, LocalDateTime.now().minusDays(2)),
+                    generateWorkerPaymentInfo("worker_005", "최영호", "조적공", 8.0, 20000, true, LocalDateTime.now().minusDays(2)),
+                    generateWorkerPaymentInfo("worker_001", "김철수", "철근공", 6.0, 18000, true, LocalDateTime.now().minusDays(2))
+                )
+                val totalAmount = workers.sumOf { it.totalAmount }
+                
+                ProjectPaymentData(
+                    id = "payment_003",
+                    projectTitle = "부산 교량 보수공사",
+                    projectId = "project_003",
+                    company = "태영건설",
+                    location = "부산 해운대구",
+                    workDate = LocalDate.of(2025, 8, 18),
+                    status = ProjectPaymentStatus.COMPLETED,
+                    workers = workers,
+                    totalAmount = totalAmount,
+                    paidAmount = totalAmount,
+                    pendingAmount = 0,
+                    createdAt = LocalDateTime.now().minusDays(7),
+                    completedAt = LocalDateTime.now().minusDays(2)
+                )
+            },
+            // 사하구 온도측정센터 신축공사 프로젝트 - 지급 대기
+            run {
+                val workers = listOf(
+                    generateWorkerPaymentInfo("worker_004", "정수진", "도장공", 8.0, 15000, false, null),
+                    generateWorkerPaymentInfo("worker_002", "이영희", "타일공", 7.0, 17000, false, null)
+                )
+                val totalAmount = workers.sumOf { it.totalAmount }
+                
+                ProjectPaymentData(
+                    id = "payment_004",
+                    projectTitle = "사하구 낙동5블럭 온도측정센터 신축공사",
+                    projectId = "project_004",
+                    company = "삼성건설",
+                    location = "부산 사하구",
+                    workDate = LocalDate.of(2025, 8, 22),
+                    status = ProjectPaymentStatus.PENDING,
+                    workers = workers,
+                    totalAmount = totalAmount,
+                    paidAmount = 0,
+                    pendingAmount = totalAmount,
+                    createdAt = LocalDateTime.now().minusDays(1),
+                    completedAt = null
+                )
+            },
+            // 대전 공장 건설공사 프로젝트 - 연체
+            run {
+                val workers = listOf(
+                    generateWorkerPaymentInfo("worker_006", "최수진", "목수", 8.0, 19000, false, null),
+                    generateWorkerPaymentInfo("worker_007", "정대수", "용접공", 8.0, 21000, false, null),
+                    generateWorkerPaymentInfo("worker_008", "송기원", "보통인부", 8.0, 16000, false, null)
+                )
+                val totalAmount = workers.sumOf { it.totalAmount }
+                
+                ProjectPaymentData(
+                    id = "payment_005",
+                    projectTitle = "대전 공장 건설공사",
+                    projectId = "project_005",
+                    company = "롯데건설",
+                    location = "대전 유성구",
+                    workDate = LocalDate.of(2025, 7, 25),
+                    status = ProjectPaymentStatus.OVERDUE,
+                    workers = workers,
+                    totalAmount = totalAmount,
+                    paidAmount = 0,
+                    pendingAmount = totalAmount,
+                    createdAt = LocalDateTime.now().minusDays(15),
+                    completedAt = null
+                )
+            },
+            // 광주 지하철 연장공사 프로젝트 - 지급 완료
+            run {
+                val workers = listOf(
+                    generateWorkerPaymentInfo("worker_003", "박민수", "전기공", 8.0, 22000, true, LocalDateTime.now().minusDays(1)),
+                    generateWorkerPaymentInfo("worker_004", "정수진", "도장공", 8.0, 15000, true, LocalDateTime.now().minusDays(1))
+                )
+                val totalAmount = workers.sumOf { it.totalAmount }
+                
+                ProjectPaymentData(
+                    id = "payment_006",
+                    projectTitle = "광주 지하철 연장공사",
+                    projectId = "project_006",
+                    company = "두산건설",
+                    location = "광주 광산구",
+                    workDate = LocalDate.of(2025, 8, 25),
+                    status = ProjectPaymentStatus.COMPLETED,
+                    workers = workers,
+                    totalAmount = totalAmount,
+                    paidAmount = totalAmount,
+                    pendingAmount = 0,
+                    createdAt = LocalDateTime.now().minusDays(5),
+                    completedAt = LocalDateTime.now().minusDays(1)
+                )
+            }
         )
     }
 
@@ -661,12 +692,6 @@ object CompanyMockDataFactory {
         return baseWorkers.find { it.id == workerId }
     }
 
-    /**
-     * 프로젝트 ID로 기본 프로젝트 정보 조회
-     */
-    fun getProjectById(projectId: String): BaseProject? {
-        return baseProjects.find { it.id == projectId }
-    }
 
     /**
      * 직종별 작업자 필터링
@@ -1178,5 +1203,258 @@ object CompanyMockDataFactory {
             monthlyTotal = 15000000L,
             weeklyTotal = 3500000L
         )
+    }
+
+    // ==================== 프로젝트별 상세 정보 ====================
+    
+    /**
+     * 프로젝트 ID로 프로젝트 정보 조회
+     */
+    fun getProjectById(projectId: String): BaseProject? {
+        return baseProjects.find { it.id == projectId }
+    }
+    
+    /**
+     * 프로젝트별 WorkDay 데이터 생성
+     */
+    fun getWorkDaysForProject(projectId: String): List<com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay> {
+        val project = getProjectById(projectId) ?: baseProjects.first()
+        val startDate = LocalDate.parse(project.startDate)
+        val endDate = LocalDate.parse(project.endDate)
+        val today = LocalDate.now()
+        
+        // 프로젝트별로 다른 WorkDay 생성
+        return when (projectId) {
+            "project_001" -> listOf(
+                // 진행중 작업일들
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
+                    id = "work_${projectId}_001", 
+                    title = "${project.category} 작업자 모집",
+                    date = today.minusDays(3),
+                    startTime = "08:00", 
+                    endTime = "18:00",
+                    recruitPeriod = "${today.minusDays(7)} ~ ${today.minusDays(3)}",
+                    applicants = 12, confirmed = 10, maxWorkers = 15,
+                    status = "IN_PROGRESS",
+                    projectId = projectId
+                ),
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
+                    id = "work_${projectId}_002",
+                    title = "철근공 작업자 모집", 
+                    date = today.minusDays(1),
+                    startTime = "08:00",
+                    endTime = "18:00",
+                    recruitPeriod = "${today.minusDays(5)} ~ ${today.minusDays(1)}",
+                    applicants = 8, confirmed = 8, maxWorkers = 10,
+                    status = "IN_PROGRESS",
+                    projectId = projectId
+                ),
+                
+                // 예정 작업일들
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
+                    id = "work_${projectId}_003",
+                    title = "전기공 작업자 모집",
+                    date = today.plusDays(3),
+                    startTime = "08:00",
+                    endTime = "18:00", 
+                    recruitPeriod = "${today.plusDays(1)} ~ ${today.plusDays(3)}",
+                    applicants = 0, confirmed = 0, maxWorkers = 12,
+                    status = "UPCOMING",
+                    projectId = projectId
+                ),
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
+                    id = "work_${projectId}_004",
+                    title = "미장공 작업자 모집",
+                    date = today.plusDays(7),
+                    startTime = "09:00",
+                    endTime = "17:00",
+                    recruitPeriod = "${today.plusDays(5)} ~ ${today.plusDays(7)}",
+                    applicants = 0, confirmed = 0, maxWorkers = 8,
+                    status = "UPCOMING",
+                    projectId = projectId
+                ),
+                
+                // 완료된 작업일들
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
+                    id = "work_${projectId}_005",
+                    title = "기초 작업자 모집",
+                    date = today.minusDays(15),
+                    startTime = "08:00",
+                    endTime = "18:00",
+                    recruitPeriod = "${today.minusDays(20)} ~ ${today.minusDays(15)}",
+                    applicants = 15, confirmed = 15, maxWorkers = 15,
+                    status = "COMPLETED",
+                    projectId = projectId
+                ),
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
+                    id = "work_${projectId}_006",
+                    title = "형틀 작업자 모집",
+                    date = today.minusDays(10),
+                    startTime = "08:00",
+                    endTime = "18:00",
+                    recruitPeriod = "${today.minusDays(15)} ~ ${today.minusDays(10)}",
+                    applicants = 12, confirmed = 12, maxWorkers = 12,
+                    status = "COMPLETED",
+                    projectId = projectId
+                )
+            )
+            
+            "project_002" -> listOf(
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
+                    id = "work_${projectId}_001",
+                    title = "물류센터 철골 작업자 모집",
+                    date = today,
+                    startTime = "07:00",
+                    endTime = "17:00",
+                    recruitPeriod = "${today.minusDays(3)} ~ ${today}",
+                    applicants = 10, confirmed = 8, maxWorkers = 12,
+                    status = "IN_PROGRESS",
+                    projectId = projectId
+                ),
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
+                    id = "work_${projectId}_002",
+                    title = "지붕 작업자 모집",
+                    date = today.plusDays(5),
+                    startTime = "07:00",
+                    endTime = "17:00",
+                    recruitPeriod = "${today.plusDays(2)} ~ ${today.plusDays(5)}",
+                    applicants = 0, confirmed = 0, maxWorkers = 15,
+                    status = "UPCOMING", 
+                    projectId = projectId
+                )
+            )
+            
+            else -> listOf(
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
+                    id = "work_${projectId}_001",
+                    title = "${project.category} 기본 작업자 모집",
+                    date = today,
+                    startTime = "08:00",
+                    endTime = "18:00",
+                    recruitPeriod = "${today.minusDays(2)} ~ ${today}",
+                    applicants = 5, confirmed = 3, maxWorkers = 8,
+                    status = "IN_PROGRESS",
+                    projectId = projectId
+                )
+            )
+        }
+    }
+
+    // ==================== 프로젝트별 노동자 출퇴근 관리 ====================
+    
+    /**
+     * 프로젝트별 등록된 노동자들의 출퇴근 데이터
+     */
+    fun getProjectWorkers(projectId: String): List<com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectWorker> {
+        val today = LocalDate.now()
+        val workDays = getWorkDaysForProject(projectId)
+        
+        // 프로젝트별로 다른 노동자들 할당
+        return when (projectId) {
+            "project_001" -> {
+                val workers = listOf(
+                    baseWorkers[0], // 김철수 - 철근공
+                    baseWorkers[2], // 박민준 - 미장공  
+                    baseWorkers[4], // 김유진 - 전기공
+                    baseWorkers[1], // 이영희 - 타일공
+                    baseWorkers[3]  // 정수빈 - 목공
+                ).take(5)
+                
+                workers.mapIndexed { index, worker ->
+                    com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectWorker(
+                        workerId = worker.id,
+                        workerName = worker.name,
+                        projectId = projectId,
+                        workDayId = workDays.firstOrNull()?.id ?: "work_${projectId}_001",
+                        jobType = worker.primaryJobType,
+                        registrationDate = today.minusDays((index + 1) * 2L),
+                        attendanceRecords = generateAttendanceRecords(today, index)
+                    )
+                }
+            }
+            
+            "project_002" -> {
+                val workers = listOf(
+                    baseWorkers[5], // 다른 노동자들 
+                    baseWorkers[6],
+                    baseWorkers[7]
+                ).take(3)
+                
+                workers.mapIndexed { index, worker ->
+                    com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectWorker(
+                        workerId = worker.id,
+                        workerName = worker.name,
+                        projectId = projectId,
+                        workDayId = workDays.firstOrNull()?.id ?: "work_${projectId}_001",
+                        jobType = worker.primaryJobType,
+                        registrationDate = today.minusDays((index + 1) * 3L),
+                        attendanceRecords = generateAttendanceRecords(today, index + 5)
+                    )
+                }
+            }
+            
+            else -> emptyList()
+        }
+    }
+    
+    /**
+     * 노동자별 출퇴근 기록 생성 
+     */
+    private fun generateAttendanceRecords(today: LocalDate, workerIndex: Int): List<com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceRecord> {
+        val records = mutableListOf<com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceRecord>()
+        
+        // 지난 일주일 동안의 출퇴근 기록 생성
+        for (i in 7 downTo 1) {
+            val date = today.minusDays(i.toLong())
+            val dayOfWeek = date.dayOfWeek.value
+            
+            // 주말은 건너뜀
+            if (dayOfWeek >= 6) continue
+            
+            // 노동자별로 다른 패턴의 출퇴근 기록
+            val status = when ((workerIndex + i) % 8) {
+                0 -> com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceStatus.ABSENT
+                1 -> com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceStatus.LATE
+                7 -> com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceStatus.EARLY_LEAVE
+                else -> com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceStatus.CHECKED_OUT
+            }
+            
+            val (checkIn, checkOut, hours, notes) = when (status) {
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceStatus.CHECKED_OUT -> 
+                    listOf("08:00", "18:00", 9.0, "정상 근무")
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceStatus.LATE -> 
+                    listOf("08:30", "18:00", 8.5, "30분 지각")
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceStatus.EARLY_LEAVE -> 
+                    listOf("08:00", "16:00", 7.0, "개인사유로 조퇴")
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceStatus.ABSENT -> 
+                    listOf(null, null, 0.0, "개인사유로 결근")
+                else -> listOf("08:00", null, 0.0, "출근만 확인")
+            }
+            
+            records.add(
+                com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceRecord(
+                    date = date,
+                    status = status,
+                    checkInTime = checkIn as String?,
+                    checkOutTime = checkOut as String?,
+                    workHours = hours as Double,
+                    notes = notes as String
+                )
+            )
+        }
+        
+        // 오늘과 미래 일정
+        records.add(
+            com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceRecord(
+                date = today,
+                status = com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.AttendanceStatus.CHECKED_IN,
+                checkInTime = "08:00",
+                checkOutTime = null,
+                workHours = 0.0,
+                notes = "현재 근무중"
+            )
+        )
+        
+        return records
     }
 }

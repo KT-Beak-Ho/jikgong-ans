@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -18,6 +20,13 @@ import com.billcorea.jikgong.presentation.company.main.money.components.ProjectP
 import com.billcorea.jikgong.presentation.company.main.money.components.ProjectPaymentSummaryCard
 import com.billcorea.jikgong.presentation.company.main.money.components.EmptyMoneyState
 import com.billcorea.jikgong.presentation.company.main.money.components.ScrollBar
+import com.billcorea.jikgong.presentation.company.main.money.popup.PendingPaymentsDialog
+import com.billcorea.jikgong.presentation.company.main.money.popup.CompletedProjectDetailDialog
+import com.billcorea.jikgong.presentation.company.main.money.popup.PaymentConfirmationDialog
+import com.billcorea.jikgong.presentation.company.main.money.popup.ProjectListDialog
+import com.billcorea.jikgong.presentation.company.main.money.popup.CompletedAmountDialog
+import com.billcorea.jikgong.presentation.company.main.money.popup.BulkPaymentConfirmationDialog
+import com.billcorea.jikgong.presentation.company.main.money.popup.ProjectWorkerListDialog
 import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentStatus
 import com.billcorea.jikgong.ui.theme.AppTypography
@@ -30,6 +39,8 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Proj
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProjectPaymentSummary
 import com.billcorea.jikgong.presentation.company.main.common.CompanyBottomBar
 import com.billcorea.jikgong.presentation.company.main.common.SearchableTopBar
+import java.text.NumberFormat
+import java.util.*
 
 @Destination
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,36 +54,103 @@ fun CompanyMoneyScreen(
     // 샘플 데이터 (빈 상태 테스트를 위해 변경 가능)
     val hasData = true // false로 변경하면 빈 상태
 
-    val projectPayments = remember {
-        if (hasData) {
-            val originalData = CompanyMockDataFactory.getProjectPayments()
-            val copyData1 = originalData.map { project ->
-                project.copy(
-                    id = "${project.id}_copy_1",
-                    projectTitle = "${project.projectTitle} (복사본1)"
-                )
+    var projectPayments by remember { 
+        mutableStateOf(
+            if (hasData) {
+                val originalData = CompanyMockDataFactory.getProjectPayments()
+                val copyData1 = originalData.map { project ->
+                    project.copy(
+                        id = "${project.id}_copy_1",
+                        projectTitle = "${project.projectTitle} (복사본1)"
+                    )
+                }
+                val copyData2 = originalData.map { project ->
+                    project.copy(
+                        id = "${project.id}_copy_2",
+                        projectTitle = "${project.projectTitle} (복사본2)"
+                    )
+                }
+                originalData + copyData1 + copyData2
+            } else {
+                emptyList()
             }
-            val copyData2 = originalData.map { project ->
-                project.copy(
-                    id = "${project.id}_copy_2",
-                    projectTitle = "${project.projectTitle} (복사본2)"
-                )
-            }
-            originalData + copyData1 + copyData2
-        } else {
-            emptyList()
-        }
+        )
     }
 
-    val summary = remember {
+    // 실제 프로젝트 데이터를 기반으로 동적 요약 데이터 생성
+    val summary = remember(projectPayments) {
         if (hasData) {
-            CompanyMockDataFactory.getProjectPaymentSummary()
+            val pendingProjects = projectPayments.filter { it.status == ProjectPaymentStatus.PENDING }
+            val completedProjects = projectPayments.filter { it.status == ProjectPaymentStatus.COMPLETED }
+            val totalAmount = projectPayments.sumOf { it.totalAmount }
+            val paidAmount = completedProjects.sumOf { it.paidAmount }
+            val pendingAmount = pendingProjects.sumOf { it.totalAmount }
+            
+            // 기본 템플릿을 가져와서 실제 데이터로 업데이트
+            val template = CompanyMockDataFactory.getProjectPaymentSummary()
+            template.copy(
+                totalProjects = projectPayments.size,
+                pendingPayments = pendingProjects.size,
+                completedPayments = completedProjects.size,
+                totalAmount = totalAmount,
+                pendingAmount = pendingAmount,
+                paidAmount = paidAmount
+            )
         } else {
             CompanyMockDataFactory.getEmptyProjectPaymentSummary()
         }
     }
 
     var selectedStatus by remember { mutableStateOf<ProjectPaymentStatus?>(null) }
+    var showPendingPaymentsDialog by remember { mutableStateOf(false) }
+    var showCompletedPaymentsDialog by remember { mutableStateOf(false) }
+    var showAllProjectsDialog by remember { mutableStateOf(false) }
+    var showCompletedAmountDialog by remember { mutableStateOf(false) }
+    var showPaymentConfirmDialog by remember { mutableStateOf(false) }
+    var selectedProjectForPayment by remember { mutableStateOf<ProjectPaymentData?>(null) }
+    var showCompletedProjectDetailDialog by remember { mutableStateOf(false) }
+    var selectedCompletedProject by remember { mutableStateOf<ProjectPaymentData?>(null) }
+    var showBulkPaymentConfirmDialog by remember { mutableStateOf(false) }
+    var showProjectWorkerListDialog by remember { mutableStateOf(false) }
+    var selectedProjectForWorkerList by remember { mutableStateOf<ProjectPaymentData?>(null) }
+
+    // 프로젝트 상태를 지급 완료로 변경하는 함수
+    fun markProjectAsCompleted(projectId: String) {
+        projectPayments = projectPayments.map { project ->
+            if (project.id == projectId) {
+                val currentTime = java.time.LocalDateTime.now()
+                project.copy(
+                    status = ProjectPaymentStatus.COMPLETED,
+                    paidAmount = project.totalAmount,
+                    completedAt = currentTime,
+                    workers = project.workers.map { worker ->
+                        worker.copy(paidAt = currentTime)
+                    }
+                )
+            } else {
+                project
+            }
+        }
+    }
+
+    // 여러 프로젝트를 일괄 지급 완료로 변경하는 함수
+    fun markProjectsAsCompleted(projectIds: List<String>) {
+        val currentTime = java.time.LocalDateTime.now()
+        projectPayments = projectPayments.map { project ->
+            if (project.id in projectIds) {
+                project.copy(
+                    status = ProjectPaymentStatus.COMPLETED,
+                    paidAmount = project.totalAmount,
+                    completedAt = currentTime,
+                    workers = project.workers.map { worker ->
+                        worker.copy(paidAt = currentTime)
+                    }
+                )
+            } else {
+                project
+            }
+        }
+    }
 
     // 필터링 및 정렬된 프로젝트 목록
     val filteredProjects = remember(selectedStatus) {
@@ -136,13 +214,135 @@ fun CompanyMoneyScreen(
                     selectedStatus = selectedStatus,
                     onStatusSelected = { status -> selectedStatus = status },
                     onPaymentAction = { project, action ->
-                        // TODO: 임금 지급 액션 처리
+                        if (action == "deposit") {
+                            selectedProjectForPayment = project
+                            showPaymentConfirmDialog = true
+                        }
                     },
+                    onPendingPaymentsClick = { showPendingPaymentsDialog = true },
+                    onCompletedPaymentsClick = { showCompletedPaymentsDialog = true },
+                    onAllProjectsClick = { showAllProjectsDialog = true },
+                    onCompletedAmountClick = { showCompletedAmountDialog = true },
                     modifier = Modifier.fillMaxSize(),
                     showBottomBar = showBottomBar
                 )
             }
         }
+    }
+
+    // 지급 대기 프로젝트 팝업
+    if (showPendingPaymentsDialog) {
+        val pendingProjects = projectPayments.filter { it.status == ProjectPaymentStatus.PENDING }
+        
+        PendingPaymentsDialog(
+            pendingProjects = pendingProjects,
+            onDismiss = { showPendingPaymentsDialog = false },
+            onPayAllClick = {
+                showPendingPaymentsDialog = false
+                showBulkPaymentConfirmDialog = true
+            },
+            onPayProjectClick = { project ->
+                selectedProjectForPayment = project
+                showPaymentConfirmDialog = true
+            }
+        )
+    }
+
+    // 지급 완료 프로젝트 팝업
+    if (showCompletedPaymentsDialog) {
+        val completedProjects = projectPayments.filter { it.status == ProjectPaymentStatus.COMPLETED }
+        
+        ProjectListDialog(
+            title = "지급 완료 프로젝트",
+            projects = completedProjects,
+            onDismiss = { showCompletedPaymentsDialog = false },
+            actionButtonText = "상세보기",
+            onProjectAction = { project ->
+                selectedCompletedProject = project
+                showCompletedProjectDetailDialog = true
+            }
+        )
+    }
+
+    // 전체 현장 팝업
+    if (showAllProjectsDialog) {
+        ProjectListDialog(
+            title = "전체 현장",
+            projects = projectPayments,
+            onDismiss = { showAllProjectsDialog = false },
+            actionButtonText = "상세보기",
+            onProjectAction = { project ->
+                selectedProjectForWorkerList = project
+                showProjectWorkerListDialog = true
+            }
+        )
+    }
+
+    // 직직직 혜택 팝업
+    if (showCompletedAmountDialog) {
+        val completedProjects = projectPayments.filter { it.status == ProjectPaymentStatus.COMPLETED }
+        
+        CompletedAmountDialog(
+            completedProjects = completedProjects,
+            monthlySavings = summary.monthlySavingsAmount,
+            onDismiss = { showCompletedAmountDialog = false }
+        )
+    }
+
+    // 지급 확인 팝업
+    if (showPaymentConfirmDialog && selectedProjectForPayment != null) {
+        PaymentConfirmationDialog(
+            project = selectedProjectForPayment!!,
+            onDismiss = { 
+                showPaymentConfirmDialog = false
+                selectedProjectForPayment = null
+            },
+            onConfirmPayment = { project ->
+                // 프로젝트를 지급 완료 상태로 변경
+                markProjectAsCompleted(project.id)
+                showPaymentConfirmDialog = false
+                selectedProjectForPayment = null
+                showPendingPaymentsDialog = false
+            }
+        )
+    }
+
+    // 지급 완료 프로젝트 상세보기 팝업
+    if (showCompletedProjectDetailDialog && selectedCompletedProject != null) {
+        CompletedProjectDetailDialog(
+            project = selectedCompletedProject!!,
+            onDismiss = { 
+                showCompletedProjectDetailDialog = false
+                selectedCompletedProject = null
+            }
+        )
+    }
+
+    // 전체 지급 확인 팝업
+    if (showBulkPaymentConfirmDialog) {
+        val pendingProjects = projectPayments.filter { it.status == ProjectPaymentStatus.PENDING }
+        
+        BulkPaymentConfirmationDialog(
+            projects = pendingProjects,
+            onDismiss = { showBulkPaymentConfirmDialog = false },
+            onConfirmBulkPayment = { projects ->
+                // 모든 프로젝트를 지급 완료 상태로 변경
+                markProjectsAsCompleted(projects.map { it.id })
+                showBulkPaymentConfirmDialog = false
+            }
+        )
+    }
+
+    // 프로젝트 노동자 목록 팝업
+    if (showProjectWorkerListDialog && selectedProjectForWorkerList != null) {
+        ProjectWorkerListDialog(
+            project = selectedProjectForWorkerList!!,
+            onDismiss = {
+                showProjectWorkerListDialog = false
+                selectedProjectForWorkerList = null
+                showAllProjectsDialog = false
+            }
+        )
     }
 }
 
@@ -153,6 +353,10 @@ private fun ScrollableContentWithScrollbar(
     selectedStatus: ProjectPaymentStatus?,
     onStatusSelected: (ProjectPaymentStatus?) -> Unit,
     onPaymentAction: (ProjectPaymentData, String) -> Unit,
+    onPendingPaymentsClick: () -> Unit,
+    onCompletedPaymentsClick: () -> Unit,
+    onAllProjectsClick: () -> Unit,
+    onCompletedAmountClick: () -> Unit,
     modifier: Modifier = Modifier,
     showBottomBar: Boolean = true
 ) {
@@ -212,7 +416,13 @@ private fun ScrollableContentWithScrollbar(
         ) {
             // 상단 통계 카드
             item {
-                ProjectPaymentSummaryCard(summary = summary)
+                ProjectPaymentSummaryCard(
+                    summary = summary,
+                    onPendingPaymentsClick = onPendingPaymentsClick,
+                    onCompletedPaymentsClick = onCompletedPaymentsClick,
+                    onAllProjectsClick = onAllProjectsClick,
+                    onCompletedAmountClick = onCompletedAmountClick
+                )
             }
 
             // 필터 바
@@ -318,3 +528,4 @@ fun CompanyMoneyScreenEmptyPreview() {
         }
     }
 }
+

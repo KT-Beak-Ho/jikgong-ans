@@ -6,16 +6,20 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Worker
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Proposal
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProposalStatus
+import com.billcorea.jikgong.utils.MainViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class CompanyScoutViewModel : ViewModel() {
+class CompanyScoutViewModel : ViewModel(), KoinComponent {
 
-  // CompanyMockDataFactory를 직접 사용
+  // MainViewModel 주입하여 위치 정보 연동
+  private val mainViewModel: MainViewModel by inject()
 
   private val _uiState = MutableStateFlow(ScoutUiState())
   val uiState: StateFlow<ScoutUiState> = _uiState.asStateFlow()
@@ -30,9 +34,18 @@ class CompanyScoutViewModel : ViewModel() {
       val workers = CompanyMockDataFactory.getScoutWorkers()
       val proposals = CompanyMockDataFactory.getScoutProposals()
 
+      // MainViewModel에서 현재 위치 정보 가져오기
+      val currentAddress = mainViewModel.respAddress.value
+      val initialLocation = if (currentAddress?.isNotEmpty() == true) {
+        currentAddress
+      } else {
+        "서울특별시 강남구" // 기본값
+      }
+
       _uiState.value = _uiState.value.copy(
         workers = workers,
         proposals = proposals,
+        currentLocation = initialLocation,
         isLoading = false
       )
     }
@@ -113,7 +126,12 @@ class CompanyScoutViewModel : ViewModel() {
   }
 
   fun updateLocation(location: String) {
+    // CompanyScoutScreen과 LocationSettingPage 간 위치 동기화
     _uiState.value = _uiState.value.copy(currentLocation = location)
+    
+    // MainViewModel의 respAddress도 업데이트하여 전역적으로 동기화
+    mainViewModel._respAddress.value = location
+    
     // 위치 변경 시 주변 인력 재검색
     refreshWorkers()
   }
@@ -126,10 +144,36 @@ class CompanyScoutViewModel : ViewModel() {
 
   fun getCurrentLocation() {
     viewModelScope.launch {
-      // TODO: 실제 위치 권한 확인 및 현재 위치 가져오기
-      // 일단 샘플 위치로 설정
-      _uiState.value = _uiState.value.copy(currentLocation = "서울특별시 서초구")
-      refreshWorkers()
+      try {
+        // MainViewModel의 실제 주소 정보 사용
+        val currentAddress = mainViewModel.respAddress.value
+        if (currentAddress?.isNotEmpty() == true) {
+          _uiState.value = _uiState.value.copy(currentLocation = currentAddress)
+        } else {
+          // 주소가 없으면 좌표로부터 주소 검색
+          val lat = mainViewModel.lat.value ?: 37.5665
+          val lon = mainViewModel.lon.value ?: 126.9780
+          
+          if (lat != 0.0 && lon != 0.0) {
+            // 좌표를 주소로 변환
+            mainViewModel.doFindAddress(lat, lon)
+            
+            // 주소 변환 결과 대기 (간단한 방법)
+            delay(1000)
+            
+            val roadAddressList = mainViewModel.roadAddress1.value
+            if (roadAddressList?.isNotEmpty() == true) {
+              val address = roadAddressList[0].addressName
+              _uiState.value = _uiState.value.copy(currentLocation = address)
+            }
+          }
+        }
+        
+        refreshWorkers()
+      } catch (e: Exception) {
+        // 오류 발생 시 기본값 사용
+        _uiState.value = _uiState.value.copy(currentLocation = "위치 확인 중...")
+      }
     }
   }
   
@@ -157,6 +201,28 @@ class CompanyScoutViewModel : ViewModel() {
       showAIFilterDialog = !_uiState.value.showAIFilterDialog
     )
   }
+  
+  fun applyAIFiltering() {
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isAIFiltering = true)
+      
+      // 2초간 로딩 표시
+      delay(2000)
+      
+      // 평점 순으로 정렬된 인력 목록 생성
+      val sortedWorkers = _uiState.value.workers.sortedWith(
+        compareByDescending<Worker> { it.rating }
+          .thenByDescending { it.completedProjects }
+          .thenByDescending { it.experience }
+      )
+      
+      _uiState.value = _uiState.value.copy(
+        workers = sortedWorkers,
+        isAIFiltering = false,
+        isAIFilterApplied = true
+      )
+    }
+  }
 }
 
 data class ScoutUiState(
@@ -171,7 +237,9 @@ data class ScoutUiState(
   val currentFilters: WorkerFilters = WorkerFilters(),
   val showFilterDialog: Boolean = false,
   val isFilterActive: Boolean = false,
-  val showAIFilterDialog: Boolean = false
+  val showAIFilterDialog: Boolean = false,
+  val isAIFiltering: Boolean = false,
+  val isAIFilterApplied: Boolean = false
 ) {
   val filteredWorkers: List<Worker>
     get() = if (isFilterActive) {

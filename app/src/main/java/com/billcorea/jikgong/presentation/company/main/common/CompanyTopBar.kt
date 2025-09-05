@@ -130,8 +130,7 @@ fun SearchableTopBar(
 @Composable
 fun ScoutTopBar(
     title: String,
-    modifier: Modifier = Modifier,
-    onSettingsClick: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
     TopAppBar(
         title = {
@@ -144,15 +143,6 @@ fun ScoutTopBar(
             )
         },
         modifier = modifier.fillMaxWidth(),
-        actions = {
-            IconButton(onClick = onSettingsClick) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "설정",
-                    tint = appColorScheme.onSurface
-                )
-            }
-        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White,
             titleContentColor = appColorScheme.onSurface,
@@ -246,8 +236,7 @@ fun CompanyTopBarPreview() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             ScoutTopBar(
-                title = "스카우트",
-                onSettingsClick = {}
+                title = "스카우트"
             )
             Spacer(modifier = Modifier.height(16.dp))
             InfoTopBar(
