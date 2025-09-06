@@ -1,6 +1,6 @@
 package com.billcorea.jikgong.api.repository.company.main.projectList.projectCreate
 
-import com.billcorea.jikgong.presentation.company.main.projectlist.model.Project
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.Project
 import com.billcorea.jikgong.api.repository.company.main.projectList.ProjectRepository
 import kotlinx.coroutines.delay
 

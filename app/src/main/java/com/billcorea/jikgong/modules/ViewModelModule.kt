@@ -3,9 +3,9 @@ package com.billcorea.jikgong.modules
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
 import com.billcorea.jikgong.presentation.company.auth.login.shared.CompanyLoginSharedViewModel
 import com.billcorea.jikgong.presentation.company.main.common.CompanySharedViewModel
-import com.billcorea.jikgong.presentation.company.main.info.viewmodel.CompanyInfoViewModel
-import com.billcorea.jikgong.presentation.company.main.projectlist.viewmodel.ProjectListViewModel
-import com.billcorea.jikgong.presentation.company.main.projectlist.projectcreate.viewmodel.ProjectCreateViewModel
+import com.billcorea.jikgong.presentation.company.main.info.presentation.viewmodel.CompanyInfoViewModel
+import com.billcorea.jikgong.presentation.company.main.projectlist.presentation.viewmodel.ProjectListViewModel
+import com.billcorea.jikgong.presentation.company.main.projectlist.feature.create.viewmodel.ProjectCreateViewModel
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
 import com.billcorea.jikgong.presentation.worker.login.shared.WorkerLoginViewModel
 import com.billcorea.jikgong.utils.MainViewModel
