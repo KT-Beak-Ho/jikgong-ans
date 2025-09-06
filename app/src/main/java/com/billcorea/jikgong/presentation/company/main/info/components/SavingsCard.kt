@@ -20,7 +20,8 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Comp
 fun SavingsCard(
   companyData: CompanyData,
   formatCurrency: (Long) -> String,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  totalSavingsAmount: Long? = null
 ) {
   // 애니메이션 효과
   val infiniteTransition = rememberInfiniteTransition()
@@ -62,7 +63,7 @@ fun SavingsCard(
     ) {
       Column {
         Text(
-          text = "💰 이번 달 절약한 중개수수료",
+          text = "💰 이때까지 절약한 총 금액",
           fontSize = 13.sp,
           color = Color.White.copy(alpha = 0.95f),
           fontWeight = FontWeight.Medium
@@ -71,7 +72,7 @@ fun SavingsCard(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-          text = formatCurrency(companyData.monthlySavings),
+          text = formatCurrency(totalSavingsAmount ?: companyData.monthlySavings),
           fontSize = 32.sp,
           fontWeight = FontWeight.Bold,
           color = Color.White,

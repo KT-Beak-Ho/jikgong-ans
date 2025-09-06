@@ -72,12 +72,29 @@ fun CompanyInfoScreen(
 ) {
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val companyData by viewModel.companyData.collectAsStateWithLifecycle()
+  val totalSavingsAmount by viewModel.totalSavingsAmount.collectAsStateWithLifecycle()
+  val dynamicStats by viewModel.projectStats.collectAsStateWithLifecycle()
+  val scoutProposalCount by viewModel.scoutProposalCount.collectAsStateWithLifecycle()
+
+  // dynamicStats를 CompanyStats 형태로 변환
+  val updatedStats = if (dynamicStats.isNotEmpty()) {
+    CompanyStats(
+      automatedDocs = companyData.stats.automatedDocs,  // 기존값 유지
+      matchedWorkers = dynamicStats.getOrNull(0) ?: companyData.stats.matchedWorkers,  // 매칭 인력
+      completedProjects = dynamicStats.getOrNull(1) ?: companyData.stats.completedProjects,  // 완료 프로젝트
+      activeConstructionSites = dynamicStats.getOrNull(2) ?: companyData.stats.activeConstructionSites  // 시공 현장
+    )
+  } else {
+    companyData.stats
+  }
 
   CompanyInfoContent(
     navigator = navigator,
     navController = navController,
     uiState = uiState,
-    companyData = companyData,
+    companyData = companyData.copy(stats = updatedStats),
+    totalSavingsAmount = totalSavingsAmount,
+    scoutProposalCount = scoutProposalCount,
     onRefresh = viewModel::refresh,
     onClearNotifications = viewModel::clearNotifications,
     formatCurrency = viewModel::formatCurrency,
@@ -92,6 +109,8 @@ internal fun CompanyInfoContent(
   navController: NavController,
   uiState: CompanyInfoUiState,
   companyData: CompanyData,
+  totalSavingsAmount: Long,
+  scoutProposalCount: Int,
   onRefresh: () -> Unit,
   onClearNotifications: () -> Unit,
   formatCurrency: (Long) -> String,
@@ -142,7 +161,8 @@ internal fun CompanyInfoContent(
           Spacer(modifier = Modifier.height(20.dp))
           SavingsCard(
             companyData = companyData,
-            formatCurrency = formatCurrency
+            formatCurrency = formatCurrency,
+            totalSavingsAmount = totalSavingsAmount
           )
         }
 
@@ -157,8 +177,13 @@ internal fun CompanyInfoContent(
           Spacer(modifier = Modifier.height(20.dp))
           QuickMenu(
             savedWorkersCount = companyData.savedWorkersCount,
+            scoutProposalCount = scoutProposalCount,
             onAutoDocsClick = { /* Navigate */ },
-            onSavedWorkersClick = { /* Navigate */ }
+            onSavedWorkersClick = { /* Navigate */ },
+            onScoutClick = {
+              // CompanyScoutScreen으로 이동
+              navController.navigate("company_scout_main")
+            }
           )
         }
 
@@ -294,6 +319,8 @@ fun CompanyInfoScreenFullPreview() {
         error = null
       ),
       companyData = createMockCompanyData(),
+      totalSavingsAmount = 5420000L,
+      scoutProposalCount = 5,
       onRefresh = {},
       onClearNotifications = {},
       formatCurrency = CompanyInfoFormatter::formatCurrency,
@@ -324,6 +351,8 @@ fun CompanyInfoScreenPreview() {
         error = null
       ),
       companyData = createMockCompanyData(),
+      totalSavingsAmount = 5420000L,
+      scoutProposalCount = 5,
       onRefresh = {},
       onClearNotifications = {},
       formatCurrency = CompanyInfoFormatter::formatCurrency,
@@ -354,6 +383,8 @@ fun CompanyInfoScreenLoadingPreview() {
         error = null
       ),
       companyData = createMockCompanyData(),
+      totalSavingsAmount = 5420000L,
+      scoutProposalCount = 5,
       onRefresh = {},
       onClearNotifications = {},
       formatCurrency = CompanyInfoFormatter::formatCurrency,
@@ -387,6 +418,8 @@ fun CompanyInfoScreenWithNotificationsPreview() {
         notificationCount = 10,
         savedWorkersCount = 156
       ),
+      totalSavingsAmount = 5420000L,
+      scoutProposalCount = 12,
       onRefresh = {},
       onClearNotifications = {},
       formatCurrency = CompanyInfoFormatter::formatCurrency,
@@ -423,7 +456,8 @@ fun SavingsCardPreview() {
     Box(modifier = Modifier.padding(16.dp)) {
       SavingsCard(
         companyData = createMockCompanyData(),
-        formatCurrency = CompanyInfoFormatter::formatCurrency
+        formatCurrency = CompanyInfoFormatter::formatCurrency,
+        totalSavingsAmount = 5420000L
       )
     }
   }

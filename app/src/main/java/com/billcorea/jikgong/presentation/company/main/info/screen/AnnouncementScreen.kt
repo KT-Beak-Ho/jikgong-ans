@@ -23,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.company.main.info.data.Announcement
 import com.billcorea.jikgong.presentation.company.main.info.data.AnnouncementContent
 import com.billcorea.jikgong.presentation.company.main.info.data.AnnouncementType
+import com.billcorea.jikgong.presentation.company.main.info.data.NewAnnouncementContent
 import com.billcorea.jikgong.presentation.company.main.info.popup.AnnouncementDetailDialog
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -43,9 +44,9 @@ fun AnnouncementScreen(
     
     val announcements = remember {
         if (selectedType == null) {
-            AnnouncementContent.announcements
+            NewAnnouncementContent.announcements
         } else {
-            AnnouncementContent.getAnnouncementsByType(selectedType!!)
+            NewAnnouncementContent.getAnnouncementsByType(selectedType!!)
         }
     }
     
@@ -127,22 +128,22 @@ fun AnnouncementScreen(
                                 ) {
                                     Text(
                                         text = when(type) {
-                                            AnnouncementType.SYSTEM -> "⚙️"
-                                            AnnouncementType.SERVICE -> "🔧"
-                                            AnnouncementType.EVENT -> "🎉"
-                                            AnnouncementType.MAINTENANCE -> "🔧"
-                                            AnnouncementType.UPDATE -> "🆙"
-                                            AnnouncementType.POLICY -> "📋"
+                                            AnnouncementType.CONSTRUCTION_NEWS -> "🏢"
+                                            AnnouncementType.LAW_REGULATION -> "⚖️"
+                                            AnnouncementType.SERVICE_UPDATE -> "🚀"
+                                            AnnouncementType.SAFETY_INFO -> "⚠️"
+                                            AnnouncementType.INDUSTRY_TREND -> "📈"
+                                            AnnouncementType.POLICY_CHANGE -> "📄"
                                         }
                                     )
                                     Text(
                                         text = when(type) {
-                                            AnnouncementType.SYSTEM -> "시스템"
-                                            AnnouncementType.SERVICE -> "서비스"
-                                            AnnouncementType.EVENT -> "이벤트"
-                                            AnnouncementType.MAINTENANCE -> "점검"
-                                            AnnouncementType.UPDATE -> "업데이트"
-                                            AnnouncementType.POLICY -> "정책"
+                                            AnnouncementType.CONSTRUCTION_NEWS -> "건설뉴스"
+                                            AnnouncementType.LAW_REGULATION -> "법령규정"
+                                            AnnouncementType.SERVICE_UPDATE -> "서비스"
+                                            AnnouncementType.SAFETY_INFO -> "안전정보"
+                                            AnnouncementType.INDUSTRY_TREND -> "업계동향"
+                                            AnnouncementType.POLICY_CHANGE -> "정책변경"
                                         },
                                         style = AppTypography.labelMedium
                                     )

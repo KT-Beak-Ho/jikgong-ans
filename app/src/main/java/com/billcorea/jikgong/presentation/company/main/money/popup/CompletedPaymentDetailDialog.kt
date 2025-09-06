@@ -3,8 +3,8 @@ package com.billcorea.jikgong.presentation.company.main.money.popup
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -45,7 +45,7 @@ fun CompletedPaymentDetailDialog(
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
-                .wrapContentHeight(),
+                .heightIn(max = 600.dp),
             shape = RoundedCornerShape(20.dp),
             color = Color.White,
             shadowElevation = 12.dp
@@ -53,6 +53,7 @@ fun CompletedPaymentDetailDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .padding(24.dp)
             ) {
                 // 헤더
@@ -172,14 +173,10 @@ fun CompletedPaymentDetailDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                LazyColumn(
-                    modifier = Modifier.heightIn(max = 300.dp),
+                Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(
-                        items = project.workers,
-                        key = { it.workerId }
-                    ) { worker ->
+                    project.workers.forEach { worker ->
                         CompletedWorkerPaymentInfo(worker = worker)
                     }
                 }

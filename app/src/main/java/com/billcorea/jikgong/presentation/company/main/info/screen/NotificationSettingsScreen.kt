@@ -32,6 +32,9 @@ fun NotificationSettingsScreen(
     var paymentEnabled by remember { mutableStateOf(true) }
     var announcementEnabled by remember { mutableStateOf(false) }
     var marketingEnabled by remember { mutableStateOf(false) }
+    var projectNewApplicantsEnabled by remember { mutableStateOf(true) }
+    var paymentRequestEnabled by remember { mutableStateOf(true) }
+    var paymentConfirmationEnabled by remember { mutableStateOf(true) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -70,7 +73,19 @@ fun NotificationSettingsScreen(
                             title = "전체 푸시 알림",
                             description = "앱의 모든 알림을 받습니다",
                             isEnabled = pushEnabled,
-                            onToggle = { pushEnabled = it }
+                            onToggle = { newValue ->
+                                pushEnabled = newValue
+                                // 전체 푸시 알림이 켜질 때 모든 상세 알림도 자동으로 켜기
+                                if (newValue) {
+                                    scoutEnabled = true
+                                    paymentEnabled = true
+                                    announcementEnabled = true
+                                    marketingEnabled = true
+                                    projectNewApplicantsEnabled = true
+                                    paymentRequestEnabled = true
+                                    paymentConfirmationEnabled = true
+                                }
+                            }
                         )
                     }
                 }
@@ -94,8 +109,22 @@ fun NotificationSettingsScreen(
                         )
 
                         NotificationToggleItem(
-                            title = "스카웃 알림",
-                            description = "새로운 스카웃 요청이 있을 때 알림을 받습니다",
+                            title = "프로젝트 새로운 지원 안내",
+                            description = "프로젝트에 새로운 지원자가 있을 때 알림을 받습니다",
+                            isEnabled = projectNewApplicantsEnabled && pushEnabled,
+                            onToggle = { projectNewApplicantsEnabled = it },
+                            enabled = pushEnabled
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            thickness = 1.dp,
+                            color = Color.Gray.copy(alpha = 0.2f)
+                        )
+
+                        NotificationToggleItem(
+                            title = "스카우트 알림",
+                            description = "새로운 스카우트 요청이 있을 때 알림을 받습니다",
                             isEnabled = scoutEnabled && pushEnabled,
                             onToggle = { scoutEnabled = it },
                             enabled = pushEnabled
@@ -108,10 +137,10 @@ fun NotificationSettingsScreen(
                         )
 
                         NotificationToggleItem(
-                            title = "급여 지급 알림",
-                            description = "급여가 지급되었을 때 알림을 받습니다",
-                            isEnabled = paymentEnabled && pushEnabled,
-                            onToggle = { paymentEnabled = it },
+                            title = "급여 요청",
+                            description = "급여 요청이 접수되었을 때 알림을 받습니다",
+                            isEnabled = paymentRequestEnabled && pushEnabled,
+                            onToggle = { paymentRequestEnabled = it },
                             enabled = pushEnabled
                         )
 
@@ -122,7 +151,21 @@ fun NotificationSettingsScreen(
                         )
 
                         NotificationToggleItem(
-                            title = "공지사항 알림",
+                            title = "급여 확인",
+                            description = "급여가 지급되었을 때 알림을 받습니다",
+                            isEnabled = paymentConfirmationEnabled && pushEnabled,
+                            onToggle = { paymentConfirmationEnabled = it },
+                            enabled = pushEnabled
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            thickness = 1.dp,
+                            color = Color.Gray.copy(alpha = 0.2f)
+                        )
+
+                        NotificationToggleItem(
+                            title = "공지사항",
                             description = "새로운 공지사항이 있을 때 알림을 받습니다",
                             isEnabled = announcementEnabled && pushEnabled,
                             onToggle = { announcementEnabled = it },

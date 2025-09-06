@@ -3,8 +3,8 @@ package com.billcorea.jikgong.presentation.company.main.money.popup
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -52,7 +52,7 @@ fun PaymentConfirmationDialog(
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
-                .wrapContentHeight(),
+                .heightIn(max = 700.dp),
             shape = RoundedCornerShape(20.dp),
             color = Color.White,
             shadowElevation = 12.dp
@@ -60,6 +60,7 @@ fun PaymentConfirmationDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .padding(24.dp)
             ) {
                 // 헤더 - 상태에 따른 색상 및 아이콘 변경
@@ -81,7 +82,7 @@ fun PaymentConfirmationDialog(
                             )
                             Text(
                                 text = if (!showConfirmationStep) {
-                                    if (isOverdue) "🚨 연체 임금 긴급 지급" else "💰 임금 지급하기"
+                                    if (isOverdue) "연체 임금 지급하기" else "💰 임금 지급하기"
                                 } else "입금 완료 확인",
                                 style = AppTypography.headlineSmall.copy(
                                     fontWeight = FontWeight.Bold
@@ -93,7 +94,7 @@ fun PaymentConfirmationDialog(
                         Text(
                             text = if (!showConfirmationStep) {
                                 if (isOverdue) 
-                                    "⚠️ 지급 기한이 지났습니다. 즉시 처리가 필요합니다" 
+                                    "지급 기한이 경과하여 즉시 처리가 필요합니다. 서비스 신뢰도에 영향이 갈 수 있습니다." 
                                 else 
                                     "아래 계좌 정보를 확인하고 입금을 진행해주세요"
                             } else "입금이 완료되었는지 확인해주세요",
@@ -114,51 +115,6 @@ fun PaymentConfirmationDialog(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 if (!showConfirmationStep) {
-                    // 연체 경고 카드 (연체 상태인 경우에만)
-                    if (isOverdue) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFFEF2F2)
-                            ),
-                            border = BorderStroke(1.dp, Color(0xFFD32F2F).copy(alpha = 0.3f))
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(20.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Warning,
-                                    contentDescription = "경고",
-                                    tint = Color(0xFFD32F2F),
-                                    modifier = Modifier.size(32.dp)
-                                )
-                                
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
-                                Text(
-                                    text = "⚡ 연체 임금 긴급 처리",
-                                    style = AppTypography.titleMedium.copy(
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    color = Color(0xFFD32F2F),
-                                    textAlign = TextAlign.Center
-                                )
-                                
-                                Text(
-                                    text = "지급 기한이 경과하여 즉시 처리가 필요합니다.\n서비스 신뢰도에 영향이 갈 수 있습니다.",
-                                    style = AppTypography.bodySmall,
-                                    color = Color(0xFFB91C1C),
-                                    textAlign = TextAlign.Center,
-                                    lineHeight = AppTypography.bodySmall.lineHeight * 1.4
-                                )
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                    
                     // 프로젝트 정보 - 상태에 따른 색상 변경
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -272,14 +228,10 @@ fun PaymentConfirmationDialog(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    LazyColumn(
-                        modifier = Modifier.heightIn(max = 300.dp),
+                    Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(
-                            items = project.workers,
-                            key = { it.workerId }
-                        ) { worker ->
+                        project.workers.forEach { worker ->
                             EnhancedWorkerPaymentInfo(worker = worker)
                         }
                     }
