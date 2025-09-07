@@ -39,7 +39,7 @@ import com.billcorea.jikgong.presentation.company.auth.join.page1.CompanyJoinPag
 import com.billcorea.jikgong.presentation.company.auth.join.page2.CompanyJoinPage2Screen
 import com.billcorea.jikgong.presentation.company.auth.join.page3.CompanyJoinPage3Screen
 import com.billcorea.jikgong.presentation.company.auth.login.page1.CompanyLoginPage1Screen
-import com.billcorea.jikgong.presentation.company.main.projectlist.feature.detail.screen.ProjectDetailScreen
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen.ProjectDetailScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.feature.detail.screen.AttendanceCheckScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.feature.detail.screen.CheckoutScreen
 import com.billcorea.jikgong.presentation.company.main.projectlist.feature.detail.screen.WorkerManagementScreen

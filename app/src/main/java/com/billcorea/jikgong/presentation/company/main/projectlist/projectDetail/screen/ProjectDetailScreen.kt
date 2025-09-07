@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation.company.main.projectlist.feature.detail.screen
+package com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,17 +17,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.annotation.Destination
-import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.SimpleProject
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay
-import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.model.ProjectDetailEvent
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.viewmodel.ProjectDetailViewModel
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,98 +37,33 @@ import java.time.format.DateTimeFormatter
 fun ProjectDetailScreen(
   navController: NavController,
   projectId: String,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  viewModel: ProjectDetailViewModel = koinViewModel()
 ) {
-  // 실제 프로젝트 데이터 로드
-  val project = remember(projectId) {
-    val baseProject = CompanyMockDataFactory.getProjectById(projectId)
-    if (baseProject != null) {
-      SimpleProject(
-        id = baseProject.id,
-        title = baseProject.title,
-        company = baseProject.company,
-        location = baseProject.location,
-        category = baseProject.category,
-        status = baseProject.status,
-        startDate = baseProject.startDate,
-        endDate = baseProject.endDate,
-        wage = baseProject.wage,
-        currentApplicants = baseProject.currentApplicants,
-        maxApplicants = baseProject.maxApplicants,
-        isUrgent = baseProject.isUrgent,
-        isBookmarked = baseProject.isBookmarked
-      )
-    } else {
-      // 기본 프로젝트 (fallback)
-      CompanyMockDataFactory.getSimpleProjects().firstOrNull() ?: SimpleProject(
-        id = projectId,
-        title = "프로젝트를 찾을 수 없습니다",
-        company = "알 수 없음",
-        location = "알 수 없음",
-        category = "일반",
-        status = "IN_PROGRESS",
-        startDate = "2025-08-01",
-        endDate = "2025-08-31",
-        wage = 150000,
-        currentApplicants = 0,
-        maxApplicants = 10,
-        isUrgent = false,
-        isBookmarked = false
-      )
-    }
-  }
-
-  // 실제 프로젝트별 작업일 데이터
-  val workDays = remember(projectId) {
-    CompanyMockDataFactory.getWorkDaysForProject(projectId)
-  }
-
-  var selectedTab by remember { mutableStateOf(0) }
+  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val bottomSheetState = rememberModalBottomSheetState()
-  val scope = rememberCoroutineScope()
-  var showBottomSheet by remember { mutableStateOf(false) }
-  var selectedWorkDay by remember { mutableStateOf<WorkDay?>(null) }
-  var showJobRegistrationBottomSheet by remember { mutableStateOf(false) }
   val jobRegistrationBottomSheetState = rememberModalBottomSheetState()
+  val scope = rememberCoroutineScope()
   
-  // 월별 필터링을 위한 상태
-  var selectedMonth by remember { mutableStateOf<String?>(null) }
-  var showMonthSelector by remember { mutableStateOf(false) }
-  
-  // 임금 입금 상태 데이터
-  val paymentStatus = remember {
-    mapOf(
-      "9" to true,  // 입금 완료
-      "10" to false, // 입금 대기
-      "11" to true,  // 입금 완료
-      "12" to false  // 입금 대기
-    )
+  // 초기 데이터 로드
+  LaunchedEffect(projectId) {
+    viewModel.onEvent(ProjectDetailEvent.LoadProject(projectId))
   }
   
-  // 프로젝트별 등록된 노동자들의 출퇴근 데이터
-  val projectWorkers = remember(projectId) {
-    CompanyMockDataFactory.getProjectWorkers(projectId)
-  }
-  
-  // 날짜별 지원자 수 계산 함수 - 프로젝트별 작업일에 따라 다름
-  fun getApplicantsCountForDate(date: LocalDate): Int {
-    // 해당 날짜의 WorkDay 찾기
-    val workDay = workDays.find { it.date == date }
-    return workDay?.applicants ?: 0
-  }
+  val project = uiState.project
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
     topBar = {
       BackNavigationTopBar(
-        title = project.title,
+        title = project?.title ?: "프로젝트 상세",
         onBackClick = { navController.popBackStack() }
       )
     },
     floatingActionButton = {
       ExtendedFloatingActionButton(
         onClick = { 
-          showJobRegistrationBottomSheet = true
+          viewModel.onEvent(ProjectDetailEvent.ShowJobRegistrationOptions)
         },
         containerColor = Color(0xFF4B7BFF),
         contentColor = Color.White,
@@ -156,43 +92,40 @@ fun ProjectDetailScreen(
       // 탭과 월별 필터
       Column {
         TabRow(
-          selectedTabIndex = selectedTab,
+          selectedTabIndex = uiState.selectedTab,
           containerColor = Color.White
         ) {
           Tab(
-            selected = selectedTab == 0,
+            selected = uiState.selectedTab == 0,
             onClick = { 
-              selectedTab = 0
-              selectedMonth = null
+              viewModel.onEvent(ProjectDetailEvent.SelectTab(0))
             },
             text = { 
-              Text("진행중 (${workDays.count { it.status == "IN_PROGRESS" }})")
+              Text("진행중 (${viewModel.getWorkDayCountByStatus("IN_PROGRESS")})")
             }
           )
           Tab(
-            selected = selectedTab == 1,
+            selected = uiState.selectedTab == 1,
             onClick = { 
-              selectedTab = 1
-              selectedMonth = null
+              viewModel.onEvent(ProjectDetailEvent.SelectTab(1))
             },
             text = { 
-              Text("예정 (${workDays.count { it.status == "UPCOMING" }})")
+              Text("예정 (${viewModel.getWorkDayCountByStatus("UPCOMING")})")
             }
           )
           Tab(
-            selected = selectedTab == 2,
+            selected = uiState.selectedTab == 2,
             onClick = { 
-              selectedTab = 2
-              selectedMonth = null
+              viewModel.onEvent(ProjectDetailEvent.SelectTab(2))
             },
             text = { 
-              Text("임금입금 (${workDays.count { it.status == "COMPLETED" }})")
+              Text("임금입금 (${viewModel.getWorkDayCountByStatus("COMPLETED")})")
             }
           )
         }
         
         // 월별 필터 버튼 (예정 탭일 때만 표시)
-        if (selectedTab == 1) {
+        if (uiState.selectedTab == 1) {
           Row(
             modifier = Modifier
               .fillMaxWidth()
@@ -200,17 +133,13 @@ fun ProjectDetailScreen(
               .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            val availableMonths = workDays
-              .filter { it.status == "UPCOMING" }
-              .map { it.date.format(DateTimeFormatter.ofPattern("yyyy년 MM월")) }
-              .distinct()
-              .sorted()
+            val availableMonths = viewModel.getAvailableMonths()
             
             OutlinedButton(
-              onClick = { selectedMonth = null },
+              onClick = { viewModel.onEvent(ProjectDetailEvent.SelectMonth(null)) },
               colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = if (selectedMonth == null) Color(0xFF4B7BFF) else Color.Transparent,
-                contentColor = if (selectedMonth == null) Color.White else Color.Gray
+                containerColor = if (uiState.selectedMonth == null) Color(0xFF4B7BFF) else Color.Transparent,
+                contentColor = if (uiState.selectedMonth == null) Color.White else Color.Gray
               ),
               modifier = Modifier.height(32.dp)
             ) {
@@ -220,10 +149,10 @@ fun ProjectDetailScreen(
             // 실제 예정된 월들 표시
             availableMonths.forEach { month ->
               OutlinedButton(
-                onClick = { selectedMonth = month },
+                onClick = { viewModel.onEvent(ProjectDetailEvent.SelectMonth(month)) },
                 colors = ButtonDefaults.outlinedButtonColors(
-                  containerColor = if (selectedMonth == month) Color(0xFF4B7BFF) else Color.Transparent,
-                  contentColor = if (selectedMonth == month) Color.White else Color.Gray
+                  containerColor = if (uiState.selectedMonth == month) Color(0xFF4B7BFF) else Color.Transparent,
+                  contentColor = if (uiState.selectedMonth == month) Color.White else Color.Gray
                 ),
                 modifier = Modifier.height(32.dp)
               ) {
@@ -240,21 +169,7 @@ fun ProjectDetailScreen(
         contentPadding = PaddingValues(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-        val filteredWorkDays = when (selectedTab) {
-          0 -> workDays.filter { it.status == "IN_PROGRESS" }
-          1 -> {
-            val upcomingDays = workDays.filter { it.status == "UPCOMING" }
-            if (selectedMonth != null) {
-              upcomingDays.filter { 
-                it.date.format(DateTimeFormatter.ofPattern("yyyy년 MM월")) == selectedMonth 
-              }
-            } else {
-              upcomingDays
-            }
-          }
-          2 -> workDays.filter { it.status == "COMPLETED" }
-          else -> workDays
-        }
+        val filteredWorkDays = viewModel.getFilteredWorkDays()
 
         // 날짜별로 그룹화
         val groupedByMonth = filteredWorkDays.groupBy { 
@@ -281,9 +196,9 @@ fun ProjectDetailScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                  text = when (selectedTab) {
+                  text = when (uiState.selectedTab) {
                     0 -> "진행 중인 일자리가 없습니다"
-                    1 -> if (selectedMonth != null) "${selectedMonth}에 예정된 일자리가 없습니다" else "예정된 일자리가 없습니다"
+                    1 -> if (uiState.selectedMonth != null) "${uiState.selectedMonth}에 예정된 일자리가 없습니다" else "예정된 일자리가 없습니다"
                     2 -> "완료된 일자리가 없습니다"
                     else -> "일자리가 없습니다"
                   },
@@ -293,9 +208,9 @@ fun ProjectDetailScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                  text = when (selectedTab) {
+                  text = when (uiState.selectedTab) {
                     0 -> "새로운 일자리를 등록해보세요"
-                    1 -> if (selectedMonth != null) "다른 월을 선택하거나 새 일자리를 등록해보세요" else "새로운 일자리를 등록해보세요"
+                    1 -> if (uiState.selectedMonth != null) "다른 월을 선택하거나 새 일자리를 등록해보세요" else "새로운 일자리를 등록해보세요"
                     2 -> "완료된 프로젝트의 임금 입금 내역을 확인하세요"
                     else -> "새로운 일자리를 등록해보세요"
                   },
@@ -325,14 +240,14 @@ fun ProjectDetailScreen(
 
             // 해당 월의 작업 카드들
             items(daysInMonth) { workDay ->
-              if (selectedTab == 2) {
+              if (uiState.selectedTab == 2) {
                 // 임금입금 확인 카드
                 PaymentStatusCard(
                   workDay = workDay,
-                  wage = project.wage,
-                  isPaymentCompleted = paymentStatus[workDay.id] ?: false,
-                  onPaymentStatusChange = { 
-                    // 임금 상태 변경 처리
+                  wage = project?.wage ?: 0,
+                  isPaymentCompleted = uiState.paymentStatus[workDay.id] ?: false,
+                  onPaymentStatusChange = { isCompleted ->
+                    viewModel.onEvent(ProjectDetailEvent.UpdatePaymentStatus(workDay.id, isCompleted))
                   },
                   onPaymentDetailsClick = {
                     // 임금 내역서 확인 - PaymentSummaryScreen으로 네비게이션
@@ -342,11 +257,10 @@ fun ProjectDetailScreen(
               } else {
                 WorkDayCard(
                   workDay = workDay,
-                  wage = project.wage,
-                  applicantsCount = getApplicantsCountForDate(workDay.date),
+                  wage = project?.wage ?: 0,
+                  applicantsCount = viewModel.getApplicantsCountForDate(workDay.date),
                   onMenuClick = {
-                    selectedWorkDay = workDay
-                    showBottomSheet = true
+                    viewModel.onEvent(ProjectDetailEvent.ShowWorkDayMenu(workDay))
                   },
                   onWorkerManageClick = {
                     navController.navigate("worker_management/${workDay.id}")
@@ -361,11 +275,10 @@ fun ProjectDetailScreen(
   }
 
   // Bottom Sheet
-  if (showBottomSheet && selectedWorkDay != null) {
+  if (uiState.showBottomSheet && uiState.selectedWorkDay != null) {
     ModalBottomSheet(
       onDismissRequest = { 
-        showBottomSheet = false
-        selectedWorkDay = null
+        viewModel.onEvent(ProjectDetailEvent.HideWorkDayMenu)
       },
       sheetState = bottomSheetState,
       containerColor = Color.White
@@ -382,7 +295,7 @@ fun ProjectDetailScreen(
             .clickable {
               scope.launch {
                 bottomSheetState.hide()
-                showBottomSheet = false
+                viewModel.onEvent(ProjectDetailEvent.HideWorkDayMenu)
               }
             }
             .padding(horizontal = 20.dp, vertical = 16.dp),
@@ -410,7 +323,10 @@ fun ProjectDetailScreen(
             .clickable {
               scope.launch {
                 bottomSheetState.hide()
-                showBottomSheet = false
+                viewModel.onEvent(ProjectDetailEvent.HideWorkDayMenu)
+                uiState.selectedWorkDay?.let {
+                  viewModel.deleteWorkDay(it.id)
+                }
               }
             }
             .padding(horizontal = 20.dp, vertical = 16.dp),
@@ -439,7 +355,7 @@ fun ProjectDetailScreen(
             .clickable {
               scope.launch {
                 bottomSheetState.hide()
-                showBottomSheet = false
+                viewModel.onEvent(ProjectDetailEvent.HideWorkDayMenu)
               }
             }
             .padding(horizontal = 20.dp, vertical = 16.dp),
@@ -464,10 +380,10 @@ fun ProjectDetailScreen(
   }
 
   // Job Registration Options Bottom Sheet
-  if (showJobRegistrationBottomSheet) {
+  if (uiState.showJobRegistrationBottomSheet) {
     ModalBottomSheet(
       onDismissRequest = { 
-        showJobRegistrationBottomSheet = false
+        viewModel.onEvent(ProjectDetailEvent.HideJobRegistrationOptions)
       },
       sheetState = jobRegistrationBottomSheetState,
       containerColor = Color.White
@@ -492,8 +408,8 @@ fun ProjectDetailScreen(
             .clickable {
               scope.launch {
                 jobRegistrationBottomSheetState.hide()
-                showJobRegistrationBottomSheet = false
-                navController.navigate("job_registration?projectStartDate=${project.startDate}&projectEndDate=${project.endDate}")
+                viewModel.onEvent(ProjectDetailEvent.HideJobRegistrationOptions)
+                navController.navigate("job_registration?projectStartDate=${project?.startDate}&projectEndDate=${project?.endDate}")
               }
             }
             .padding(horizontal = 20.dp, vertical = 16.dp),
@@ -535,7 +451,7 @@ fun ProjectDetailScreen(
             .clickable {
               scope.launch {
                 jobRegistrationBottomSheetState.hide()
-                showJobRegistrationBottomSheet = false
+                viewModel.onEvent(ProjectDetailEvent.HideJobRegistrationOptions)
                 navController.navigate("previous_job_posts/$projectId")
               }
             }
@@ -578,7 +494,7 @@ fun ProjectDetailScreen(
             .clickable {
               scope.launch {
                 jobRegistrationBottomSheetState.hide()
-                showJobRegistrationBottomSheet = false
+                viewModel.onEvent(ProjectDetailEvent.HideJobRegistrationOptions)
                 navController.navigate("temp_save")
               }
             }
@@ -614,6 +530,13 @@ fun ProjectDetailScreen(
         
         Spacer(modifier = Modifier.height(32.dp))
       }
+    }
+  }
+  
+  // 에러 메시지 표시
+  uiState.error?.let { error ->
+    LaunchedEffect(error) {
+      // Snackbar 또는 다른 에러 표시 로직
     }
   }
 }
