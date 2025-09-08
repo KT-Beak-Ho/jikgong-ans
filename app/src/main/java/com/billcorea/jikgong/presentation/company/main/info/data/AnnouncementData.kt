@@ -5,12 +5,12 @@ import java.time.LocalDateTime
 // ==================== 공지사항 데이터 모델 ====================
 
 enum class AnnouncementType {
-    SYSTEM,          // 시스템 공지
-    SERVICE,         // 서비스 관련
-    EVENT,           // 이벤트
-    MAINTENANCE,     // 점검 공지
-    UPDATE,          // 업데이트
-    POLICY           // 정책 변경
+    CONSTRUCTION_NEWS,   // 건설현장 뉴스
+    LAW_REGULATION,      // 법령 및 규정
+    SERVICE_UPDATE,      // 서비스 추가 안내
+    SAFETY_INFO,         // 안전 정보
+    INDUSTRY_TREND,      // 업계 동향
+    POLICY_CHANGE        // 정책 변경
 }
 
 enum class AnnouncementPriority {
@@ -58,23 +58,23 @@ data class Announcement(
     // 타입별 한글명
     val typeDisplayName: String
         get() = when (type) {
-            AnnouncementType.SYSTEM -> "시스템"
-            AnnouncementType.SERVICE -> "서비스"
-            AnnouncementType.EVENT -> "이벤트"
-            AnnouncementType.MAINTENANCE -> "점검"
-            AnnouncementType.UPDATE -> "업데이트"
-            AnnouncementType.POLICY -> "정책"
+            AnnouncementType.CONSTRUCTION_NEWS -> "건설뉴스"
+            AnnouncementType.LAW_REGULATION -> "법령규정"
+            AnnouncementType.SERVICE_UPDATE -> "서비스"
+            AnnouncementType.SAFETY_INFO -> "안전정보"
+            AnnouncementType.INDUSTRY_TREND -> "업계동향"
+            AnnouncementType.POLICY_CHANGE -> "정책변경"
         }
     
     // 타입별 아이콘
     val typeIcon: String
         get() = when (type) {
-            AnnouncementType.SYSTEM -> "⚙️"
-            AnnouncementType.SERVICE -> "🔧"
-            AnnouncementType.EVENT -> "🎉"
-            AnnouncementType.MAINTENANCE -> "🔧"
-            AnnouncementType.UPDATE -> "🆙"
-            AnnouncementType.POLICY -> "📋"
+            AnnouncementType.CONSTRUCTION_NEWS -> "🏢"
+            AnnouncementType.LAW_REGULATION -> "⚖️"
+            AnnouncementType.SERVICE_UPDATE -> "🚀"
+            AnnouncementType.SAFETY_INFO -> "⚠️"
+            AnnouncementType.INDUSTRY_TREND -> "📈"
+            AnnouncementType.POLICY_CHANGE -> "📄"
         }
     
     // 유효성 확인
@@ -86,11 +86,13 @@ data class Announcement(
 
 object AnnouncementContent {
     
+    // 새로운 건설현장 중심의 공지사항 데이터
+    
     val announcements = listOf(
         Announcement(
             id = "ann_001",
-            title = "🎉 직직직 2.0 업데이트 출시!",
-            summary = "더욱 편리해진 인력 매칭과 새로운 기능들을 만나보세요.",
+            title = "🏢 2024년 건설업 안전규정 개정사항",
+            summary = "건설현장 안전규정 강화 내용과 추가 안전장비 지급 기준 안내",
             content = """
 🎉 직직직 2.0 업데이트가 출시되었습니다!
 
@@ -163,7 +165,7 @@ object AnnouncementContent {
 감사합니다.
 직직직 팀 드림
             """.trimIndent(),
-            type = AnnouncementType.UPDATE,
+            type = AnnouncementType.SERVICE_UPDATE,
             priority = AnnouncementPriority.HIGH,
             isImportant = true,
             isPinned = true,
@@ -259,7 +261,7 @@ object AnnouncementContent {
 감사합니다.
 직직직 운영팀
             """.trimIndent(),
-            type = AnnouncementType.MAINTENANCE,
+            type = AnnouncementType.SAFETY_INFO,
             priority = AnnouncementPriority.URGENT,
             isImportant = true,
             isPinned = true,
@@ -381,7 +383,7 @@ object AnnouncementContent {
 감사합니다.
 직직직 결제팀
             """.trimIndent(),
-            type = AnnouncementType.SERVICE,
+            type = AnnouncementType.SERVICE_UPDATE,
             priority = AnnouncementPriority.MEDIUM,
             isImportant = false,
             isPinned = false,
@@ -517,7 +519,7 @@ object AnnouncementContent {
 
 직직직 기업서비스팀 드림
             """.trimIndent(),
-            type = AnnouncementType.EVENT,
+            type = AnnouncementType.CONSTRUCTION_NEWS,
             priority = AnnouncementPriority.LOW,
             isImportant = false,
             isPinned = false,
@@ -669,7 +671,7 @@ object AnnouncementContent {
 감사합니다.
 직직직 개인정보보호팀
             """.trimIndent(),
-            type = AnnouncementType.POLICY,
+            type = AnnouncementType.POLICY_CHANGE,
             priority = AnnouncementPriority.MEDIUM,
             isImportant = true,
             isPinned = false,
