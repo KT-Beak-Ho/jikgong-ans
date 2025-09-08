@@ -535,21 +535,12 @@ private fun CompactMapView(
 ) {
   val context = LocalContext.current
   
-  // KakaoMap SDK 초기화 확인
-  var isMapInitialized by remember { mutableStateOf(false) }
+  // KakaoMap SDK 초기화 확인 - try-catch로 안전하게 처리
+  var isMapAvailable by remember { mutableStateOf(true) }
+  var mapError by remember { mutableStateOf<String?>(null) }
   
-  LaunchedEffect(Unit) {
-    try {
-      // SDK가 초기화되었는지 확인
-      isMapInitialized = true
-    } catch (e: Exception) {
-      isMapInitialized = false
-      android.util.Log.e("CompactMapView", "Map initialization check failed", e)
-    }
-  }
-  
-  if (!isMapInitialized) {
-    // 지도를 사용할 수 없는 경우 대체 UI 표시
+  // 지도 사용 불가능한 경우 대체 UI 표시
+  if (!isMapAvailable || mapError != null) {
     Box(
       modifier = modifier
         .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
@@ -567,7 +558,7 @@ private fun CompactMapView(
           modifier = Modifier.size(48.dp)
         )
         Text(
-          text = "지도를 불러올 수 없습니다",
+          text = mapError ?: "지도 미리보기",
           style = MaterialTheme.typography.bodyMedium,
           color = Color(0xFF6B7280)
         )
@@ -582,7 +573,51 @@ private fun CompactMapView(
     return
   }
   
-  val mapView = remember { MapView(context) }
+  // MapView 생성 시 안전하게 처리
+  val mapView = remember { 
+    try {
+      MapView(context)
+    } catch (e: Exception) {
+      android.util.Log.e("CompactMapView", "MapView creation failed: ${e.message}")
+      isMapAvailable = false
+      mapError = "지도를 초기화할 수 없습니다"
+      null
+    }
+  }
+  
+  // MapView가 null인 경우 대체 UI 표시
+  if (mapView == null) {
+    Box(
+      modifier = modifier
+        .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
+        .padding(20.dp),
+      contentAlignment = Alignment.Center
+    ) {
+      Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Default.LocationOn,
+          contentDescription = "위치",
+          tint = Color(0xFF9CA3AF),
+          modifier = Modifier.size(48.dp)
+        )
+        Text(
+          text = "지도 미리보기",
+          style = MaterialTheme.typography.bodyMedium,
+          color = Color(0xFF6B7280)
+        )
+        Text(
+          text = currentLocation,
+          style = MaterialTheme.typography.bodySmall,
+          color = Color(0xFF9CA3AF),
+          textAlign = TextAlign.Center
+        )
+      }
+    }
+    return
+  }
   
   // 현재 위치 좌표 (기본값: 서울 시청)
   var centerPosition by remember { mutableStateOf(LatLng.from(37.5665, 126.9780)) }
@@ -613,7 +648,8 @@ private fun CompactMapView(
     modifier = modifier,
     factory = { context ->
       mapView.apply {
-        start(
+        try {
+          start(
           object : MapLifeCycleCallback() {
             override fun onMapDestroy() {
               kakaoMap = null
@@ -700,7 +736,12 @@ private fun CompactMapView(
               return centerPosition
             }
           }
-        )
+          )
+        } catch (e: Exception) {
+          android.util.Log.e("CompactMapView", "MapView start failed: ${e.message}")
+          isMapAvailable = false
+          mapError = "지도를 시작할 수 없습니다"
+        }
       }
     }
   )

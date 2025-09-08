@@ -2,6 +2,7 @@ package com.billcorea.jikgong.presentation.company.main.info.presentation.screen
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,8 +16,20 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Construction
+import androidx.compose.material.icons.filled.PersonSearch
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +45,7 @@ import com.billcorea.jikgong.presentation.company.main.info.data.ProfileContent
 import com.billcorea.jikgong.presentation.company.main.info.data.BusinessLicense
 import com.billcorea.jikgong.presentation.company.main.info.data.Insurance
 import com.billcorea.jikgong.presentation.company.main.info.feature.dialog.screen.ProfileEditDialog
+import com.billcorea.jikgong.presentation.destinations.CompanyScoutMainScreenDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
@@ -48,6 +62,68 @@ fun MyInfoScreen(
 ) {
     var profile by remember { mutableStateOf(ProfileContent.createMockCompanyProfile()) }
     var showEditDialog by remember { mutableStateOf(false) }
+    var showComingSoonDialog by remember { mutableStateOf(false) }
+    var comingSoonFeature by remember { mutableStateOf("") }
+    
+    // Coming Soon 다이얼로그
+    if (showComingSoonDialog) {
+        AlertDialog(
+            onDismissRequest = { showComingSoonDialog = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Construction,
+                    contentDescription = null,
+                    tint = Color(0xFF4B7BFF),
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "준비 중인 기능",
+                    style = AppTypography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = Color(0xFF1A1D29)
+                )
+            },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "'$comingSoonFeature' 기능은\n현재 준비 중입니다.",
+                        style = AppTypography.bodyLarge,
+                        color = Color(0xFF6B7280),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Text(
+                        text = "곧 더 나은 서비스로 찾아뵙겠습니다!",
+                        style = AppTypography.bodyMedium,
+                        color = Color(0xFF9CA3AF),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { showComingSoonDialog = false },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Color(0xFF4B7BFF)
+                    )
+                ) {
+                    Text(
+                        text = "확인",
+                        style = AppTypography.labelLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
     
     // 프로필 편집 다이얼로그
     if (showEditDialog) {
@@ -63,53 +139,141 @@ fun MyInfoScreen(
     
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "내 정보",
-                        style = AppTypography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = Color(0xFF1A1D29)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.Transparent
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0xFF4B7BFF).copy(alpha = 0.05f),
+                                    Color(0xFF6B8BFF).copy(alpha = 0.03f)
+                                )
+                            )
+                        )
+                ) {
+                    TopAppBar(
+                        title = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = Color(0xFF4B7BFF).copy(alpha = 0.15f),
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "👤",
+                                            style = AppTypography.titleMedium
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = "내 정보",
+                                    style = AppTypography.titleLarge.copy(
+                                        fontWeight = FontWeight.ExtraBold
+                                    ),
+                                    color = Color(0xFF1A1D29)
+                                )
+                            }
+                        },
+                        navigationIcon = {
+                            IconButton(
+                                onClick = { navigator.navigateUp() }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowBack,
+                                    contentDescription = "뒤로가기",
+                                    tint = Color(0xFF1A1D29)
+                                )
+                            }
+                        },
+                        actions = {
+                            IconButton(
+                                onClick = { showEditDialog = true }
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = Color(0xFF4B7BFF).copy(alpha = 0.1f),
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "편집",
+                                            tint = Color(0xFF4B7BFF),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent
+                        )
                     )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navigator.navigateUp() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "뒤로가기",
-                            tint = Color(0xFF1A1D29)
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { showEditDialog = true }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "편집",
-                            tint = Color(0xFF4B7BFF)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+                }
+            }
         },
-        containerColor = Color.White
+        containerColor = Color.Transparent
     ) { paddingValues ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFFF8FAFC),
+                            Color(0xFFEFF3FF)
+                        )
+                    )
+                )
         ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // 빠른 메뉴
+            item {
+                QuickMenuCard(
+                    onDocumentAutomationClick = {
+                        comingSoonFeature = "서류 자동화"
+                        showComingSoonDialog = true
+                    },
+                    onMatchingWorkersClick = {
+                        comingSoonFeature = "매칭 인력"
+                        showComingSoonDialog = true
+                    },
+                    onCompletedProjectsClick = {
+                        comingSoonFeature = "완료 프로젝트"
+                        showComingSoonDialog = true
+                    },
+                    onConstructionSitesClick = {
+                        comingSoonFeature = "시공 현장"
+                        showComingSoonDialog = true
+                    },
+                    onScoutProposalClick = {
+                        navigator.navigate(CompanyScoutMainScreenDestination)
+                    },
+                    showComingSoonDialog = showComingSoonDialog,
+                    comingSoonFeature = comingSoonFeature,
+                    onComingSoonFeatureChange = { comingSoonFeature = it },
+                    onShowComingSoonDialogChange = { showComingSoonDialog = it }
+                )
+            }
+            
             // 회사 기본 정보
             item {
                 CompanyBasicInfoCard(profile = profile)
@@ -154,6 +318,345 @@ fun MyInfoScreen(
             item {
                 Spacer(modifier = Modifier.height(24.dp))
             }
+        }
+        }
+    }
+}
+
+@Composable
+private fun QuickMenuCard(
+    onDocumentAutomationClick: () -> Unit,
+    onMatchingWorkersClick: () -> Unit,
+    onCompletedProjectsClick: () -> Unit,
+    onConstructionSitesClick: () -> Unit,
+    onScoutProposalClick: () -> Unit,
+    showComingSoonDialog: Boolean,
+    comingSoonFeature: String,
+    onComingSoonFeatureChange: (String) -> Unit,
+    onShowComingSoonDialogChange: (Boolean) -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val animatedElevation by animateDpAsState(
+        targetValue = if (isExpanded) 12.dp else 6.dp,
+        animationSpec = tween(300),
+        label = "elevation"
+    )
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = animatedElevation
+        ),
+        shape = RoundedCornerShape(24.dp),
+        border = BorderStroke(
+            width = 2.dp,
+            color = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                colors = listOf(
+                    Color(0xFF4B7BFF).copy(alpha = 0.3f),
+                    Color(0xFF6B8BFF).copy(alpha = 0.1f)
+                )
+            ).let { brush ->
+                Color(0xFF4B7BFF).copy(alpha = 0.2f)
+            }
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF4B7BFF).copy(alpha = 0.15f),
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "⚡",
+                                style = AppTypography.titleLarge
+                            )
+                        }
+                    }
+                    
+                    Column {
+                        Text(
+                            text = "빠른 메뉴",
+                            style = AppTypography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color(0xFF1A1D29)
+                        )
+                        Text(
+                            text = "자주 사용하는 기능",
+                            style = AppTypography.labelSmall,
+                            color = Color(0xFF9CA3AF)
+                        )
+                    }
+                }
+                
+                IconButton(
+                    onClick = { isExpanded = !isExpanded }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = if (isExpanded) "접기" else "펼치기",
+                        tint = Color(0xFF4B7BFF),
+                        modifier = Modifier.rotate(if (isExpanded) 90f else -90f)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // 첫 번째 줄
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickMenuItem(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Description,
+                    iconEmoji = "📄",
+                    label = "서류 자동화",
+                    backgroundColor = Color(0xFF4B7BFF).copy(alpha = 0.1f),
+                    iconColor = Color(0xFF4B7BFF),
+                    onClick = onDocumentAutomationClick
+                )
+                
+                QuickMenuItem(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Group,
+                    iconEmoji = "👥",
+                    label = "매칭 인력",
+                    backgroundColor = Color(0xFF10B981).copy(alpha = 0.1f),
+                    iconColor = Color(0xFF10B981),
+                    onClick = onMatchingWorkersClick
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // 두 번째 줄
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickMenuItem(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.CheckCircle,
+                    iconEmoji = "✅",
+                    label = "완료 프로젝트",
+                    backgroundColor = Color(0xFF8B5CF6).copy(alpha = 0.1f),
+                    iconColor = Color(0xFF8B5CF6),
+                    onClick = onCompletedProjectsClick
+                )
+                
+                QuickMenuItem(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Construction,
+                    iconEmoji = "🏗️",
+                    label = "시공 현장",
+                    backgroundColor = Color(0xFFF59E0B).copy(alpha = 0.1f),
+                    iconColor = Color(0xFFF59E0B),
+                    onClick = onConstructionSitesClick
+                )
+            }
+            
+            // 세 번째 줄 - 스크랩한 인력 추가
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        QuickMenuItem(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.Bookmark,
+                            iconEmoji = "⭐",
+                            label = "스크랩한 인력",
+                            backgroundColor = Color(0xFFEC407A).copy(alpha = 0.1f),
+                            iconColor = Color(0xFFEC407A),
+                            onClick = {
+                                onComingSoonFeatureChange("스크랩한 인력")
+                                onShowComingSoonDialogChange(true)
+                            }
+                        )
+                        
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // 스카우트 제안 버튼 (전체 너비)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onScoutProposalClick() },
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Transparent
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 4.dp
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0xFF4B7BFF),
+                                    Color(0xFF6B8BFF)
+                                )
+                            )
+                        )
+                        .padding(18.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PersonSearch,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        Text(
+                            text = "스카우트 제안 보기",
+                            style = AppTypography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color.White
+                        )
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color.White.copy(alpha = 0.25f)
+                        ) {
+                            Text(
+                                text = "NEW",
+                                style = AppTypography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold
+                                ),
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickMenuItem(
+    icon: ImageVector,
+    iconEmoji: String,
+    label: String,
+    backgroundColor: Color,
+    iconColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "scale"
+    )
+    val elevation by animateDpAsState(
+        targetValue = if (isPressed) 8.dp else 3.dp,
+        animationSpec = tween(100),
+        label = "elevation"
+    )
+    
+    Card(
+        modifier = modifier
+            .height(90.dp)
+            .scale(scale)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = backgroundColor
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = elevation
+        ),
+        shape = RoundedCornerShape(18.dp),
+        border = BorderStroke(
+            width = 1.5.dp,
+            brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                colors = listOf(
+                    iconColor.copy(alpha = 0.3f),
+                    iconColor.copy(alpha = 0.1f)
+                )
+            )
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = iconEmoji,
+                style = AppTypography.headlineSmall
+            )
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            Text(
+                text = label,
+                style = AppTypography.labelMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = iconColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -341,10 +844,20 @@ private fun LicenseItem(license: BusinessLicense) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFF8FAFC)
+            containerColor = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                colors = listOf(
+                    Color(0xFFF8FAFC),
+                    Color(0xFFF0F4FF)
+                )
+            ).let { Color(0xFFF8FAFC) }
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp
+            defaultElevation = 2.dp
+        ),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (license.isValid) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFEF4444).copy(alpha = 0.2f)
         )
     ) {
         Column(
@@ -430,10 +943,20 @@ private fun InsuranceItem(insurance: Insurance) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFF8FAFC)
+            containerColor = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                colors = listOf(
+                    Color(0xFFF8FAFC),
+                    Color(0xFFF0F4FF)
+                )
+            ).let { Color(0xFFF8FAFC) }
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp
+            defaultElevation = 2.dp
+        ),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (insurance.isActive) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFEF4444).copy(alpha = 0.2f)
         )
     ) {
         Column(
@@ -530,18 +1053,57 @@ private fun SafetyRatingCard(profile: CompanyProfile) {
                 }
             }
             
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = profile.safetyRating.ratingColor.copy(alpha = 0.1f)
-            ) {
-                Text(
-                    text = profile.safetyRating.ratingGrade,
-                    style = AppTypography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = profile.safetyRating.ratingColor,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = profile.safetyRating.ratingColor.copy(alpha = 0.1f)
+                ),
+                border = BorderStroke(
+                    width = 2.dp,
+                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(
+                            profile.safetyRating.ratingColor.copy(alpha = 0.5f),
+                            profile.safetyRating.ratingColor.copy(alpha = 0.2f)
+                        )
+                    )
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 4.dp
                 )
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.radialGradient(
+                                colors = listOf(
+                                    profile.safetyRating.ratingColor.copy(alpha = 0.2f),
+                                    profile.safetyRating.ratingColor.copy(alpha = 0.05f)
+                                )
+                            )
+                        )
+                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = profile.safetyRating.ratingGrade,
+                            style = AppTypography.headlineLarge.copy(
+                                fontWeight = FontWeight.ExtraBold
+                            ),
+                            color = profile.safetyRating.ratingColor
+                        )
+                        Text(
+                            text = "안전등급",
+                            style = AppTypography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = profile.safetyRating.ratingColor.copy(alpha = 0.9f)
+                        )
+                    }
+                }
             }
         }
         
@@ -611,23 +1173,39 @@ private fun InfoCard(
             containerColor = Color.White
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
+            defaultElevation = 4.dp,
+            pressedElevation = 8.dp,
+            hoveredElevation = 6.dp
         ),
-        border = BorderStroke(1.dp, Color(0xFFE5E7EB))
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = Color(0xFFE5E7EB)
+        )
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(24.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color(0xFF4B7BFF),
-                    modifier = Modifier.size(20.dp)
-                )
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFF4B7BFF).copy(alpha = 0.1f),
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = Color(0xFF4B7BFF),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
                 
                 Text(
                     text = title,
@@ -638,7 +1216,7 @@ private fun InfoCard(
                 )
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             
             content()
         }
@@ -652,25 +1230,39 @@ private fun InfoItem(
     maxLines: Int = 1,
     isLink: Boolean = false
 ) {
-    Column(
-        modifier = Modifier.padding(vertical = 4.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = label,
-            style = AppTypography.bodySmall,
-            color = Color(0xFF6B7280)
+            style = AppTypography.bodyMedium.copy(
+                fontWeight = FontWeight.Medium
+            ),
+            color = Color(0xFF6B7280),
+            modifier = Modifier.weight(0.4f)
         )
-        
-        Spacer(modifier = Modifier.height(2.dp))
         
         Text(
             text = value,
-            style = AppTypography.bodyMedium,
+            style = AppTypography.bodyMedium.copy(
+                fontWeight = if (isLink) FontWeight.Bold else FontWeight.Normal
+            ),
             color = if (isLink) Color(0xFF4B7BFF) else Color(0xFF1A1D29),
             maxLines = maxLines,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(0.6f),
+            textAlign = androidx.compose.ui.text.style.TextAlign.End
         )
     }
+    
+    HorizontalDivider(
+        modifier = Modifier.padding(vertical = 4.dp),
+        thickness = 0.5.dp,
+        color = Color(0xFFE5E7EB).copy(alpha = 0.5f)
+    )
 }
 
 @Preview(showBackground = true)

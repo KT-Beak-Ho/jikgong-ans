@@ -54,26 +54,94 @@ fun CompanyMoneyScreen(
 ) {
     // 샘플 데이터 (빈 상태 테스트를 위해 변경 가능)
     val hasData = true // false로 변경하면 빈 상태
-
-    var projectPayments by remember { 
-        mutableStateOf(
-            if (hasData) {
-                val originalData = CompanyMockDataFactory.getProjectPayments()
-                val copyData1 = originalData.map { project ->
-                    project.copy(
-                        id = "${project.id}_copy_1",
-                        projectTitle = "${project.projectTitle} (복사본1)"
+    
+    // 원본 데이터
+    val allProjectPayments = remember {
+        if (hasData) {
+            val originalData = CompanyMockDataFactory.getProjectPayments()
+            val copyData1 = originalData.map { project ->
+                project.copy(
+                    id = "${project.id}_copy_1",
+                    projectTitle = "${project.projectTitle} (복사본1)"
+                )
+            }
+            val copyData2 = originalData.map { project ->
+                project.copy(
+                    id = "${project.id}_copy_2",
+                    projectTitle = "${project.projectTitle} (복사본2)"
+                )
+            }
+            originalData + copyData1 + copyData2
+        } else {
+            emptyList()
+        }
+    }
+    
+    // 필터링된 데이터
+    var projectPayments by remember { mutableStateOf(allProjectPayments) }
+    
+    // 검색 상태
+    var searchQuery by remember { mutableStateOf("") }
+    var isSearching by remember { mutableStateOf(false) }
+    
+    // 검색 다이얼로그
+    if (isSearching) {
+        AlertDialog(
+            onDismissRequest = { 
+                isSearching = false
+                searchQuery = ""
+                projectPayments = allProjectPayments
+            },
+            title = {
+                Text(
+                    text = "프로젝트/인력 검색",
+                    style = AppTypography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
                     )
+                )
+            },
+            text = {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { query ->
+                        searchQuery = query
+                        // 실시간 검색 필터링
+                        projectPayments = if (query.isEmpty()) {
+                            allProjectPayments
+                        } else {
+                            allProjectPayments.filter { project ->
+                                project.projectTitle.contains(query, ignoreCase = true) ||
+                                project.workers.any { worker ->
+                                    worker.workerName.contains(query, ignoreCase = true)
+                                }
+                            }
+                        }
+                    },
+                    placeholder = { Text("프로젝트명 또는 인력명 입력") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { 
+                        isSearching = false
+                    }
+                ) {
+                    Text("확인")
                 }
-                val copyData2 = originalData.map { project ->
-                    project.copy(
-                        id = "${project.id}_copy_2",
-                        projectTitle = "${project.projectTitle} (복사본2)"
-                    )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { 
+                        isSearching = false
+                        searchQuery = ""
+                        projectPayments = allProjectPayments
+                    }
+                ) {
+                    Text("취소")
                 }
-                originalData + copyData1 + copyData2
-            } else {
-                emptyList()
             }
         )
     }
@@ -182,7 +250,8 @@ fun CompanyMoneyScreen(
             SearchableTopBar(
                 title = "임금 관리",
                 onSearchClick = {
-                    // TODO: 검색 기능 구현
+                    // 검색 기능 - 검색 다이얼로그 표시
+                    isSearching = !isSearching
                 }
             )
         },
@@ -205,7 +274,8 @@ fun CompanyMoneyScreen(
                 // 빈 상태
                 EmptyMoneyState(
                     onCreateProjectClick = {
-                        // TODO: 프로젝트 생성 화면으로 이동
+                        // 프로젝트 생성 화면으로 이동
+                        navController.navigate("company_project_list")
                     },
                     modifier = Modifier.fillMaxSize()
                 )

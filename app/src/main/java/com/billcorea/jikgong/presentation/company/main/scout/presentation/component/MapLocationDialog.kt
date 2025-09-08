@@ -62,7 +62,25 @@ fun MapLocationDialog(
     val context = LocalContext.current
     val config = LocalConfiguration.current
     val screenHeight = config.screenHeightDp
-    val mapView = remember { MapView(context) }
+    
+    // MapView 생성 시 안전하게 처리
+    val mapView = remember { 
+        try {
+            MapView(context)
+        } catch (e: Exception) {
+            Log.e("MapLocationDialog", "Failed to create MapView: ${e.message}")
+            null
+        }
+    }
+    
+    // MapView가 null인 경우 다이얼로그 닫기
+    if (mapView == null) {
+        LaunchedEffect(Unit) {
+            onDismiss()
+        }
+        return
+    }
+    
     var selectedPosition by remember { mutableStateOf<LatLng?>(null) }
     var isGpsLocationLoaded by remember { mutableStateOf(false) }
     var kakaoMapInstance by remember { mutableStateOf<KakaoMap?>(null) }
@@ -295,7 +313,8 @@ fun MapLocationDialog(
                         .padding(horizontal = 16.dp),
                     factory = { context ->
                         mapView.apply {
-                            start(
+                            try {
+                                start(
                                 object : MapLifeCycleCallback() {
                                     override fun onMapDestroy() {
                                         Log.e("MapLocationDialog", "Map destroyed")
@@ -447,6 +466,10 @@ fun MapLocationDialog(
                                     }
                                 }
                             )
+                            } catch (e: Exception) {
+                                Log.e("MapLocationDialog", "Failed to start MapView: ${e.message}")
+                                onDismiss()
+                            }
                         }
                     }
                 )
