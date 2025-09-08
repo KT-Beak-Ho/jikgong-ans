@@ -24,7 +24,8 @@
       "Bash(cp:*)",
       "Bash(rm:*)",
       "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\money\\data\\PaymentSortBy.kt\")",
-      "Bash(\"./gradlew\" clean)"
+      "Bash(\"./gradlew\" clean)",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\info\\presentation\\screen\\SettingsScreen.kt\")"
     ],
     "deny": [],
     "ask": []

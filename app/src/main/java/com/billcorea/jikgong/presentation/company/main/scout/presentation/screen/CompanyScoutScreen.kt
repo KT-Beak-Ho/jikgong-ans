@@ -10,6 +10,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,6 +44,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination(route = "company_scout_main")
 @Composable
 fun CompanyScoutMainScreen(
@@ -256,9 +258,168 @@ fun CompanyScoutMainScreen(
         )
     }
     
-    
+    // Proposal 상세 보기 BottomSheet
+    if (uiState.showProposalDetailSheet && uiState.selectedProposal != null) {
+        val proposal = uiState.selectedProposal!!
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.dismissProposalDetail() },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = Color.White
+        ) {
+            ProposalDetailBottomSheetContent(
+                proposal = proposal,
+                onDismiss = { viewModel.dismissProposalDetail() }
+            )
+        }
+    }
 }
 
+@Composable
+private fun ProposalDetailBottomSheetContent(
+    proposal: Proposal,
+    onDismiss: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+            .navigationBarsPadding()
+    ) {
+        // 헤더
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "제안 상세",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            IconButton(onClick = onDismiss) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "닫기"
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(20.dp))
+        
+        // 인력 정보
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FA))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = proposal.workerName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    proposal.jobTypes.forEach { jobType ->
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFF4B7BFF).copy(alpha = 0.1f)
+                        ) {
+                            Text(
+                                text = jobType,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color(0xFF4B7BFF)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // 제안 정보
+        InfoRow(label = "제안 일시", value = proposal.toDisplayInfo())
+        InfoRow(label = "제안 금액", value = proposal.proposedWage)
+        InfoRow(label = "거리", value = proposal.distance)
+        InfoRow(label = "상태", value = proposal.status.name)
+        
+        if (proposal.message.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "메시지",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = proposal.message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
+        }
+        
+        if (proposal.status == ProposalStatus.ACCEPTED && proposal.workerPhone != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { /* 전화 걸기 */ },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7BFF))
+            ) {
+                Icon(imageVector = Icons.Default.Phone, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "전화 걸기: ${proposal.workerPhone}")
+            }
+        }
+        
+        if (proposal.status == ProposalStatus.REJECTED && proposal.rejectReason != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFEE2E2))
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = null,
+                        tint = Color(0xFFDC2626)
+                    )
+                    Text(
+                        text = "거절 사유: ${proposal.rejectReason}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFFDC2626)
+                    )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
 
 @Composable
 private fun TossStyleHeader(

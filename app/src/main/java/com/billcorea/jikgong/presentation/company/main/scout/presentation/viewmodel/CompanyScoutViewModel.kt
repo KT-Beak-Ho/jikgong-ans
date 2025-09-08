@@ -121,8 +121,19 @@ class CompanyScoutViewModel : ViewModel(), KoinComponent {
   }
 
   fun showProposalDetail(proposal: Proposal) {
-    // 제안 상세 보기 구현
-    // TODO: 상세 화면 네비게이션 또는 바텀시트 표시
+    // 제안 상세 보기 - 바텀시트로 표시
+    _uiState.value = _uiState.value.copy(
+      selectedProposal = proposal,
+      showProposalDetailSheet = true
+    )
+  }
+  
+  fun dismissProposalDetail() {
+    // 제안 상세 바텀시트 닫기
+    _uiState.value = _uiState.value.copy(
+      selectedProposal = null,
+      showProposalDetailSheet = false
+    )
   }
 
   fun updateLocation(location: String) {
@@ -229,6 +240,8 @@ data class ScoutUiState(
   val workers: List<Worker> = emptyList(),
   val proposals: List<Proposal> = emptyList(),
   val selectedWorker: Worker? = null,
+  val selectedProposal: Proposal? = null,
+  val showProposalDetailSheet: Boolean = false,
   val isLoading: Boolean = false,
   val isRefreshing: Boolean = false,
   val errorMessage: String? = null,

@@ -7,7 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -158,8 +157,7 @@ fun InfoTopBar(
     title: String,
     modifier: Modifier = Modifier,
     notificationCount: Int = 0,
-    onNotificationClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {}
+    onNotificationClick: () -> Unit = {}
 ) {
     TopAppBar(
         title = {
@@ -200,15 +198,6 @@ fun InfoTopBar(
                     }
                 }
             }
-            
-            // 설정 버튼
-            IconButton(onClick = onSettingsClick) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "설정",
-                    tint = appColorScheme.onSurface
-                )
-            }
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White,
@@ -242,8 +231,7 @@ fun CompanyTopBarPreview() {
             InfoTopBar(
                 title = "내 정보",
                 notificationCount = 3,
-                onNotificationClick = {},
-                onSettingsClick = {}
+                onNotificationClick = {}
             )
         }
     }
