@@ -33,6 +33,8 @@ import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.SimpleProject
 import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -273,60 +275,89 @@ private fun ProjectCard(
       // 정보 섹션
       Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         InfoRow(
-          icon = Icons.Outlined.Business,
-          text = project.company
-        )
-        InfoRow(
           icon = Icons.Outlined.LocationOn,
           text = project.location
         )
         InfoRow(
-          icon = Icons.Outlined.AttachMoney,
-          text = "일당 ${NumberFormat.getNumberInstance(Locale.KOREA).format(project.wage)}원"
+          icon = Icons.Outlined.CalendarToday,
+          text = "착공일: ${project.startDate}"
         )
         InfoRow(
-          icon = Icons.Outlined.CalendarMonth,
-          text = "${project.startDate} ~ ${project.endDate}"
+          icon = Icons.Outlined.EventAvailable,
+          text = "준공일: ${project.endDate}"
         )
       }
 
-      // 모집 현황 프로그레스
+      // 진행 현황 프로그레스 (날짜 기반)
       Column {
+        val startDate = try {
+          java.time.LocalDate.parse(project.startDate)
+        } catch (e: Exception) {
+          java.time.LocalDate.now()
+        }
+        val endDate = try {
+          java.time.LocalDate.parse(project.endDate)
+        } catch (e: Exception) {
+          java.time.LocalDate.now().plusDays(30)
+        }
+        val today = java.time.LocalDate.now()
+        
+        val totalDays = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate).toFloat()
+        val elapsedDays = if (today.isBefore(startDate)) {
+          0f
+        } else if (today.isAfter(endDate)) {
+          totalDays
+        } else {
+          java.time.temporal.ChronoUnit.DAYS.between(startDate, today).toFloat()
+        }
+        
+        val progressPercentage = if (totalDays > 0) {
+          ((elapsedDays / totalDays) * 100).toInt().coerceIn(0, 100)
+        } else 0
+        
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceBetween
         ) {
           Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-              Icons.Outlined.Groups,
+              Icons.Outlined.Schedule,
               contentDescription = null,
               modifier = Modifier.size(16.dp),
               tint = Color.Gray
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-              "${project.currentApplicants}/${project.maxApplicants}명",
+              when {
+                today.isBefore(startDate) -> "시작 전"
+                today.isAfter(endDate) -> "완료"
+                else -> "진행중 (${elapsedDays.toInt()}/${totalDays.toInt()}일)"
+              },
               fontSize = 13.sp,
               color = Color.Gray
             )
           }
           Text(
-            "${(project.currentApplicants.toFloat() / project.maxApplicants * 100).toInt()}%",
+            "$progressPercentage%",
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF4B7BFF)
+            color = when {
+              progressPercentage >= 100 -> Color(0xFF4CAF50)
+              progressPercentage >= 80 -> Color(0xFFFFC107)
+              else -> Color(0xFF4B7BFF)
+            }
           )
         }
         Spacer(modifier = Modifier.height(4.dp))
         LinearProgressIndicator(
-          progress = { project.currentApplicants.toFloat() / project.maxApplicants },
+          progress = { progressPercentage / 100f },
           modifier = Modifier
             .fillMaxWidth()
             .height(6.dp)
             .clip(RoundedCornerShape(3.dp)),
           color = when {
-            project.currentApplicants >= project.maxApplicants -> Color(0xFF4CAF50)
-            project.currentApplicants >= project.maxApplicants * 0.8 -> Color(0xFFFFC107)
+            progressPercentage >= 100 -> Color(0xFF4CAF50)
+            progressPercentage >= 80 -> Color(0xFFFFC107)
             else -> Color(0xFF4B7BFF)
           },
           trackColor = Color(0xFFE0E0E0)
