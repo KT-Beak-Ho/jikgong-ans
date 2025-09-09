@@ -460,7 +460,7 @@ class MainActivity : ComponentActivity() {
       getLastKnownLocation()
     } else {
       MaterialDialog(this).show {
-        icon(R.drawable.ic_jikgong_v1)
+        icon(R.drawable.jikjikjik_black)
         title(R.string.app_name)
         message(R.string.location_permission_message)
         positiveButton(R.string.OK) {
