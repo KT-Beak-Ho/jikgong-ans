@@ -19,16 +19,9 @@ import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopB
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.ExistingJob
 import java.text.NumberFormat
 import java.util.*
-
-// 기존 일자리 데이터
-data class ExistingJob(
-  val id: String,
-  val title: String,
-  val workPeriod: String,
-  val dailyWage: Int
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

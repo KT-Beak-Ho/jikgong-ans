@@ -29,22 +29,10 @@ import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ApplicantWorker
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.WorkerAttendanceInfo
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.DateStatus
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
-// 출근/퇴근 상태를 나타내는 데이터 클래스
-data class WorkerAttendanceInfo(
-  val hasCheckedIn: Boolean = false,
-  val hasCheckedOut: Boolean = false,
-  val hasPaymentRecord: Boolean = false
-)
-
-// 날짜 상태를 나타내는 enum
-enum class DateStatus {
-  PAST,    // 과거 날짜
-  TODAY,   // 오늘 날짜
-  FUTURE   // 미래 날짜
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

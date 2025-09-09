@@ -24,15 +24,9 @@ import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.TempSavePost
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
-// 임시저장 데이터
-data class TempSavePost(
-  val id: String,
-  val title: String,
-  val saveDate: LocalDateTime
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination

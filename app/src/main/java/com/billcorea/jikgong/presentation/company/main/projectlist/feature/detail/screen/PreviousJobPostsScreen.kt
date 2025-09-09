@@ -25,23 +25,11 @@ import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopB
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.PreviousJobPost
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.text.NumberFormat
 import java.util.*
-
-// 기존 공고 데이터
-data class PreviousJobPost(
-  val id: String,
-  val title: String,
-  val category: String,
-  val location: String,
-  val wage: Int,
-  val workPeriod: String,
-  val maxWorkers: Int,
-  val completedDate: LocalDate,
-  val totalApplicants: Int
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination
