@@ -55,7 +55,7 @@ val networkModule = module {
   }
 
   single {
-    val baseUrl = try {
+    val baseUrl = "http://59.21.223.137/" /* try {
       if (BuildConfig.BASE_URL.isNullOrBlank()) {
         "http://59.21.223.137/"
       } else {
@@ -64,7 +64,7 @@ val networkModule = module {
     } catch (e: Exception) {
       Log.e("NetworkModule", "BuildConfig.BASE_URL not available, using fallback", e)
       "http://59.21.223.137/"
-    }
+    } */
     
     Retrofit.Builder()
       .baseUrl(baseUrl)
