@@ -1,33 +1,35 @@
 # 📋 직직직 사업자(Company) 앱 통합 TODO 리스트 v3.0
 
 > **최종 업데이트**: 2025-01-15  
-> **총 TODO 항목**: 35개  
-> **예상 총 소요시간**: 61시간 (약 8-10일)
+> **총 TODO 항목**: 35개 (완료: 3개)  
+> **예상 총 소요시간**: 61시간 (약 8-10일)  
+> **완료된 작업**: 중복 파일 정리, MapLocationDialog 메모리 누수 해결, MVVM 패턴 적용
 
 ---
 
 ## 🚨 긴급 - 기술적 이슈 (즉시 해결 필요)
 
-### 1. 중복 파일 정리
-- **문제**: `ProjectCreateDialog.kt` 파일이 2개 존재
-  - `/projectlist/projectcreate/screen/ProjectCreateDialog.kt` (새 버전 - 4필드) ✅
-  - `/projectlist/feature/create/screen/ProjectCreateDialog.kt` (구 버전) ❌
-- **해결**: 구 버전 제거하고 새 버전으로 통합
-- **예상 시간**: 1시간
+### 1. ✅ 중복 파일 정리 (완료)
+- **문제**: `ProjectCreateDialog.kt` 파일이 2개 존재했음
+  - `/projectlist/projectcreate/screen/ProjectCreateDialog.kt` (새 버전 - 4필드) ✅ 유지
+  - `/projectlist/feature/create/screen/ProjectCreateDialog.kt` (구 버전) ❌ 삭제 완료
+- **해결**: 구 버전 제거 완료, import 충돌 없음 확인
+- **완료 시간**: 2025-01-15
 
-### 2. 메모리 누수 위험 해결
+### 2. ✅ 메모리 누수 위험 해결 (완료)
 
-#### 2-1. MapLocationDialog.kt 정리
+#### 2-1. ✅ MapLocationDialog.kt 정리 (완료)
 - **위치**: `MapLocationDialog.kt`
 - **문제**: LaunchedEffect 7개 사용, cleanup 미확인
 - **해결**: DisposableEffect로 변경, onDispose 추가
-- **예상 시간**: 2시간
+- **완료**: MapLocationDialogOptimized.kt 생성, MapLocationViewModel 추가
+- **완료 시간**: 2025-01-15
 
-#### 2-2. CompanyScoutScreen.kt 최적화
+#### 2-2. ✅ CompanyScoutScreen.kt 최적화 (완료)
 - **위치**: `CompanyScoutScreen.kt`
 - **문제**: LaunchedEffect 17개로 과도한 Side Effect
-- **해결**: ViewModel로 로직 이동, Effect 수 감소
-- **예상 시간**: 3시간
+- **해결**: MapLocationViewModel로 로직 이동, DisposableEffect 적용
+- **완료 시간**: 2025-01-15
 
 #### 2-3. JobCreationScreen.kt 상태 관리 개선
 - **위치**: `JobCreationScreen.kt`

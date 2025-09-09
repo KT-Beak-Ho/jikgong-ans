@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +38,7 @@ import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
-import com.billcorea.jikgong.presentation.company.main.scout.presentation.component.MapLocationDialog
+import com.billcorea.jikgong.presentation.company.main.scout.presentation.component.MapLocationDialogOptimized
 import com.billcorea.jikgong.presentation.location.LocationPermissionHandler
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
@@ -489,12 +490,12 @@ fun LocationSettingPage(
         showMapDialog = false
       }
     ) {
-      MapLocationDialog(
+      MapLocationDialogOptimized(
         onDismiss = { showMapDialog = false },
         onLocationSelected = { selectedLocation ->
           onLocationChange(selectedLocation)
         },
-        viewModel = viewModel,
+        mainViewModel = viewModel,
         searchRadius = searchRadius
       )
     }
