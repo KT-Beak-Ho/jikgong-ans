@@ -112,7 +112,7 @@ fun JoinPage1(
             if (phoneValResult.indexOf("false") >= 0) {
                 isSecurity = false
                 MaterialDialog(context).show {
-                    icon(R.drawable.ic_jikgong_white)
+                    icon(R.drawable.jikjikjik_white)
                     message(R.string.phoneIsNotValid)
                     positiveButton(R.string.OK) {
                         it.dismiss()
@@ -126,7 +126,7 @@ fun JoinPage1(
                 } else {
                     isSecurity = false
                     MaterialDialog(context).show {
-                        icon(R.drawable.ic_jikgong_white)
+                        icon(R.drawable.jikjikjik_white)
                         message(R.string.msgPhoneNumberIsNotValid)
                         positiveButton(R.string.OK) {
                             it.dismiss()

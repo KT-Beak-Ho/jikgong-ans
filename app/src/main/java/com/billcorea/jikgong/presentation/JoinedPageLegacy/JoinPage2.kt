@@ -198,7 +198,7 @@ fun JoinPage2 (
                 isCheck = false
                 idFocusRequester.requestFocus()
                 MaterialDialog(context).show {
-                    icon(R.drawable.ic_jikgong_white)
+                    icon(R.drawable.jikjikjik_white)
                     message(R.string.idIsNotValid)
                     positiveButton(R.string.OK) { it.dismiss() }
                 }
@@ -206,7 +206,7 @@ fun JoinPage2 (
                 isCheck = true
                 passwordFocusRequester.requestFocus()
                 MaterialDialog(context).show {
-                    icon(R.drawable.ic_jikgong_white)
+                    icon(R.drawable.jikjikjik_white)
                     message(R.string.idIsValid)
                     positiveButton(R.string.OK) { it.dismiss() }
                 }

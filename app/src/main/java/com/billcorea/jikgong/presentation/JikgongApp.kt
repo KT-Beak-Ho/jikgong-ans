@@ -167,7 +167,7 @@ Scaffold(
           horizontalAlignment = Alignment.CenterHorizontally
         ) {
           Image(
-            painter = painterResource(if (isDark) R.drawable.ic_jikgong_white else R.drawable.ic_jikgong_v1),
+            painter = painterResource(if (isDark) R.drawable.jikjikjik_white else R.drawable.jikjikjik_black),
             contentDescription = "Logo"
           )
           Image(
