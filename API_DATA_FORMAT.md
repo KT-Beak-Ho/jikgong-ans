@@ -1,12 +1,49 @@
 # 직직직 사업자 앱 API 데이터 형식 문서
 
+## 📋 변경 이력
+- **2024-01-15 v3.0**: 프로젝트 관리 API 전면 개편
+  - 프로젝트 생성: 4개 필수 필드로 단순화 (title, startDate, endDate, location)
+  - 프로젝트 목록: wage/worker 정보 제거, 날짜 기반 진행률 추가
+  - 진행률 계산 방식 변경: 인력 기반 → 날짜 기반
+  - 작업일별 관리 API 추가 (출근체크, 퇴근체크, 임금지급)
+  - 인부 지원 현황 API 추가 (날짜별 지원자/확정자 관리)
+  - 지급내역서 및 영수증 발급 API 추가
+  - 일자리 등록 API 추가 (프로젝트 내 작업일 추가)
+  - 플랫폼 수수료 5% 명시 (기존 10% 대비 50% 절감)
+
 ## 📋 목차
 1. [인증 API](#1-인증-api-auth)
+   - 1.1 SMS 인증 요청
+   - 1.2 SMS 인증 확인
+   - 1.3 사업자 가입
+   - 1.4 로그인
 2. [프로젝트 관리 API](#2-프로젝트-관리-api-projectlist)
+   - 2.1 프로젝트 목록 조회
+   - 2.2 프로젝트 생성
+   - 2.3 프로젝트 작업일 관리
+   - 2.4 인부 지원 현황 관리
+   - 2.5 출근/퇴근 체크
+   - 2.6 임금 지급 내역서
+   - 2.7 일자리 등록 (작업일 추가)
 3. [인력 스카우트 API](#3-인력-스카우트-api-scout)
+   - 3.1 인력 검색
+   - 3.2 인력 상세 조회
+   - 3.3 스카우트 제안
+   - 3.4 제안 목록 조회
 4. [자금 관리 API](#4-자금-관리-api-money)
+   - 4.1 정산 목록 조회
+   - 4.2 급여 계산
+   - 4.3 일괄 급여 지급
+   - 4.4 송금 처리
 5. [사업자 정보 API](#5-사업자-정보-api-info)
+   - 5.1 프로필 조회
+   - 5.2 통계 조회
+   - 5.3 공지사항
 6. [공통 Response 형식](#6-공통-response-형식)
+   - 6.1 성공 Response
+   - 6.2 에러 Response
+   - 6.3 페이지네이션 정보
+   - 6.4 API 에러 코드
 
 ---
 
@@ -128,7 +165,7 @@ Query Parameters:
 - status: String? (RECRUITING, IN_PROGRESS, COMPLETED)
 - page: Int
 - size: Int
-- sortBy: String (createdAt, startDate, wage)
+- sortBy: String (createdAt, startDate, endDate)
 
 // Response
 data class ProjectListResponse(
@@ -140,30 +177,67 @@ data class ProjectListResponse(
 data class SimpleProject(
     val id: String,
     val title: String,
-    val location: String,
-    val detailLocation: String,
-    val startDate: String,        // "2025-08-01"
-    val endDate: String,
-    val workStartTime: String,    // "08:00"
-    val workEndTime: String,      // "17:00"
-    val wage: Int,               // 일당
-    val wageType: String,        // "DAILY", "HOURLY"
-    val jobCategories: List<JobCategory>,
-    val currentWorkers: Int,
-    val requiredWorkers: Int,
-    val status: String,
+    val location: String,         // "서울특별시 강남구 역삼동"
+    val locationDetail: String?,  // "101동 지하 1층"
+    val startDate: String,        // "2024-03-01"
+    val endDate: String,          // "2024-06-30"
+    val category: String,         // "건축", "토목", "전기", "설비"
+    val status: String,           // "RECRUITING", "IN_PROGRESS", "COMPLETED"
     val isUrgent: Boolean,
+    val progressPercentage: Int,  // 날짜 기반 진행률 (0-100)
+    val totalDays: Int,           // 전체 공사 기간 (일)
+    val elapsedDays: Int,         // 경과 일수
+    val remainingDays: Int,       // 남은 일수
     val createdAt: String,
-    val daysRemaining: Int?      // 모집 마감까지 남은 일수
+    val updatedAt: String
 )
 
-data class JobCategory(
-    val categoryId: String,
-    val categoryName: String,     // "목수", "철근공", "조공"
-    val requiredCount: Int,
-    val confirmedCount: Int,
-    val skillLevel: String       // "BEGINNER", "INTERMEDIATE", "EXPERT"
-)
+// 예시 응답
+{
+    "success": true,
+    "data": [
+        {
+            "id": "proj_123456",
+            "title": "강남 오피스텔 신축 공사",
+            "location": "서울특별시 강남구 역삼동",
+            "locationDetail": "101동",
+            "startDate": "2024-03-01",
+            "endDate": "2024-06-30",
+            "category": "건축",
+            "status": "IN_PROGRESS",
+            "isUrgent": false,
+            "progressPercentage": 45,
+            "totalDays": 121,
+            "elapsedDays": 54,
+            "remainingDays": 67,
+            "createdAt": "2024-01-15T09:00:00Z",
+            "updatedAt": "2024-04-24T15:30:00Z"
+        },
+        {
+            "id": "proj_789012",
+            "title": "판교 오피스 리모델링",
+            "location": "경기도 성남시 분당구 판교동",
+            "locationDetail": null,
+            "startDate": "2024-05-01",
+            "endDate": "2024-07-31",
+            "category": "건축",
+            "status": "RECRUITING",
+            "isUrgent": true,
+            "progressPercentage": 0,
+            "totalDays": 91,
+            "elapsedDays": 0,
+            "remainingDays": 91,
+            "createdAt": "2024-04-20T10:00:00Z",
+            "updatedAt": "2024-04-20T10:00:00Z"
+        }
+    ],
+    "pagination": {
+        "page": 1,
+        "size": 20,
+        "totalPages": 5,
+        "totalElements": 87
+    }
+}
 ```
 
 ### 2.2 프로젝트 생성
@@ -171,80 +245,432 @@ data class JobCategory(
 // Request
 POST /api/projects
 data class ProjectCreateRequest(
+    val title: String,           // 프로젝트 이름 (필수)
+    val startDate: String,        // 착공일 ISO 8601 형식 "2024-03-01" (필수)
+    val endDate: String,          // 준공일 ISO 8601 형식 "2024-06-30" (필수)
+    val location: String,         // 작업장소 주소 "서울특별시 강남구 역삼동 123-45" (필수)
+    val locationDetail: String?,  // 상세 주소 "101동 지하 1층" (선택)
+    val latitude: Double,         // 위도 37.5665 (필수)
+    val longitude: Double         // 경도 126.9780 (필수)
+)
+
+// Response
+data class ProjectCreateResponse(
+    val success: Boolean,
+    val projectId: String,
+    val message: String,
+    val project: ProjectDetail
+)
+
+data class ProjectDetail(
+    val id: String,
     val title: String,
-    val description: String,
-    val location: Address,
-    val workPeriod: WorkPeriod,
-    val jobRequirements: List<JobRequirement>,
-    val paymentInfo: PaymentInfo,
-    val additionalInfo: ProjectAdditionalInfo
-)
-
-data class Address(
-    val roadAddress: String,
-    val jibunAddress: String,
-    val detailAddress: String,
-    val latitude: Double,
-    val longitude: Double,
-    val zipCode: String
-)
-
-data class WorkPeriod(
     val startDate: String,
     val endDate: String,
-    val workDays: List<String>,   // ["MON", "TUE", "WED", ...]
-    val workStartTime: String,
-    val workEndTime: String,
-    val breakTime: BreakTime?
+    val location: String,
+    val locationDetail: String?,
+    val latitude: Double,
+    val longitude: Double,
+    val status: String,           // "RECRUITING", "IN_PROGRESS", "COMPLETED"
+    val progressPercentage: Int,  // 날짜 기반 진행률 (0-100)
+    val createdAt: String,
+    val updatedAt: String
 )
 
-data class BreakTime(
-    val startTime: String,
-    val endTime: String
+// Error Response
+data class ProjectCreateErrorResponse(
+    val success: Boolean,
+    val error: String,
+    val details: Map<String, String>?  // 필드별 에러 메시지
 )
 
-data class JobRequirement(
-    val jobCategoryId: String,
-    val requiredCount: Int,
-    val skillLevel: String,
-    val description: String?,
-    val preferredExperience: Int?  // 년 단위
+// 예시 요청
+{
+    "title": "강남 오피스텔 신축 공사",
+    "startDate": "2024-03-01",
+    "endDate": "2024-06-30",
+    "location": "서울특별시 강남구 역삼동 123-45",
+    "locationDetail": "101동 지하 1층",
+    "latitude": 37.5665,
+    "longitude": 126.9780
+}
+
+// 예시 성공 응답
+{
+    "success": true,
+    "projectId": "proj_123456",
+    "message": "프로젝트가 성공적으로 생성되었습니다",
+    "project": {
+        "id": "proj_123456",
+        "title": "강남 오피스텔 신축 공사",
+        "startDate": "2024-03-01",
+        "endDate": "2024-06-30",
+        "location": "서울특별시 강남구 역삼동 123-45",
+        "locationDetail": "101동 지하 1층",
+        "latitude": 37.5665,
+        "longitude": 126.9780,
+        "status": "RECRUITING",
+        "progressPercentage": 0,
+        "createdAt": "2024-01-15T09:00:00Z",
+        "updatedAt": "2024-01-15T09:00:00Z"
+    }
+}
+
+// 예시 실패 응답
+{
+    "success": false,
+    "error": "VALIDATION_ERROR",
+    "details": {
+        "title": "프로젝트 이름은 필수입니다",
+        "endDate": "준공일은 착공일 이후여야 합니다"
+    }
+}
+```
+
+### 2.3 프로젝트 작업일 관리
+```kotlin
+// Request - 작업일별 상세 조회
+GET /api/projects/{projectId}/workdays
+Query Parameters:
+- status: String? (IN_PROGRESS, UPCOMING, COMPLETED)
+- month: String? ("2024-03")
+
+// Response
+data class WorkDayListResponse(
+    val success: Boolean,
+    val data: List<WorkDay>,
+    val summary: WorkDaySummary
 )
 
-data class PaymentInfo(
-    val wageType: String,
-    val wage: Int,
-    val overtimePay: Int?,        // 시간외 수당
-    val weekendPay: Int?,         // 주말 수당
-    val paymentMethod: String,    // "DAILY", "WEEKLY", "MONTHLY"
-    val paymentDay: Int?          // 월급일 (1-31)
+data class WorkDay(
+    val id: String,
+    val projectId: String,
+    val title: String,           // "보통인부 15명 모집"
+    val date: String,             // "2024-03-15"
+    val startTime: String,        // "08:00"
+    val endTime: String,          // "18:00"
+    val recruitPeriod: String,    // "2024-03-01 ~ 2024-03-07"
+    val applicants: Int,          // 날짜별 지원자 수
+    val confirmed: Int,           // 확정된 인원
+    val maxWorkers: Int,          // 최대 모집 인원
+    val status: String,           // "IN_PROGRESS", "UPCOMING", "COMPLETED"
+    val attendanceInfo: AttendanceInfo?
 )
 
-data class ProjectAdditionalInfo(
-    val provideMeals: Boolean,
-    val provideTransport: Boolean,
-    val provideAccommodation: Boolean,
-    val safetyEquipment: List<String>,  // ["안전모", "안전화", ...]
-    val requirements: List<String>,      // 기타 요구사항
-    val isUrgent: Boolean,
-    val isRecurring: Boolean,
-    val recurringInfo: RecurringInfo?
+data class AttendanceInfo(
+    val hasCheckedIn: Boolean,
+    val hasCheckedOut: Boolean,
+    val hasPaymentRecord: Boolean,
+    val checkedInCount: Int,     // 출근 체크한 인원
+    val checkedOutCount: Int     // 퇴근 체크한 인원
 )
 
-data class RecurringInfo(
-    val frequency: String,         // "WEEKLY", "MONTHLY"
-    val endDate: String?
+data class WorkDaySummary(
+    val totalWorkDays: Int,
+    val completedDays: Int,
+    val upcomingDays: Int,
+    val inProgressDays: Int
 )
 ```
 
-### 2.3 출근 체크
+### 2.4 인부 지원 현황 관리
 ```kotlin
-// Request
-POST /api/projects/{projectId}/attendance
-data class AttendanceCheckRequest(
+// Request - 날짜별 지원자 조회
+GET /api/projects/{projectId}/workdays/{date}/applicants
+
+// Response
+data class ApplicantListResponse(
+    val success: Boolean,
     val projectId: String,
+    val date: String,
+    val applicants: List<ApplicantWorker>,
+    val confirmedWorkers: List<ConfirmedWorker>
+)
+
+data class ApplicantWorker(
+    val id: String,
+    val name: String,
+    val jobType: String,          // "철근공", "목수", "보통인부"
+    val experienceYears: Int,
+    val phone: String,
+    val distance: String,          // "2.5km"
+    val rating: Double,            // 4.5
+    val completedProjects: Int,    // 완료한 프로젝트 수
+    val status: String,            // "PENDING", "ACCEPTED", "REJECTED"
+    val appliedAt: String,
+    val profileImage: String?
+)
+
+data class ConfirmedWorker(
+    val id: String,
+    val name: String,
+    val jobType: String,
+    val phone: String,
+    val confirmedAt: String,
+    val attendanceStatus: AttendanceStatus?
+)
+
+data class AttendanceStatus(
+    val checkInTime: String?,     // "08:05"
+    val checkOutTime: String?,    // "18:10"
+    val workHours: Double?        // 10.08
+)
+
+// Request - 지원자 수락/거절
+POST /api/projects/{projectId}/applicants/{applicantId}/status
+data class ApplicantStatusRequest(
+    val action: String,           // "ACCEPT" or "REJECT"
     val workDate: String,
-    val attendanceList: List<WorkerAttendance>
+    val reason: String?           // 거절 사유 (선택)
+)
+
+// Response
+data class ApplicantStatusResponse(
+    val success: Boolean,
+    val message: String,
+    val updatedApplicant: ApplicantWorker
+)
+```
+
+### 2.5 출근/퇴근 체크
+```kotlin
+// Request - 출근 체크
+POST /api/projects/{projectId}/attendance/checkin
+data class AttendanceCheckInRequest(
+    val workDate: String,
+    val workers: List<WorkerCheckIn>
+)
+
+data class WorkerCheckIn(
+    val workerId: String,
+    val checkInTime: String,      // "08:05"
+    val location: LocationInfo?
+)
+
+data class LocationInfo(
+    val latitude: Double,
+    val longitude: Double,
+    val accuracy: Float
+)
+
+// Response
+data class AttendanceCheckResponse(
+    val success: Boolean,
+    val checkedInCount: Int,
+    val message: String,
+    val results: List<CheckResult>
+)
+
+data class CheckResult(
+    val workerId: String,
+    val workerName: String,
+    val success: Boolean,
+    val checkTime: String,
+    val message: String?
+)
+
+// Request - 퇴근 체크
+POST /api/projects/{projectId}/attendance/checkout
+data class AttendanceCheckOutRequest(
+    val workDate: String,
+    val workers: List<WorkerCheckOut>
+)
+
+data class WorkerCheckOut(
+    val workerId: String,
+    val checkOutTime: String,     // "18:10"
+    val workHours: Double,        // 10.08
+    val overtimeHours: Double?    // 2.0
+)
+
+// Request - 출근 현황 조회
+GET /api/projects/{projectId}/attendance/{date}
+
+// Response
+data class AttendanceStatusResponse(
+    val success: Boolean,
+    val projectId: String,
+    val date: String,
+    val summary: AttendanceSummary,
+    val workers: List<WorkerAttendanceDetail>
+)
+
+data class AttendanceSummary(
+    val totalWorkers: Int,
+    val checkedInWorkers: Int,
+    val checkedOutWorkers: Int,
+    val absentWorkers: Int,
+    val totalWorkHours: Double
+)
+
+data class WorkerAttendanceDetail(
+    val workerId: String,
+    val workerName: String,
+    val jobType: String,
+    val checkInTime: String?,
+    val checkOutTime: String?,
+    val workHours: Double?,
+    val status: String,           // "CHECKED_IN", "CHECKED_OUT", "ABSENT"
+    val wage: Int,
+    val totalWage: Long
+)
+```
+
+### 2.6 임금 지급 내역서
+```kotlin
+// Request - 프로젝트별 임금 지급 내역 조회
+GET /api/projects/{projectId}/payments
+Query Parameters:
+- date: String? ("2024-03-15")
+- status: String? (PENDING, COMPLETED, FAILED)
+
+// Response  
+data class ProjectPaymentListResponse(
+    val success: Boolean,
+    val projectId: String,
+    val payments: List<PaymentRecord>,
+    val summary: PaymentSummary
+)
+
+data class PaymentRecord(
+    val id: String,
+    val workDate: String,
+    val workerId: String,
+    val workerName: String,
+    val jobType: String,
+    val workHours: Double,
+    val hourlyWage: Int,
+    val baseWage: Long,
+    val overtimePay: Long?,
+    val deductions: Long,         // 공제액 (플랫폼 수수료 등)
+    val finalAmount: Long,        // 실지급액
+    val status: String,           // "PENDING", "COMPLETED", "FAILED"
+    val paymentDate: String?,
+    val bankName: String,
+    val accountNumber: String,
+    val transactionId: String?
+)
+
+data class PaymentSummary(
+    val totalWorkers: Int,
+    val totalAmount: Long,
+    val paidAmount: Long,
+    val pendingAmount: Long,
+    val completedCount: Int,
+    val pendingCount: Int,
+    val platformFee: Long,        // 플랫폼 수수료 (5%)
+    val savedAmount: Long         // 기존 10% → 5%로 절약한 금액
+)
+
+// Request - 임금 지급 승인
+POST /api/projects/{projectId}/payments/approve
+data class PaymentApprovalRequest(
+    val paymentIds: List<String>,
+    val approvalType: String      // "INDIVIDUAL" or "BULK"
+)
+
+// Response
+data class PaymentApprovalResponse(
+    val success: Boolean,
+    val approvedCount: Int,
+    val failedCount: Int,
+    val totalAmount: Long,
+    val message: String,
+    val results: List<ApprovalResult>
+)
+
+data class ApprovalResult(
+    val paymentId: String,
+    val workerId: String,
+    val success: Boolean,
+    val amount: Long,
+    val transactionId: String?,
+    val errorMessage: String?
+)
+
+// Request - 지급 내역서 다운로드
+GET /api/projects/{projectId}/payments/receipt/{paymentId}
+
+// Response
+data class PaymentReceiptResponse(
+    val success: Boolean,
+    val receipt: PaymentReceipt
+)
+
+data class PaymentReceipt(
+    val receiptNumber: String,
+    val issueDate: String,
+    val projectInfo: ProjectInfo,
+    val workerInfo: WorkerInfo,
+    val paymentDetails: PaymentDetails,
+    val downloadUrl: String       // PDF 다운로드 URL
+)
+
+data class ProjectInfo(
+    val projectId: String,
+    val projectTitle: String,
+    val company: String,
+    val location: String
+)
+
+data class WorkerInfo(
+    val workerId: String,
+    val name: String,
+    val phone: String,
+    val jobType: String,
+    val bankName: String,
+    val accountNumber: String
+)
+
+data class PaymentDetails(
+    val workDate: String,
+    val workHours: Double,
+    val hourlyWage: Int,
+    val baseWage: Long,
+    val overtimePay: Long?,
+    val deductions: Long,
+    val platformFee: Long,
+    val finalAmount: Long,
+    val paymentMethod: String,
+    val paymentDate: String,
+    val transactionId: String
+)
+```
+
+### 2.7 일자리 등록 (작업일 추가)
+```kotlin
+// Request - 프로젝트에 새 작업일 추가
+POST /api/projects/{projectId}/workdays
+data class JobRegistrationRequest(
+    val title: String,            // "보통인부 15명 모집"
+    val date: String,             // "2024-03-20"
+    val startTime: String,        // "08:00"
+    val endTime: String,          // "18:00"
+    val maxWorkers: Int,          // 15
+    val jobTypes: List<JobTypeRequirement>,
+    val wage: WageInfo,
+    val requirements: List<String>?,
+    val benefits: List<String>?
+)
+
+data class JobTypeRequirement(
+    val jobType: String,          // "철근공"
+    val requiredCount: Int,       // 5
+    val experienceLevel: String?  // "3년 이상"
+)
+
+data class WageInfo(
+    val type: String,             // "DAILY" or "HOURLY"
+    val amount: Int,              // 200000 (일당) or 25000 (시급)
+    val overtimeRate: Double?     // 1.5 (시간외 수당 배율)
+)
+
+// Response
+data class JobRegistrationResponse(
+    val success: Boolean,
+    val workDayId: String,
+    val message: String,
+    val workDay: WorkDay
 )
 
 data class WorkerAttendance(
