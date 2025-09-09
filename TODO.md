@@ -1,7 +1,7 @@
 # 📋 직직직 사업자(Company) 앱 통합 TODO 리스트 v3.0
 
 > **최종 업데이트**: 2025-01-15  
-> **총 TODO 항목**: 35개 (완료: 5개)  
+> **총 TODO 항목**: 35개 (완료: 7개)  
 > **예상 총 소요시간**: 61시간 (약 8-10일)  
 > **완료된 작업**: 중복 파일 정리, 메모리 누수 해결, MVVM 패턴 적용, Money 화면 네비게이션
 
@@ -50,19 +50,21 @@
 - **완료**: CompanyMoneyScreenEnhanced.kt 생성, 실시간 검색, FAB 버튼 추가
 - **완료 시간**: 2025-01-15
 
-### 4. Scout 화면 네비게이션
+### 4. ✅ Scout 화면 네비게이션 (완료)
 - **파일**: `CompanyScoutViewModel.kt`
 - **필요 기능**: 근로자 상세 화면 네비게이션
-- **예상 시간**: 1시간
+- **완료**: 네비게이션 이벤트 추가, 전화 걸기 기능 구현
+- **완료 시간**: 2025-01-15
 
-### 5. Info 화면 네비게이션
+### 5. ✅ Info 화면 네비게이션 (완료)
 - **파일**: `CompanyInfoScreen.kt`
 - **필요 기능**: 
   - 프로필 수정 화면 이동
   - 알림 설정 화면 이동
   - 약관 및 정책 화면 이동
   - 로그아웃 처리
-- **예상 시간**: 2시간
+- **완료**: CompanyInfoScreenEnhanced.kt 생성, 모든 네비게이션 메서드 구현
+- **완료 시간**: 2025-01-15
 
 ---
 
@@ -217,15 +219,15 @@
 ### 🚀 Sprint 1 (Week 1): 기술적 이슈 해결
 **목표**: 안정성 확보  
 **소요시간**: 10시간
-- [ ] 중복 파일 정리 (1h)
-- [ ] MapLocationDialog 메모리 누수 해결 (2h)
-- [ ] CompanyScoutScreen Side Effect 정리 (3h)
-- [ ] JobCreationScreen ViewModel 분리 (4h)
+- [x] 중복 파일 정리 (1h) ✅
+- [x] MapLocationDialog 메모리 누수 해결 (2h) ✅
+- [x] CompanyScoutScreen Side Effect 정리 (3h) ✅
+- [x] JobCreationScreen ViewModel 분리 (4h) ✅
 
 ### 🚀 Sprint 2 (Week 2): 네비게이션 & 핵심 API
 **목표**: 기본 동작 구현  
 **소요시간**: 20시간
-- [ ] 모든 네비게이션 구현 (5h)
+- [x] 모든 네비게이션 구현 (5h) ✅ (Money, Scout, Info 완료)
 - [ ] 회원가입 API 연동 (7h)
 - [ ] 회사 정보 연동 (1h)
 - [ ] 지원자 관리 API (3h)
