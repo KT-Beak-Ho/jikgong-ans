@@ -89,7 +89,7 @@ fun WorkerLoginPage(
     LaunchedEffect(loginError) {
         loginError?.let {
             MaterialDialog(context).show {
-                icon(R.drawable.ic_jikgong_white)
+                icon(R.drawable.jikjikjik_white)
                 message(text = it)
                 positiveButton(R.string.OK) { dialog -> dialog.dismiss() }
             }

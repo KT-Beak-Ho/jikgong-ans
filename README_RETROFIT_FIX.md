@@ -9,7 +9,7 @@
 ### 1. local.properties 설정 추가
 ```properties
 # API Configuration
-BASE_URL=https://www.jikgong.p-e.kr/
+BASE_URL=http://59.21.223.137/
 KAKAO_REST_API=YOUR_KAKAO_REST_API_KEY_HERE
 KAKAO_API=YOUR_KAKAO_API_KEY_HERE
 ```
