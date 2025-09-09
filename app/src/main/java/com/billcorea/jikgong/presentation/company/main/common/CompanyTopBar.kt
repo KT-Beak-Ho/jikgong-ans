@@ -7,8 +7,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -129,8 +129,7 @@ fun SearchableTopBar(
 @Composable
 fun ScoutTopBar(
     title: String,
-    modifier: Modifier = Modifier,
-    onSettingsClick: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
     TopAppBar(
         title = {
@@ -143,15 +142,6 @@ fun ScoutTopBar(
             )
         },
         modifier = modifier.fillMaxWidth(),
-        actions = {
-            IconButton(onClick = onSettingsClick) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "설정",
-                    tint = appColorScheme.onSurface
-                )
-            }
-        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White,
             titleContentColor = appColorScheme.onSurface,
@@ -167,8 +157,7 @@ fun InfoTopBar(
     title: String,
     modifier: Modifier = Modifier,
     notificationCount: Int = 0,
-    onNotificationClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {}
+    onNotificationClick: () -> Unit = {}
 ) {
     TopAppBar(
         title = {
@@ -209,15 +198,6 @@ fun InfoTopBar(
                     }
                 }
             }
-            
-            // 설정 버튼
-            IconButton(onClick = onSettingsClick) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "설정",
-                    tint = appColorScheme.onSurface
-                )
-            }
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White,
@@ -245,15 +225,13 @@ fun CompanyTopBarPreview() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             ScoutTopBar(
-                title = "스카우트",
-                onSettingsClick = {}
+                title = "스카우트"
             )
             Spacer(modifier = Modifier.height(16.dp))
             InfoTopBar(
                 title = "내 정보",
                 notificationCount = 3,
-                onNotificationClick = {},
-                onSettingsClick = {}
+                onNotificationClick = {}
             )
         }
     }

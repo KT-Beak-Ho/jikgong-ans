@@ -10,7 +10,22 @@
       "Bash(powershell:*)",
       "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\network\\auth\\AuthModels.kt\")",
       "Bash(\"./gradlew\" build)",
-      "Bash(\"./gradlew\" compileDebugKotlin --no-daemon)"
+      "Bash(\"./gradlew\" compileDebugKotlin --no-daemon)",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\money\\components\\PaymentCalendar.kt\")",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\money\\components\\PaymentStatusChip.kt\")",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\money\\components\\PaymentTabBar.kt\")",
+      "Bash(git restore:*)",
+      "Bash(move:*)",
+      "Bash(\"./gradlew\" build --continue)",
+      "Bash(kotlinc-jvm --version)",
+      "Bash(\"./gradlew\" assembleDebug --no-daemon)",
+      "Bash(tree:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\money\\data\\PaymentSortBy.kt\")",
+      "Bash(\"./gradlew\" clean)",
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\info\\presentation\\screen\\SettingsScreen.kt\")"
     ],
     "deny": [],
     "ask": []

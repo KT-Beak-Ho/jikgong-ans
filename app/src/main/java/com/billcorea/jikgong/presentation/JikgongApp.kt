@@ -44,11 +44,13 @@ import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination(start = true)
+@RootNavGraph(start = true)
+@Destination
 @Composable
 fun JikgongApp (
   navigator: DestinationsNavigator,
