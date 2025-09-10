@@ -210,42 +210,42 @@ class CompanyJoinSharedViewModel(
   }
 
   /**
-   * server에 해당 ID 존재 유뮤 체크 ( 수정 필요 )
+   * server에 해당 ID 존재 유무 체크 - 실제 API 연동 완료
    */
   private fun checkIdRegist(id: String) {
     viewModelScope.launch {
       _uiState.value = _uiState.value.copy(isWaiting = true)
 
-      joinRepository.validatePhone(id)
+      joinRepository.validateLoginId(id)
         .onSuccess { response ->
-          // 성공 시 ID가 사용 가능함을 의미 (서버에 등록되지 않음)
+          // 성공(200) = ID 사용 가능
           _uiState.value = _uiState.value.copy(
-            isSecurityStepActive = true,
-            isPhoneNumberAvailable = true,
+            isIdAvailable = true,
             isWaiting = false,
-            errorMessage = null
+            errorMessage = null,
+            idCheckMessage = "사용 가능한 아이디입니다"
           )
         }
         .onError { error ->
           _uiState.value = _uiState.value.copy(
-            isPhoneNumberAvailable = false,
+            isIdAvailable = false,
             isWaiting = false,
-            isSecurityStepActive=false,
-            errorMessage = "네트워크 오류: ${error.message}"
+            errorMessage = "네트워크 오류: ${error.message}",
+            idCheckMessage = null
           )
         }
         .onHttpError { code, message, errorBody ->
           val errorMessage = when (code) {
-            409 -> "이미 등록된 전화번호입니다"
-            400 -> "잘못된 전화번호 형식입니다"
+            409 -> "이미 사용중인 아이디입니다"
+            400 -> "아이디 형식이 올바르지 않습니다"
             500 -> "서버 오류가 발생했습니다"
-            else -> "HTTP $code: $message"
+            else -> "오류 발생: $message"
           }
           _uiState.value = _uiState.value.copy(
-            isPhoneNumberAvailable = false,
+            isIdAvailable = false,
             isWaiting = false,
-            isSecurityStepActive=false,
-            errorMessage = errorMessage
+            errorMessage = errorMessage,
+            idCheckMessage = errorMessage
           )
         }
     }
@@ -534,15 +534,24 @@ class CompanyJoinSharedViewModel(
         validateUserId(event.id)
       }
       /**
-       * 사용자 아이디 입력 후 등록 여부 확인
+       * 사용자 아이디 입력 후 등록 여부 확인 - 실제 API 연동
        */
-      is CompanyJoinSharedEvent.RequestVerificationID ->{
-//        _uiState.value = _uiState.value.copy(
-//          isWaiting = true,
-//          authCode = "" // 기존에 받은 인증번호 초기화
-//        )
-//        // 해당 번호가 이미 등록되어 있는 번호인가?
-//        checkPhoneNumberRegist(_uiState.value.phoneNumber)
+      is CompanyJoinSharedEvent.RequestVerificationID -> {
+        // ID 형식 검증 먼저 수행
+        if (_uiState.value.id.isEmpty()) {
+          _uiState.value = _uiState.value.copy(
+            idCheckMessage = "아이디를 입력해주세요",
+            isIdAvailable = false
+          )
+        } else if (_uiState.value.id.length < 4) {
+          _uiState.value = _uiState.value.copy(
+            idCheckMessage = "아이디는 4자 이상이어야 합니다",
+            isIdAvailable = false
+          )
+        } else {
+          // 서버에 중복 확인 요청
+          checkIdRegist(_uiState.value.id)
+        }
       }
       /**
        * 사용자 비밀번호 입력
@@ -571,9 +580,31 @@ class CompanyJoinSharedViewModel(
         validateEmail(event.email)
       }
       /**
-       * 사용자 Email 입력 후 등록 여부 확인
+       * 사용자 Email 입력 후 등록 여부 확인 
+       * 서버 API 미구현 - 클라이언트 검증만 수행
        */
-      is CompanyJoinSharedEvent.RequestVerificationEmail ->{}
+      is CompanyJoinSharedEvent.RequestVerificationEmail -> {
+        val email = _uiState.value.email
+        val emailPattern = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+        
+        if (email.isEmpty()) {
+          _uiState.value = _uiState.value.copy(
+            emailCheckMessage = "이메일을 입력해주세요",
+            isEmailAvailable = false
+          )
+        } else if (!email.matches(emailPattern)) {
+          _uiState.value = _uiState.value.copy(
+            emailCheckMessage = "올바른 이메일 형식이 아닙니다",
+            isEmailAvailable = false
+          )
+        } else {
+          // 서버 API가 없으므로 형식만 검증하고 사용 가능으로 처리
+          _uiState.value = _uiState.value.copy(
+            emailCheckMessage = "사용 가능한 이메일입니다",
+            isEmailAvailable = true
+          )
+        }
+      }
       /**
        * 사업자등록번호
        */

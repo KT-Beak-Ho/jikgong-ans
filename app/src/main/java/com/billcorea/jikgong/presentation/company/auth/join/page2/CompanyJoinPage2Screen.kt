@@ -1,14 +1,20 @@
 package com.billcorea.jikgong.presentation.company.auth.join.page2
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -181,18 +188,50 @@ fun CompanyJoinPage2Screen(
       }
       //  아이디
       item {
-        CommonTextInput(
-          value = uiState.id,
-          labelMainText = stringResource(R.string.id),
-          labelAppendText = "*",
-          labelAppendTextColor = colorResource(R.color.secondary_B),
-          placeholder = stringResource(R.string.enterId),
-          validationError = uiState.validationErrors["id"],
-          modifier = Modifier.fillMaxWidth(),
-          onChange = {
-            companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserId(it))
+        Column {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            CommonTextInput(
+              value = uiState.id,
+              labelMainText = stringResource(R.string.id),
+              labelAppendText = "*",
+              labelAppendTextColor = colorResource(R.color.secondary_B),
+              placeholder = stringResource(R.string.enterId),
+              validationError = uiState.validationErrors["id"],
+              modifier = Modifier.weight(1f),
+              onChange = {
+                companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserId(it))
+              }
+            )
+            Button(
+              onClick = {
+                companyJoinViewModel.onEvent(CompanyJoinSharedEvent.RequestVerificationID)
+              },
+              enabled = uiState.id.isNotEmpty() && !uiState.isWaiting,
+              modifier = Modifier.align(Alignment.Bottom).padding(bottom = if(uiState.validationErrors["id"] != null) 20.dp else 0.dp)
+            ) {
+              if (uiState.isWaiting) {
+                CircularProgressIndicator(
+                  modifier = Modifier.size(16.dp),
+                  color = Color.White
+                )
+              } else {
+                Text("중복 확인")
+              }
+            }
           }
-        )
+          // ID 중복 확인 메시지 표시
+          uiState.idCheckMessage?.let { message ->
+            Text(
+              text = message,
+              color = if (uiState.isIdAvailable) Color(0xFF4CAF50) else Color(0xFFE53935),
+              style = MaterialTheme.typography.bodySmall,
+              modifier = Modifier.padding(top = 4.dp, start = 8.dp)
+            )
+          }
+        }
       }
       //  비밀번호
       item {
@@ -210,19 +249,45 @@ fun CompanyJoinPage2Screen(
         )
       }
       //  메일
+      //  이메일
       item {
-        CommonTextInput(
-          value = uiState.email,
-          labelMainText = stringResource(R.string.email),
-          labelAppendText = "*",
-          labelAppendTextColor = colorResource(R.color.secondary_B),
-          placeholder = stringResource(R.string.enterEmail),
-          validationError = uiState.validationErrors["email"],
-          modifier = Modifier.fillMaxWidth(),
-          onChange = {
-            companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserMail(it))
+        Column {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            CommonTextInput(
+              value = uiState.email,
+              labelMainText = stringResource(R.string.email),
+              labelAppendText = "*",
+              labelAppendTextColor = colorResource(R.color.secondary_B),
+              placeholder = stringResource(R.string.enterEmail),
+              validationError = uiState.validationErrors["email"],
+              modifier = Modifier.weight(1f),
+              onChange = {
+                companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserMail(it))
+              }
+            )
+            Button(
+              onClick = {
+                companyJoinViewModel.onEvent(CompanyJoinSharedEvent.RequestVerificationEmail)
+              },
+              enabled = uiState.email.isNotEmpty(),
+              modifier = Modifier.align(Alignment.Bottom).padding(bottom = if(uiState.validationErrors["email"] != null) 20.dp else 0.dp)
+            ) {
+              Text("형식 확인")
+            }
           }
-        )
+          // Email 형식 확인 메시지 표시
+          uiState.emailCheckMessage?.let { message ->
+            Text(
+              text = message,
+              color = if (uiState.isEmailAvailable) Color(0xFF4CAF50) else Color(0xFFE53935),
+              style = MaterialTheme.typography.bodySmall,
+              modifier = Modifier.padding(top = 4.dp, start = 8.dp)
+            )
+          }
+        }
       }
       //  사업자 등록 번호
       item {

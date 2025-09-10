@@ -25,6 +25,8 @@ data class CompanyJoinSharedUiState(
   val inquiry: String = "",             //  문의사항
   val isIdAvailable: Boolean = false,   //  사용가능한 ID 인가
   val isEmailAvailable: Boolean = false,//  사용가능한 Email 인가
+  val idCheckMessage: String? = null,   //  ID 중복 확인 메시지
+  val emailCheckMessage: String? = null,//  Email 중복 확인 메시지
 
   // 공통 상태
   val currentPage: Int = 1,

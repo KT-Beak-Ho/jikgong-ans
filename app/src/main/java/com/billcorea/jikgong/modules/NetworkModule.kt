@@ -55,15 +55,13 @@ val networkModule = module {
   }
 
   single {
+    // Worker API와 동일한 서버 사용
     val baseUrl = try {
-      if (BuildConfig.BASE_URL.isNullOrBlank()) {
-        "https://www.jikgong.p-e.kr/"
-      } else {
-        BuildConfig.BASE_URL
-      }
+      // Worker와 동일한 서버로 통합
+      "http://59.21.223.137:8080/"
     } catch (e: Exception) {
-      Log.e("NetworkModule", "BuildConfig.BASE_URL not available, using fallback", e)
-      "https://www.jikgong.p-e.kr/"
+      Log.e("NetworkModule", "Error setting BASE_URL, using Worker server", e)
+      "http://59.21.223.137:8080/"
     }
     
     Retrofit.Builder()
