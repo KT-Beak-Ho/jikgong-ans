@@ -38,17 +38,19 @@ import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyLoginPage1ScreenDestination
-import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage4ScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination(start = true)
+@RootNavGraph(start = true)
+@Destination
 @Composable
 fun JikgongApp (
   navigator: DestinationsNavigator,
@@ -86,7 +88,7 @@ Scaffold(
                         doJoinPerson = {
                             showBottomSheet = false
                             // navigator.navigate(JoinPage2Destination)
-                            navigator.navigate(WorkerJoinPage4ScreenDestination)
+                            navigator.navigate(WorkerJoinPage1ScreenDestination)
                                        },
                         doJoinCorp = {
                             showBottomSheet = false
@@ -165,7 +167,7 @@ Scaffold(
           horizontalAlignment = Alignment.CenterHorizontally
         ) {
           Image(
-            painter = painterResource(if (isDark) R.drawable.ic_jikgong_white else R.drawable.ic_jikgong_v1),
+            painter = painterResource(if (isDark) R.drawable.jikjikjik_white else R.drawable.jikjikjik_black),
             contentDescription = "Logo"
           )
           Image(

@@ -55,14 +55,15 @@ val networkModule = module {
   }
 
   single {
+
     // Worker API와 동일한 서버 사용
     val baseUrl = try {
-      // Worker와 동일한 서버로 통합
       "http://59.21.223.137:8080/"
     } catch (e: Exception) {
       Log.e("NetworkModule", "Error setting BASE_URL, using Worker server", e)
       "http://59.21.223.137:8080/"
     }
+
     
     Retrofit.Builder()
       .baseUrl(baseUrl)

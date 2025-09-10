@@ -60,7 +60,7 @@ fun SplashScreen (modifier: Modifier, onTimeout:() -> Unit) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(painter = painterResource(R.drawable.ic_jikgong_white), contentDescription = "Logo")
+            Image(painter = painterResource(R.drawable.jikjikjik_white), contentDescription = "Logo")
             Image(painter = painterResource(R.drawable.ic_example), contentDescription = "example")
         }
     }
