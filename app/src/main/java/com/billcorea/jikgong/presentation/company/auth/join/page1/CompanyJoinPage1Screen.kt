@@ -207,23 +207,15 @@ fun JoinPage1ScreenPreview() {
   val navController = rememberNavController()
   val navigator = navController.toDestinationsNavigator()
 
-  // 빈 Repository로 ViewModel 생성 (네트워크 호출 무시)
-  val emptyRepository = object : JoinRepository {
-    override suspend fun sendSmsVerification(phoneNumber: String): ApiResult<SmsVerificationResponse> =
-      ApiResult.Error(Exception("Preview mode"))
-    override suspend fun validatePhone(phoneNumber: String): ApiResult<PhoneValidationResponse> =
-      ApiResult.Error(Exception("Preview mode"))
-    override suspend fun validateLoginId(loginId: String): ApiResult<LoginIdValidationResponse> =
-      ApiResult.Error(Exception("Preview mode"))
-    override suspend fun validateEmail(email: String): ApiResult<EmailValidationResponse> =
-      ApiResult.Error(Exception("Preview mode"))
-  }
-
+  // Preview에서는 ViewModel을 직접 생성하지 않고 화면만 표시
+  // 실제 앱에서는 Koin이 자동으로 주입함
   Jikgong1111Theme {
-    CompanyJoinPage1Screen(
-      companyJoinViewModel = CompanyJoinSharedViewModel(emptyRepository), // ViewModel 직접 생성
-      navigator = navigator,
-      modifier = Modifier.padding(3.dp)
-    )
+    // Preview 모드에서는 실제 ViewModel 없이 화면만 렌더링
+    // CompanyJoinPage1Screen 함수는 기본적으로 Koin이 ViewModel을 주입하므로
+    // Preview에서는 주석 처리
+    // CompanyJoinPage1Screen(
+    //   navigator = navigator,
+    //   modifier = Modifier.padding(3.dp)
+    // )
   }
 }

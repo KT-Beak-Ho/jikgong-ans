@@ -1,6 +1,16 @@
-# 직직직 사업자(Company) 앱 API 데이터 형식 문서 v7.0
+# 직직직 사업자(Company) 앱 API 데이터 형식 문서 v9.0
 
 ## 📋 변경 이력
+- **2025-01-15 v9.0**: DataStore 구현 및 오류 수정
+  - CompanyDataStore 구현 완료 ✅
+  - DataStore 의존성 추가 (1.1.1) ✅
+  - Preview 함수 Context 오류 수정 ✅
+  - IDE 인덱싱 문제 해결 가이드 추가
+- **2025-01-15 v8.0**: 회원가입 플로우 정밀 분석 및 API 구체화
+  - 3단계 회원가입 프로세스 상세 정의
+  - 각 페이지별 필수 API 엔드포인트 확정
+  - DataStore 연동 방식 명시
+  - 실제 구현 오류 수정 사항 반영
 - **2025-01-15 v7.0**: 전체 API 엔드포인트 재정리
   - 각 화면별 필요 API 상세 정의
   - Request/Response 형식 구체화
@@ -10,21 +20,30 @@
 ## 🔍 구현 상태 요약
 
 ### ✅ 구현 완료
-- SMS 인증 발송/확인
+- SMS 인증 발송/확인 (Worker용)
 - 로그인 (Worker용)
 - ID 중복 확인 (Worker용)
+- **CompanyDataStore (회사 정보 로컬 저장소) ✅ NEW**
+  - 회사 정보 저장/조회 기능
+  - 인증 토큰 관리
+  - 로그인 상태 관리
+  - DataStore 1.1.1 의존성 추가
 
 ### 🔄 부분 구현
+- Company 회원가입 UI (3단계 화면 완료, API 미연동)
 - 프로젝트 CRUD (Repository만 구현, API 미연동)
-- 회원가입 (Worker용만 구현)
+- ID/Email 검증 (UI 구현, Mock 데이터 사용)
 
 ### ⚠️ Mock 데이터 사용
 - Scout (인력 스카우트)
 - Money (자금 관리)
 - Info (사업자 정보)
+- ID 중복 확인 (Company용)
+- Email 형식 확인 (Company용)
 
-### ❌ 미구현
-- Company 전용 회원가입
+### ❌ 미구현 (API)
+- Company 회원가입 최종 제출
+- 사업자등록번호 검증
 - 출근/퇴근 체크
 - 정산/송금
 - AI 매칭
@@ -114,34 +133,29 @@ POST /api/company/auth/register
 
 Request:
 data class CompanyRegisterRequest(
-    val tempToken: String,  // SMS 인증 토큰
+    // Page1에서 수집
+    val phoneNumber: String,  // "01012345678" (하이픈 제외)
+    val verificationCode: String,  // SMS 인증 코드
     
-    // 사업자 정보
-    val businessNumber: String,
-    val companyName: String,
-    val representativeName: String,
-    val businessType: String,
-    val businessAddress: String,
-    val businessDetailAddress: String?,
+    // Page2에서 수집
+    val name: String,  // 대표자명
+    val loginId: String,  // 로그인 ID (중복 확인 완료)
+    val password: String,  // 비밀번호
+    val email: String,  // 이메일 (형식 확인 완료)
+    val businessNumber: String,  // 사업자등록번호
+    val companyName: String,  // 회사명
+    val inquiry: String?,  // 문의사항 (선택)
     
-    // 계정 정보
-    val loginId: String,
-    val password: String,
-    val email: String,
+    // Page3는 완료 안내 화면이므로 데이터 수집 없음
     
-    // 보험 정보
-    val hasInsurance: Boolean,
-    val insuranceType: String?,  // "산재보험", "고용보험", "둘다"
-    val insuranceNumber: String?,
-    
-    // 약관 동의
-    val termsAgree: Boolean,
-    val privacyAgree: Boolean,
-    val marketingAgree: Boolean,
-    
-    // FCM 토큰
-    val deviceToken: String
-)
+    // 서버에서 기본값 설정
+    val businessType: String? = null,  // 추후 프로필에서 설정
+    val businessAddress: String? = null,  // 추후 프로필에서 설정
+    val hasInsurance: Boolean = false,  // 추후 설정
+    val termsAgree: Boolean = true,  // 가입 시 자동 동의
+    val privacyAgree: Boolean = true,  // 가입 시 자동 동의
+    val marketingAgree: Boolean = false,  // 기본값 false
+    val deviceToken: String? = null  // FCM 토큰 (선택)
 
 Response:
 data class CompanyRegisterResponse(
@@ -174,7 +188,7 @@ data class CompanyLoginResponse(
 )
 ```
 
-### 1.6 ID 중복 확인 ⚠️
+### 1.6 ID 중복 확인 ⚠️ (Company용 미구현)
 ```kotlin
 POST /api/company/auth/check-id
 
@@ -191,7 +205,7 @@ data class CheckIdResponse(
 )
 ```
 
-### 1.7 이메일 중복 확인 ❌
+### 1.7 이메일 형식 확인 ⚠️ (Mock 데이터 사용)
 ```kotlin
 POST /api/company/auth/check-email
 
@@ -1234,40 +1248,101 @@ data class RefreshTokenResponse(
 
 ---
 
-## 11. 구현 우선순위
+## 11. 구현 우선순위 및 현황
 
-### 🔴 1순위 (핵심 기능)
-1. Company 회원가입 API
-2. 프로젝트 CRUD API
-3. 일자리 생성/조회 API
-4. 출근 체크 API
+### 🔴 1순위 (핵심 기능) - 진행중
+1. **Company 회원가입 API** 🔄
+   - Page1: SMS 인증 UI ✅, API ❌
+   - Page2: 정보 입력 UI ✅, ID/Email 검증 Mock ⚠️
+   - Page3: 완료 안내 UI ✅
+   - 최종 제출 API ❌
+   - CompanyDataStore 연동 ✅
+
+2. **프로젝트 CRUD API** 🔄
+   - UI 구현 ✅
+   - Repository 구현 ✅
+   - API 연동 ❌
+   - CompanyDataStore에서 회사명 조회 필요
+
+3. **일자리 생성/조회 API** ❌
+4. **출근 체크 API** ❌
 
 ### 🟡 2순위 (차별화 기능)
-1. Scout 인력 검색/제안 API
-2. Money 정산/송금 API
-3. 절감액 통계 API
-4. AI 매칭 API
+1. Scout 인력 검색/제안 API ⚠️ (Mock)
+2. Money 정산/송금 API ⚠️ (Mock)
+3. 절감액 통계 API ⚠️ (Mock)
+4. AI 매칭 API ❌
 
 ### 🟢 3순위 (부가 기능)
-1. 프로필/통계 API
-2. 알림 시스템 API
-3. 공지사항 API
-4. 임시저장 API
+1. 프로필/통계 API ⚠️ (Mock)
+2. 알림 시스템 API ❌
+3. 공지사항 API ❌
+4. 임시저장 API ❌
 
 ---
 
 ## 📝 참고사항
 
+### 회원가입 플로우 상세
+1. **Page1 (SMS 인증)**
+   - 전화번호 입력 (010XXXXXXXX 형식)
+   - SMS 인증코드 발송 및 확인
+   - 성공 시 Page2로 이동
+
+2. **Page2 (필수 정보)**
+   - 대표자명, ID, 비밀번호, 이메일
+   - 사업자등록번호, 회사명
+   - 문의사항 (선택)
+   - ID 중복 확인 버튼, Email 형식 확인 버튼
+
+3. **Page3 (완료 안내)**
+   - 신청 완료 메시지
+   - 홈으로 이동 버튼
+
+### 데이터 형식
 1. **날짜 형식**: ISO 8601 (YYYY-MM-DD, HH:mm:ss)
 2. **금액 단위**: 원(KRW), Long 타입 사용
 3. **좌표 체계**: WGS84 (위도, 경도)
 4. **문자 인코딩**: UTF-8
 5. **이미지**: Base64 또는 S3 URL
 6. **에러 처리**: 모든 API는 공통 에러 형식 사용
+7. **전화번호**: 하이픈 제외 (01012345678)
 
 ---
 
-문서 버전: v7.0
+## 🔧 즉시 수정 필요 사항
+
+### ✅ 완료된 수정 사항
+1. **ViewModelModule.kt**
+   - CompanyJoinSharedViewModel에 Context 주입 ✅ 완료
+   - ProjectCreateViewModel에 Context 주입 ✅ 완료
+
+2. **CompanyJoinSharedViewModel.kt**
+   - Context 파라미터 추가 ✅ 완료
+   - CompanyDataStore 인스턴스 생성 ✅ 완료
+
+3. **Preview 함수 오류 수정**
+   - CompanyJoinPage1, 2, 3 Preview 함수 수정 ✅ 완료
+   - Context 파라미터 누락 문제 해결 ✅ 완료
+
+4. **DataStore 의존성**
+   - androidx.datastore:datastore-preferences:1.1.1 추가 ✅ 완료
+   - Import 문 정리 (와일드카드 → 개별 import) ✅ 완료
+
+### ⚠️ 남은 작업
+1. **JoinRepository 구현**
+   - ID 중복 확인 API (Company용) 구현 필요
+   - Email 형식 확인 API 구현 필요
+   - 회원가입 최종 제출 API 구현 필요
+
+2. **CompanyDataStore 활용**
+   - 회원가입 성공 시 데이터 저장 로직 추가 필요
+   - 로그인 시 토큰 저장 로직 추가 필요
+   - 프로젝트 생성 시 회사 정보 조회 연동 필요
+
+---
+
+문서 버전: v9.0
 최종 업데이트: 2025-01-15
 작성자: 직직직 개발팀
 용도: 사업자(Company) 앱 API 명세서

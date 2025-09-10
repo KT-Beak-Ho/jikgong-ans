@@ -21,7 +21,7 @@ val viewModelModule = module {
   viewModel { WorkerLoginViewModel() }
 
   // Company Auth
-  viewModel { CompanyJoinSharedViewModel(get()) }  // JoinRepository 주입
+  viewModel { CompanyJoinSharedViewModel(get(), get()) }  // JoinRepository, Context 주입
   viewModel { CompanyLoginSharedViewModel(get()) } // LoginRepository 주입
 
   // Company 공통 (싱글톤으로 관리)
@@ -34,7 +34,7 @@ val viewModelModule = module {
   viewModel { ProjectListViewModel(get()) }  // ProjectRepository 주입
 
   // Company ProjectCreate
-  viewModel { ProjectCreateViewModel(get()) }  // ProjectCreateRepository 주입
+  viewModel { ProjectCreateViewModel(get(), get()) }  // ProjectCreateRepository, Context 주입
 
   // 기타 기존 ViewModels...
 }
