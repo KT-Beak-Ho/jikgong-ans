@@ -10,6 +10,8 @@ import com.billcorea.jikgong.api.repository.company.main.projectList.ProjectRepo
 import com.billcorea.jikgong.api.repository.company.main.projectList.ProjectRepositoryImpl
 import com.billcorea.jikgong.api.repository.company.main.projectList.projectCreate.ProjectCreateRepository
 import com.billcorea.jikgong.api.repository.company.main.projectList.projectCreate.ProjectCreateRepositoryImpl
+import com.billcorea.jikgong.api.repository.company.main.projectList.projectDetail.ProjectDetailRepository
+import com.billcorea.jikgong.api.repository.company.main.projectList.projectDetail.ProjectDetailRepositoryImpl
 import org.koin.dsl.module
 
 val repositoryModule = module {
@@ -27,4 +29,7 @@ val repositoryModule = module {
   single<ProjectCreateRepository> {
     ProjectCreateRepositoryImpl(get())  // get()으로 ProjectRepository 자동 주입
   }
+
+  // ProjectDetail
+  single<ProjectDetailRepository> { ProjectDetailRepositoryImpl() }
 }

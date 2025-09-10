@@ -6,6 +6,7 @@ import com.billcorea.jikgong.presentation.company.main.common.CompanySharedViewM
 import com.billcorea.jikgong.presentation.company.main.info.presentation.viewmodel.CompanyInfoViewModel
 import com.billcorea.jikgong.presentation.company.main.projectlist.presentation.viewmodel.ProjectListViewModel
 import com.billcorea.jikgong.presentation.company.main.projectlist.feature.create.viewmodel.ProjectCreateViewModel
+import com.billcorea.jikgong.presentation.company.main.projectlist.projectDetail.viewmodel.ProjectDetailViewModel
 import com.billcorea.jikgong.presentation.worker.auth.join.shared.WorkerJoinSharedViewModel
 import com.billcorea.jikgong.presentation.worker.login.shared.WorkerLoginViewModel
 import com.billcorea.jikgong.utils.MainViewModel
@@ -35,6 +36,9 @@ val viewModelModule = module {
 
   // Company ProjectCreate
   viewModel { ProjectCreateViewModel(get(), get()) }  // ProjectCreateRepository, Context 주입
+
+  // Company ProjectDetail
+  viewModel { ProjectDetailViewModel() }  // Repository는 내부에서 inject
 
   // 기타 기존 ViewModels...
 }
