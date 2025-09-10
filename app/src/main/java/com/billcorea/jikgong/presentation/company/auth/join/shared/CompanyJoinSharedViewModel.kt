@@ -1,8 +1,10 @@
 package com.billcorea.jikgong.presentation.company.auth.join.shared
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.billcorea.jikgong.api.repository.join.JoinRepository
+import com.billcorea.jikgong.data.datastore.CompanyDataStore
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants.TOTAL_PAGES
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,8 +12,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class CompanyJoinSharedViewModel(
-  private val joinRepository: JoinRepository
+  private val joinRepository: JoinRepository,
+  private val context: Context
 ) : ViewModel() {
+  
+  private val companyDataStore = CompanyDataStore(context)
 
   private val _uiState = MutableStateFlow(CompanyJoinSharedUiState())
   val uiState: StateFlow<CompanyJoinSharedUiState> = _uiState.asStateFlow()
@@ -304,36 +309,37 @@ class CompanyJoinSharedViewModel(
     viewModelScope.launch {
       _uiState.value = _uiState.value.copy(isWaiting = true)
 
-      joinRepository.validatePhone(email)
+      joinRepository.validateEmail(email)
         .onSuccess { response ->
-          // 성공 시 ID가 사용 가능함을 의미 (서버에 등록되지 않음)
+          // 성공(200) = Email 사용 가능
           _uiState.value = _uiState.value.copy(
-            isSecurityStepActive = true,
-            isPhoneNumberAvailable = true,
+            isEmailAvailable = true,
             isWaiting = false,
-            errorMessage = null
+            errorMessage = null,
+            emailCheckMessage = "사용 가능한 이메일입니다"
           )
         }
         .onError { error ->
           _uiState.value = _uiState.value.copy(
-            isPhoneNumberAvailable = false,
+            isEmailAvailable = false,
             isWaiting = false,
-            isSecurityStepActive=false,
-            errorMessage = "네트워크 오류: ${error.message}"
+            errorMessage = "네트워크 오류: ${error.message}",
+            emailCheckMessage = null
           )
         }
         .onHttpError { code, message, errorBody ->
           val errorMessage = when (code) {
-            409 -> "이미 등록된 전화번호입니다"
-            400 -> "잘못된 전화번호 형식입니다"
+            409 -> "이미 사용중인 이메일입니다"
+            422 -> "유효하지 않은 이메일 형식입니다"
+            400 -> "잘못된 요청입니다"
             500 -> "서버 오류가 발생했습니다"
             else -> "HTTP $code: $message"
           }
           _uiState.value = _uiState.value.copy(
-            isPhoneNumberAvailable = false,
+            isEmailAvailable = false,
             isWaiting = false,
-            isSecurityStepActive=false,
-            errorMessage = errorMessage
+            errorMessage = errorMessage,
+            emailCheckMessage = errorMessage
           )
         }
     }
