@@ -33,6 +33,7 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Work
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Proposal
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProposalStatus
 import com.billcorea.jikgong.presentation.company.main.scout.presentation.viewmodel.CompanyScoutViewModel
+import com.billcorea.jikgong.presentation.company.main.scout.presentation.viewmodel.ScoutNavigationEvent
 import com.billcorea.jikgong.presentation.company.main.scout.feature.pages.WorkerListPage
 import com.billcorea.jikgong.presentation.company.main.scout.feature.pages.ProposalListPage
 import com.billcorea.jikgong.presentation.company.main.scout.feature.pages.LocationSettingPage
@@ -54,11 +55,35 @@ fun CompanyScoutMainScreen(
     viewModel: CompanyScoutViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val navigationEvent by viewModel.navigationEvent.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState(pageCount = { 3 }) // 3개 탭: 인력 목록, 제안 목록, 위치 설정
     val coroutineScope = rememberCoroutineScope()
     
     // 새로고침 완료 알림을 위한 상태
     val snackbarHostState = remember { SnackbarHostState() }
+    
+    // 네비게이션 이벤트 처리
+    LaunchedEffect(navigationEvent) {
+        navigationEvent?.let { event ->
+            when (event) {
+                is ScoutNavigationEvent.NavigateToWorkerDetail -> {
+                    // 근로자 상세 화면으로 이동
+                    navController.navigate("worker_detail/${event.workerId}")
+                    viewModel.clearNavigationEvent()
+                }
+                is ScoutNavigationEvent.MakePhoneCall -> {
+                    // 전화 걸기 (실제 구현에서는 Intent 사용)
+                    // val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${event.phoneNumber}"))
+                    // context.startActivity(intent)
+                    viewModel.clearNavigationEvent()
+                }
+                ScoutNavigationEvent.NavigateBack -> {
+                    navController.popBackStack()
+                    viewModel.clearNavigationEvent()
+                }
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -268,7 +293,8 @@ fun CompanyScoutMainScreen(
         ) {
             ProposalDetailBottomSheetContent(
                 proposal = proposal,
-                onDismiss = { viewModel.dismissProposalDetail() }
+                onDismiss = { viewModel.dismissProposalDetail() },
+                viewModel = viewModel
             )
         }
     }
@@ -277,7 +303,8 @@ fun CompanyScoutMainScreen(
 @Composable
 private fun ProposalDetailBottomSheetContent(
     proposal: Proposal,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    viewModel: CompanyScoutViewModel
 ) {
     Column(
         modifier = Modifier
@@ -362,7 +389,9 @@ private fun ProposalDetailBottomSheetContent(
         if (proposal.status == ProposalStatus.ACCEPTED && proposal.workerPhone != null) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { /* 전화 걸기 */ },
+                onClick = { 
+                    viewModel.makePhoneCall(proposal.workerPhone)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7BFF))
             ) {

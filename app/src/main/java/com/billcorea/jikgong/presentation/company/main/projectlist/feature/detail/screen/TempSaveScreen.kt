@@ -1,9 +1,11 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.feature.detail.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -19,20 +21,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.TempSavedJob
 import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
-// 임시저장 데이터
-data class TempSavePost(
-  val id: String,
-  val title: String,
-  val saveDate: LocalDateTime
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination
@@ -41,19 +37,13 @@ fun TempSaveScreen(
   navController: NavController,
   modifier: Modifier = Modifier
 ) {
-  // 샘플 임시저장 데이터 (빈 리스트로 시작해서 없는 경우 테스트 가능)
-  var tempSavePosts by remember { 
-    mutableStateOf(
-      listOf(
-        TempSavePost("1", "아파트 신축공사 철근 작업자 모집", LocalDateTime.now().minusDays(1)),
-        TempSavePost("2", "사무실 인테리어 목공 인력 모집", LocalDateTime.now().minusDays(3)),
-        TempSavePost("3", "상가건물 전기공 모집", LocalDateTime.now().minusDays(7))
-      )
-    )
+  // CompanyMockDataFactory에서 임시저장 데이터 가져오기
+  var tempSavedJobs by remember { 
+    mutableStateOf(CompanyMockDataFactory.getTempSavedJobs())
   }
   
   var showDeleteDialog by remember { mutableStateOf(false) }
-  var selectedPost by remember { mutableStateOf<TempSavePost?>(null) }
+  var selectedJob by remember { mutableStateOf<TempSavedJob?>(null) }
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
@@ -72,7 +62,7 @@ fun TempSaveScreen(
     ) {
       Divider(thickness = 1.dp, color = Color.LightGray)
       
-      if (tempSavePosts.isEmpty()) {
+      if (tempSavedJobs.isEmpty()) {
         // 임시저장글이 없는 경우
         Box(
           modifier = Modifier
@@ -104,19 +94,23 @@ fun TempSaveScreen(
                 color = Color.Gray
               )
               Text(
-                text = "${tempSavePosts.size}건",
+                text = "${tempSavedJobs.size}건",
                 style = AppTypography.bodyMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF4B7BFF)
+                color = appColorScheme.primary
               )
             }
           }
           
-          items(tempSavePosts) { post ->
+          items(tempSavedJobs) { job ->
             TempSaveCard(
-              post = post,
+              job = job,
+              onLoadClick = {
+                // 임시저장된 내용을 불러와서 새 공고 작성 화면으로 이동
+                navController.navigate("job_registration/${job.id}")
+              },
               onDeleteClick = {
-                selectedPost = post
+                selectedJob = job
                 showDeleteDialog = true
               }
             )
@@ -127,16 +121,16 @@ fun TempSaveScreen(
   }
   
   // 삭제 확인 다이얼로그
-  if (showDeleteDialog && selectedPost != null) {
+  if (showDeleteDialog && selectedJob != null) {
     DeleteConfirmDialog(
       onDismiss = { 
         showDeleteDialog = false
-        selectedPost = null
+        selectedJob = null
       },
       onConfirm = {
-        tempSavePosts = tempSavePosts.filter { it.id != selectedPost?.id }
+        tempSavedJobs = tempSavedJobs.filter { it.id != selectedJob?.id }
         showDeleteDialog = false
-        selectedPost = null
+        selectedJob = null
       }
     )
   }
@@ -144,55 +138,132 @@ fun TempSaveScreen(
 
 @Composable
 private fun TempSaveCard(
-  post: TempSavePost,
+  job: TempSavedJob,
+  onLoadClick: () -> Unit,
   onDeleteClick: () -> Unit
 ) {
+  val dateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+  
   Card(
-    modifier = Modifier.fillMaxWidth(),
+    modifier = Modifier
+      .fillMaxWidth()
+      .clickable { onLoadClick() },
     shape = RoundedCornerShape(12.dp),
     colors = CardDefaults.cardColors(containerColor = Color.White),
     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
   ) {
-    Row(
+    Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(16.dp),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
+        .padding(16.dp)
     ) {
-      // 좌측 정보
-      Column(
-        modifier = Modifier.weight(1f)
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
       ) {
-        // 임시저장 날짜
-        Text(
-          text = post.saveDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm")),
-          style = AppTypography.bodySmall,
-          color = Color.Gray
-        )
+        // 좌측 정보
+        Column(
+          modifier = Modifier.weight(1f)
+        ) {
+          // 임시저장 날짜
+          Text(
+            text = "임시저장: ${job.savedDate.format(dateFormatter)}",
+            style = AppTypography.bodySmall,
+            color = Color.Gray
+          )
+          
+          Spacer(modifier = Modifier.height(4.dp))
+          
+          // 제목
+          Text(
+            text = job.title,
+            style = AppTypography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = Color.Black
+          )
+          
+          Spacer(modifier = Modifier.height(4.dp))
+          
+          // 상세 정보
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            if (job.jobType.isNotEmpty()) {
+              Text(
+                text = job.jobType,
+                style = AppTypography.bodySmall,
+                color = Color(0xFF666666)
+              )
+            }
+            if (job.location.isNotEmpty()) {
+              Text(
+                text = "• ${job.location}",
+                style = AppTypography.bodySmall,
+                color = Color(0xFF666666)
+              )
+            }
+          }
+        }
+        
+        // 우측 삭제 버튼
+        IconButton(
+          onClick = onDeleteClick,
+          modifier = Modifier.size(24.dp)
+        ) {
+          Icon(
+            Icons.Default.Delete,
+            contentDescription = "삭제",
+            tint = Color.Gray,
+            modifier = Modifier.size(20.dp)
+          )
+        }
+      }
+      
+      Spacer(modifier = Modifier.height(12.dp))
+      
+      // 작성 진행률
+      Column {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+          Text(
+            text = "작성 진행률",
+            style = AppTypography.bodySmall,
+            color = Color.Gray
+          )
+          Text(
+            text = "${job.completionRate}%",
+            style = AppTypography.bodySmall,
+            fontWeight = FontWeight.Medium,
+            color = if (job.completionRate == 100) appColorScheme.primary else Color(0xFF666666)
+          )
+        }
         
         Spacer(modifier = Modifier.height(4.dp))
         
-        // 게시물 이름
-        Text(
-          text = post.title,
-          style = AppTypography.bodyMedium,
-          fontWeight = FontWeight.Medium,
-          color = Color.Black
-        )
-      }
-      
-      // 우측 삭제 버튼
-      IconButton(
-        onClick = onDeleteClick,
-        modifier = Modifier.size(24.dp)
-      ) {
-        Icon(
-          Icons.Default.Delete,
-          contentDescription = "삭제",
-          tint = Color.Gray,
-          modifier = Modifier.size(20.dp)
-        )
+        // 진행률 바
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(4.dp)
+            .background(
+              color = Color(0xFFE0E0E0),
+              shape = RoundedCornerShape(2.dp)
+            )
+        ) {
+          Box(
+            modifier = Modifier
+              .fillMaxWidth(job.completionRate / 100f)
+              .fillMaxHeight()
+              .background(
+                color = if (job.completionRate == 100) appColorScheme.primary else Color(0xFF90CAF9),
+                shape = RoundedCornerShape(2.dp)
+              )
+          )
+        }
       }
     }
   }

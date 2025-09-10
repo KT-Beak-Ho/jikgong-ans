@@ -214,8 +214,23 @@ internal fun ProjectCreateScreenContent(
             .padding(16.dp),
           horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+          var showCancelDialog by remember { mutableStateOf(false) }
+          
           OutlinedButton(
-            onClick = onNavigateBack,
+            onClick = { 
+              // 작성된 내용이 있는지 확인
+              val hasContent = uiState.projectName.isNotBlank() || 
+                              uiState.category.isNotBlank() || 
+                              uiState.maxApplicants.isNotBlank() || 
+                              uiState.wage.isNotBlank() ||
+                              uiState.description.isNotBlank()
+              
+              if (hasContent) {
+                showCancelDialog = true
+              } else {
+                onNavigateBack()
+              }
+            },
             modifier = Modifier.weight(1f)
           ) {
             Text("취소")
@@ -288,6 +303,53 @@ internal fun ProjectCreateScreenContent(
                   onClick = { showValidationDialog = false }
                 ) {
                   Text("확인")
+                }
+              },
+              containerColor = Color.White
+            )
+          }
+          
+          // 취소 시 임시저장 다이얼로그
+          if (showCancelDialog) {
+            AlertDialog(
+              onDismissRequest = { showCancelDialog = false },
+              title = { 
+                Text(
+                  "임시저장",
+                  fontWeight = FontWeight.Bold
+                )
+              },
+              text = { 
+                Text("작성 중인 내용을 임시저장하시겠습니까?")
+              },
+              confirmButton = {
+                Row(
+                  horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                  TextButton(
+                    onClick = { 
+                      showCancelDialog = false
+                      onNavigateBack()
+                    }
+                  ) {
+                    Text("삭제", color = Color(0xFFE57373))
+                  }
+                  TextButton(
+                    onClick = { 
+                      // TODO: 임시저장 로직 구현
+                      showCancelDialog = false
+                      onNavigateBack()
+                    }
+                  ) {
+                    Text("임시저장", color = Color(0xFF4B7BFF))
+                  }
+                }
+              },
+              dismissButton = {
+                TextButton(
+                  onClick = { showCancelDialog = false }
+                ) {
+                  Text("계속 작성")
                 }
               },
               containerColor = Color.White
