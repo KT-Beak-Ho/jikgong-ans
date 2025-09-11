@@ -16,6 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.net.Uri
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Proposal
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ProposalStatus
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -226,11 +229,18 @@ fun ProposalCard(
       // 수락된 경우 연락처 표시 (인라인으로)
       if (proposal.status == ProposalStatus.ACCEPTED && proposal.workerPhone != null) {
         Spacer(modifier = Modifier.height(6.dp))
+        val context = LocalContext.current
         Row(
           modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(6.dp))
-            .clickable { /* TODO: 전화 걸기 */ }
+            .clickable { 
+              val phoneNumber = "tel:${proposal.workerPhone.replace("-", "")}"
+              val intent = Intent(Intent.ACTION_DIAL).apply {
+                data = Uri.parse(phoneNumber)
+              }
+              context.startActivity(intent)
+            }
             .background(Color(0xFF4B7BFF).copy(alpha = 0.1f))
             .padding(8.dp),
           verticalAlignment = Alignment.CenterVertically,

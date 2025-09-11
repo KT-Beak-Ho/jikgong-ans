@@ -10,6 +10,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import android.util.Log
+import com.billcorea.jikgong.api.service.RetrofitAPI
+import com.billcorea.jikgong.api.models.auth.SmsVerificationRequest
+import com.billcorea.jikgong.api.models.auth.SmsVerificationResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class CompanyJoinSharedViewModel(
   private val joinRepository: JoinRepository,
@@ -55,21 +62,37 @@ class CompanyJoinSharedViewModel(
   }
 
   /**
-   * 전화번호 양식 검증 함수
+   * 전화번호 양식 검증 함수 - 다양한 형식 지원
+   * 지원 형식: 010-1234-5678, 01012345678, 010 1234 5678 등
+   * 010으로 시작하는 번호는 반드시 11자리여야 함
    */
   private fun validatePhoneNumber(phoneNumber: String) {
     val errors = _uiState.value.validationErrors.toMutableMap()
+    
+    // 숫자만 추출 (하이픈, 공백, 괄호 등 모든 특수문자 제거)
+    val digitsOnly = phoneNumber.replace(Regex("[^0-9]"), "")
+    
     val isValid = when {
       phoneNumber.isEmpty() -> {
-        errors["phoneNumber"] = "기업 전화번호를 입력해주세요"
+        errors["phoneNumber"] = "휴대폰 번호를 입력해주세요"
         false
       }
-
-      !phoneNumber.matches(Regex("^010\\d{8}$")) -> {
-        errors["phoneNumber"] = "올바른 기업 전화번호 형식이 아닙니다"
+      digitsOnly.startsWith("010") && digitsOnly.length != 11 -> {
+        errors["phoneNumber"] = "010 번호는 11자리여야 합니다 (현재: ${digitsOnly.length}자리)"
         false
       }
-
+      !digitsOnly.startsWith("010") && digitsOnly.length != 10 && digitsOnly.length != 11 -> {
+        errors["phoneNumber"] = "올바른 휴대폰 번호를 입력해주세요"
+        false
+      }
+      digitsOnly.length == 11 && !digitsOnly.startsWith("01") -> {
+        errors["phoneNumber"] = "올바른 휴대폰 번호 형식이 아닙니다"
+        false
+      }
+      digitsOnly.length == 10 && !digitsOnly.startsWith("01") -> {
+        errors["phoneNumber"] = "올바른 휴대폰 번호 형식이 아닙니다"
+        false
+      }
       else -> {
         errors.remove("phoneNumber")
         true
@@ -87,8 +110,10 @@ class CompanyJoinSharedViewModel(
   private fun checkPhoneNumberRegist(phone: String) {
     viewModelScope.launch {
       _uiState.value = _uiState.value.copy(isWaiting = true)
-
-      joinRepository.validatePhone(phone)
+      
+      // 숫자만 추출하여 API 호출
+      val cleanPhone = phone.replace(Regex("[^0-9]"), "")
+      joinRepository.validatePhone(cleanPhone)
         .onSuccess { response ->
           // 성공 시 전화번호가 사용 가능함을 의미 (서버에 등록되지 않음)
           _uiState.value = _uiState.value.copy(
@@ -124,42 +149,37 @@ class CompanyJoinSharedViewModel(
   }
 
   /**
-   * 인증코드 발송 요청
+   * 인증코드 발송 요청 - 노동자와 동일한 방식
    */
   private fun doSmsVerification(phone: String) {
-    viewModelScope.launch {
-      _uiState.value = _uiState.value.copy(isWaiting = true)
+    // 숫자만 추출하여 SMS 인증 요청
+    val cleanPhone = phone.replace(Regex("[^0-9]"), "")
+    val smsBody = SmsVerificationRequest(cleanPhone)
+    RetrofitAPI.create().smsVerification(smsBody).enqueue(object :
+      Callback<SmsVerificationResponse> {
+      override fun onResponse(
+        call: Call<SmsVerificationResponse>,
+        response: Response<SmsVerificationResponse>
+      ) {
+        Log.e("CompanyJoin", "SMS response ${response.body()?.data?.authCode}")
+        _uiState.value = _uiState.value.copy(
+          authCode = response.body()?.data?.authCode,
+          isWaiting = false,
+          isSecurityStepActive = true,
+          errorMessage = null,
+          isPhoneNumberAvailable = true
+        )
+      }
 
-      joinRepository.sendSmsVerification(phone)
-        .onSuccess { response ->
-          _uiState.value = _uiState.value.copy(
-            authCode = response.verificationId ?: "",
-            isWaiting = false,
-            isSecurityStepActive = true,
-            errorMessage = null
-          )
-        }
-        .onError { error ->
-          _uiState.value = _uiState.value.copy(
-            isWaiting = false,
-            errorMessage = "SMS 발송 실패: ${error.message}"
-          )
-        }
-        .onHttpError { code, message, errorBody ->
-          val errorMessage = when (code) {
-            400 -> "잘못된 전화번호입니다"
-            408 -> "네트워크 지연(요청실패)"
-            429 -> "요청이 너무 많습니다. 잠시 후 다시 시도해주세요"
-            500 -> "서버 오류로 SMS 발송에 실패했습니다"
-            else -> "SMS 발송 실패: HTTP $code"
-          }
-//          Log.e("SMS", "Final error message: $errorMessage")
-          _uiState.value = _uiState.value.copy(
-            isWaiting = false,
-            errorMessage = errorMessage
-          )
-        }
-    }
+      override fun onFailure(call: Call<SmsVerificationResponse>, t: Throwable) {
+        Log.e("CompanyJoin", "SMS error ${t.localizedMessage}")
+        // 실패 시에도 isWaiting = false로 변경
+        _uiState.value = _uiState.value.copy(
+          isWaiting = false,
+          errorMessage = "SMS 발송 실패: ${t.localizedMessage}"
+        )
+      }
+    })
   }
 
   /**
@@ -168,6 +188,9 @@ class CompanyJoinSharedViewModel(
   private fun validateAuthCode(verificationCode: String) {
     val currentState = _uiState.value
     val errors = currentState.validationErrors.toMutableMap()
+    
+    // 디버그용 로그
+    Log.d("CompanyJoin", "Validating - User input: $verificationCode, Server code: ${currentState.authCode}")
 
     val isValid = when {
       verificationCode.isEmpty() -> {
@@ -177,11 +200,13 @@ class CompanyJoinSharedViewModel(
 
       verificationCode != currentState.authCode -> {
         errors["verificationCode"] = "인증번호가 일치하지 않습니다"
+        Log.d("CompanyJoin", "Verification failed - codes don't match")
         false
       }
 
       else -> {
         errors.remove("verificationCode")
+        Log.d("CompanyJoin", "Verification successful!")
         true
       }
     }
@@ -282,21 +307,57 @@ class CompanyJoinSharedViewModel(
   /**
    * 비밀번호 입력 검증 함수
    */
-  private fun validateUserPwd(pwd: String) {
+  private fun validateUserPassword(password: String) {
     val currentState = _uiState.value
     val errors = currentState.validationErrors.toMutableMap()
 
     val isValid = when {
-      pwd.isEmpty() -> {
-        errors["pwd"] = "비밀번호를 입력해주세요"
+      password.isEmpty() -> {
+        errors["password"] = "비밀번호를 입력해주세요"
         false
       }
-
+      password.length < 8 -> {
+        errors["password"] = "비밀번호는 8자 이상이어야 합니다"
+        false
+      }
       else -> {
-        errors.remove("pwd")
+        errors.remove("password")
         true
       }
     }
+    
+    // 비밀번호 확인 필드도 재검증
+    if (currentState.passwordConfirm.isNotEmpty()) {
+      validatePasswordConfirm(currentState.passwordConfirm)
+    }
+    
+    _uiState.value = currentState.copy(
+      validationErrors = errors,
+    )
+  }
+  
+  /**
+   * 비밀번호 확인 검증 함수
+   */
+  private fun validatePasswordConfirm(passwordConfirm: String) {
+    val currentState = _uiState.value
+    val errors = currentState.validationErrors.toMutableMap()
+    
+    val isValid = when {
+      passwordConfirm.isEmpty() -> {
+        errors["passwordConfirm"] = "비밀번호 확인을 입력해주세요"
+        false
+      }
+      passwordConfirm != currentState.password -> {
+        errors["passwordConfirm"] = "비밀번호가 일치하지 않습니다"
+        false
+      }
+      else -> {
+        errors.remove("passwordConfirm")
+        true
+      }
+    }
+    
     _uiState.value = currentState.copy(
       validationErrors = errors,
     )
@@ -372,22 +433,27 @@ class CompanyJoinSharedViewModel(
   }
 
   /**
-   * 사업자 번호 임력 검증 함수
+   * 사업자 번호 입력 검증 함수 - 다양한 형식 지원
+   * 지원 형식: 123-45-67890, 1234567890, 123 45 67890 등
+   * 10자리만 확인, 체크섬 검증 없음
    */
   private fun validateBusinessNumber(businessNumber: String) {
     val errors = _uiState.value.validationErrors.toMutableMap()
+    
+    // 숫자만 추출 (하이픈, 공백, 대시 등 모든 특수문자 제거)
+    val digitsOnly = businessNumber.replace(Regex("[^0-9]"), "")
+    
     val isValid = when {
       businessNumber.isEmpty() -> {
         errors["businessNumber"] = "사업자 등록번호를 입력해주세요"
         false
       }
-
-      !businessNumber.matches(Regex("^\\d{3}-\\d{2}-\\d{5}$")) -> {
-        errors["businessNumber"] = "올바른 사업자 등록번호 형식이 아닙니다"
+      digitsOnly.length != 10 -> {
+        errors["businessNumber"] = "사업자 등록번호는 10자리여야 합니다 (현재: ${digitsOnly.length}자리)"
         false
       }
-
       else -> {
+        // 10자리면 바로 통과
         errors.remove("businessNumber")
         true
       }
@@ -395,6 +461,25 @@ class CompanyJoinSharedViewModel(
     _uiState.value = _uiState.value.copy(
       validationErrors = errors,
     )
+  }
+  
+  /**
+   * 사업자 번호 체크섬 검증 (대한민국 사업자번호 검증 알고리즘)
+   */
+  private fun validateBusinessNumberChecksum(businessNumber: String): Boolean {
+    if (businessNumber.length != 10) return false
+    
+    val checkArray = intArrayOf(1, 3, 7, 1, 3, 7, 1, 3, 5)
+    var sum = 0
+    
+    for (i in 0..8) {
+      sum += (businessNumber[i] - '0') * checkArray[i]
+    }
+    
+    sum += ((businessNumber[8] - '0') * 5) / 10
+    val checkDigit = (10 - (sum % 10)) % 10
+    
+    return checkDigit == (businessNumber[9] - '0')
   }
 
   /**
@@ -421,6 +506,92 @@ class CompanyJoinSharedViewModel(
   }
 
   /**
+   * 회원가입 최종 제출 - API 연동
+   */
+  private fun submitRegistration() {
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isWaiting = true, errorMessage = null)
+      
+      val state = _uiState.value
+      
+      // 회원가입 API 호출 - 숫자만 추출하여 전송
+      joinRepository.registerCompany(
+        phoneNumber = state.phoneNumber.replace(Regex("[^0-9]"), ""), // 모든 특수문자 제거
+        verificationCode = state.verificationCode,
+        name = state.name,
+        loginId = state.id,
+        password = state.password,
+        email = state.email,
+        businessNumber = state.businessNumber.replace(Regex("[^0-9]"), ""), // 모든 특수문자 제거
+        companyName = state.companyName,
+        inquiry = state.inquiry.ifEmpty { null }
+      ).onSuccess { response ->
+        // 회원가입 성공 - CompanyDataStore에 정보 저장
+        if (response.success && response.companyId != null) {
+          // 회사 정보 저장
+          companyDataStore.saveCompanyInfo(
+            CompanyDataStore.CompanyInfo(
+              companyId = response.companyId,
+              companyName = state.companyName,
+              businessNumber = state.businessNumber,
+              representativeName = state.name,
+              businessType = "", // 추후 프로필에서 설정
+              businessAddress = "", // 추후 프로필에서 설정
+              email = state.email,
+              phone = state.phoneNumber,
+              loginId = state.id,
+              membershipType = "BASIC"
+            )
+          )
+          
+          // 토큰 저장 (자동 로그인)
+          if (response.accessToken != null && response.refreshToken != null) {
+            companyDataStore.saveAuthTokens(
+              CompanyDataStore.AuthTokens(
+                accessToken = response.accessToken,
+                refreshToken = response.refreshToken,
+                isLoggedIn = true
+              )
+            )
+          }
+          
+          // 성공 상태로 업데이트
+          _uiState.value = _uiState.value.copy(
+            isWaiting = false,
+            isRegistrationComplete = true,
+            currentPage = 3 // Page3로 이동
+          )
+          
+          // Page3로 네비게이션
+          _shouldNavigateToNextPage.value = true
+        } else {
+          _uiState.value = _uiState.value.copy(
+            isWaiting = false,
+            errorMessage = response.message ?: "회원가입 실패"
+          )
+        }
+      }.onError { error ->
+        _uiState.value = _uiState.value.copy(
+          isWaiting = false,
+          errorMessage = "네트워크 오류: ${error.message}"
+        )
+      }.onHttpError { code, message, errorBody ->
+        val errorMessage = when (code) {
+          400 -> "입력 정보를 확인해주세요"
+          409 -> "이미 가입된 정보입니다"
+          422 -> "유효하지 않은 정보입니다"
+          500 -> "서버 오류가 발생했습니다"
+          else -> "회원가입 실패: $message"
+        }
+        _uiState.value = _uiState.value.copy(
+          isWaiting = false,
+          errorMessage = errorMessage
+        )
+      }
+    }
+  }
+
+  /**
    * 전체 이벤트 처리
    */
   fun onEvent(event: CompanyJoinSharedEvent) {
@@ -443,12 +614,24 @@ class CompanyJoinSharedViewModel(
        * 페이지 다음 으로 가기
        */
       is CompanyJoinSharedEvent.NextPage -> {
-        if (canNavigateToNextPage()) {
-          val currentPage = _uiState.value.currentPage
+        val currentPage = _uiState.value.currentPage
+        
+        // Page2에서 다음 버튼 클릭 시 회원가입 제출
+        if (currentPage == 2 && canNavigateToNextPage()) {
+          submitRegistration()
+        } else if (canNavigateToNextPage()) {
           _uiState.value = _uiState.value.copy(
             currentPage = currentPage + 1
           )
           _shouldNavigateToNextPage.value = true
+        }
+      }
+      /**
+       * 회원가입 최종 제출
+       */
+      is CompanyJoinSharedEvent.SubmitRegistration -> {
+        if (_uiState.value.isPage2Complete) {
+          submitRegistration()
         }
       }
       /**
@@ -476,31 +659,33 @@ class CompanyJoinSharedViewModel(
         validatePhoneNumber(event.phoneNumber)
       }
       /**
-       * 전화 번호 입력 완료 후 인증번호 요청
+       * 전화 번호 입력 완료 후 인증번호 요청 - 노동자와 동일
        */
       is CompanyJoinSharedEvent.RequestVerificationCode -> {
         // 인증 절차넘어감 + 인증번호 받기버튼 로딩상태 변경
         _uiState.value = _uiState.value.copy(
+          isSecurityStepActive = true,
           isWaiting = true,
           authCode = "" // 기존에 받은 인증번호 초기화
         )
-        // 해당 번호가 이미 등록되어 있는 번호인가?
-        checkPhoneNumberRegist(_uiState.value.phoneNumber)
         // 인증번호 요청
-        val currentState = _uiState.value
-        if (currentState.isPhoneNumberAvailable) {
-          doSmsVerification(currentState.phoneNumber)
-        }
+        doSmsVerification(_uiState.value.phoneNumber)
       }
       /**
        * 인증번호 입력
        */
       is CompanyJoinSharedEvent.UpdateVerificationCode -> {
         _uiState.value = _uiState.value.copy(
-          verificationCode = event.code
+          verificationCode = event.code,
+          isPhoneVerified = false  // 입력 중에는 인증 완료 상태 초기화
         )
-        //  실시간 검증
-        validateAuthCode(event.code)
+      }
+      
+      /**
+       * 인증번호 확인 버튼 클릭
+       */
+      is CompanyJoinSharedEvent.VerifyCode -> {
+        validateAuthCode(_uiState.value.verificationCode)
       }
       /**
        * 1 Page 입력값 초기화
@@ -566,7 +751,7 @@ class CompanyJoinSharedViewModel(
         _uiState.value = _uiState.value.copy(
           password = event.password
         )
-        validateUserPwd(event.password)
+        validateUserPassword(event.password)
       }
       /**
        * 사용자 비밀번호 재입력
@@ -575,6 +760,7 @@ class CompanyJoinSharedViewModel(
         _uiState.value = _uiState.value.copy(
           passwordConfirm = event.password
         )
+        validatePasswordConfirm(event.password)
       }
       /**
        * 사용자 Email 입력

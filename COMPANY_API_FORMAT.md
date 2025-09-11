@@ -1,6 +1,14 @@
 # 직직직 사업자(Company) 앱 API 데이터 형식 문서 v9.0
 
 ## 📋 변경 이력
+- **2025-01-15 v10.0**: Priority 2 UI 기능 구현 완료
+  - LocationPickerDialog 구현 (지도 선택) ✅
+  - JobCreationScreen 폼 검증 로직 구현 ✅
+  - WorkHoursTimePicker 근무시간 선택기 구현 ✅
+  - 사진 업로드 기능 구현 (최대 5장) ✅
+  - 픽업장소 관리 기능 구현 ✅
+  - 전화 걸기 기능 구현 (CustomerServiceScreen, ProposalCard) ✅
+  - AI 문의 다이얼로그 구현 ✅
 - **2025-01-15 v9.0**: DataStore 구현 및 오류 수정
   - CompanyDataStore 구현 완료 ✅
   - DataStore 의존성 추가 (1.1.1) ✅
@@ -23,11 +31,19 @@
 - SMS 인증 발송/확인 (Worker용)
 - 로그인 (Worker용)
 - ID 중복 확인 (Worker용)
-- **CompanyDataStore (회사 정보 로컬 저장소) ✅ NEW**
+- **CompanyDataStore (회사 정보 로컬 저장소) ✅**
   - 회사 정보 저장/조회 기능
   - 인증 토큰 관리
   - 로그인 상태 관리
   - DataStore 1.1.1 의존성 추가
+- **UI 기능 구현 ✅ NEW**
+  - LocationPickerDialog (지도 선택)
+  - JobCreationScreen 폼 검증
+  - WorkHoursTimePicker (시간 선택)
+  - 사진 업로드 (ActivityResultContracts)
+  - 픽업장소 관리
+  - 전화 걸기 (Intent.ACTION_DIAL)
+  - AI 문의 다이얼로그
 
 ### 🔄 부분 구현
 - Company 회원가입 UI (3단계 화면 완료, API 미연동)
@@ -371,8 +387,8 @@ POST /api/company/projects/{projectId}/jobs
 Request:
 data class JobCreateRequest(
     val title: String,
-    val jobType: String,  // "철근공", "목수", "전기공" 등
-    val workDate: String,
+    val jobTypes: List<String>,  // ✅ 복수 선택 가능 ["철근공", "목수"]
+    val workDates: List<String>,  // ✅ 복수 날짜 선택
     val startTime: String,  // "08:00"
     val endTime: String,    // "18:00"
     val requiredWorkers: Int,
@@ -385,14 +401,19 @@ data class JobCreateRequest(
     val provideMeals: Boolean,
     val provideTransport: Boolean,
     val provideAccommodation: Boolean,
+    val parkingOption: String?,  // ✅ "무료주차", "유료주차", "제공안함"
     
     // 픽업 정보
     val hasPickup: Boolean,
-    val pickupLocation: LocationData?,
+    val pickupLocations: List<String>?,  // ✅ 복수 픽업장소
     val pickupTime: String?,
     
     // 사진
-    val imageUrls: List<String>?
+    val imageUrls: List<String>?,  // ✅ 최대 5장
+    
+    // 담당자 정보
+    val managerName: String,  // ✅ NEW
+    val managerPhone: String   // ✅ NEW
 )
 
 Response:
@@ -1342,7 +1363,75 @@ data class RefreshTokenResponse(
 
 ---
 
-문서 버전: v9.0
+## 12. 향후 추천 작업 사항
+
+### 🔴 우선순위 1 - API 연동
+1. **회원가입 API 연동**
+   - CompanyJoinSharedViewModel에서 실제 API 호출
+   - CompanyDataStore에 회원정보 저장
+   - 토큰 관리 구현
+
+2. **프로젝트 CRUD API 연동**
+   - ProjectListViewModel API 연결
+   - ProjectCreateViewModel API 연결
+   - 실시간 데이터 동기화
+
+3. **일자리 생성 API 연동**
+   - JobCreationScreen에서 수집한 데이터 전송
+   - 사진 업로드 서버 연동
+   - 임시저장 기능 구현
+
+### 🟡 우선순위 2 - 기능 개선
+1. **카카오맵 API 통합**
+   - LocationPickerDialog에 실제 지도 표시
+   - 주소 검색 기능 구현
+   - GPS 기반 현재 위치 표시
+
+2. **이미지 처리 개선**
+   - Coil 라이브러리로 이미지 로딩
+   - 이미지 압축 및 최적화
+   - 썸네일 생성
+
+3. **실시간 기능**
+   - WebSocket 연결로 실시간 알림
+   - 출근 현황 실시간 업데이트
+   - 제안 응답 실시간 알림
+
+### 🟢 우선순위 3 - UX 개선
+1. **애니메이션 추가**
+   - 화면 전환 애니메이션
+   - 로딩 스켈레톤 UI
+   - Lottie 애니메이션 통합
+
+2. **오프라인 지원**
+   - Room DB로 로컬 캐싱
+   - 네트워크 재연결시 자동 동기화
+   - 오프라인 모드 UI
+
+3. **접근성 개선**
+   - TalkBack 지원
+   - 고대비 모드
+   - 폰트 크기 조절
+
+### 💎 우선순위 4 - 고급 기능
+1. **AI 기능 강화**
+   - 자연어 처리로 일자리 작성 도우미
+   - 이미지 인식으로 현장 사진 자동 분류
+   - 근로자 추천 알고리즘 고도화
+
+2. **분석 대시보드**
+   - 차트 라이브러리 통합
+   - 실시간 통계 표시
+   - 예측 분석 기능
+
+3. **생체 인증**
+   - 지문/얼굴 인식 로그인
+   - 중요 작업시 2차 인증
+   - 생체 정보 암호화 저장
+
+---
+
+문서 버전: v10.0
 최종 업데이트: 2025-01-15
 작성자: 직직직 개발팀
 용도: 사업자(Company) 앱 API 명세서

@@ -6,6 +6,14 @@
 > **문서 용도**: 사업자(Company) 앱 전용 아키텍처
 
 ## 🔄 최근 변경사항 (2025-01-15)
+- ✅ **Priority 2 UI 기능 구현 완료**
+  - 지도 다이얼로그 구현 (LocationPickerDialog)
+  - 폼 검증 로직 구현 (JobCreationScreen)
+  - 근무 시간 선택기 구현 (WorkHoursTimePicker)
+  - 사진 업로드 기능 구현 (최대 5장)
+  - 픽업장소 관리 기능 구현
+  - 전화 걸기 기능 구현 (Intent.ACTION_DIAL)
+  - AI 문의 다이얼로그 구현
 - ✅ **CompanyDataStore 구현**: 회사 정보 및 인증 토큰 관리
 - ✅ **DataStore 의존성 추가**: androidx.datastore:datastore-preferences:1.1.1
 - ✅ **Preview 함수 수정**: Context 파라미터 오류 해결
@@ -100,10 +108,13 @@ presentation/company/
 │   │   ├── 📁 feature/
 │   │   │   ├── 📁 create/            # 프로젝트 생성
 │   │   │   │   ├── 📁 screen/
-│   │   │   │   │   ├── ProjectCreateDialog.kt
-│   │   │   │   │   └── JobCreationScreen.kt
+│   │   │   │   │   ├── ProjectCreateDialog.kt      # ✅ LocationPickerDialog 추가
+│   │   │   │   │   └── JobCreationScreen.kt        # ✅ 폼검증, 시간선택, 사진, 픽업장소
 │   │   │   │   ├── 📁 components/
-│   │   │   │   │   └── UrgentRecruitmentDialog.kt
+│   │   │   │   │   ├── UrgentRecruitmentDialog.kt
+│   │   │   │   │   ├── WorkHoursTimePicker.kt      # ✅ NEW: 근무시간 선택
+│   │   │   │   │   ├── WorkDateCalendar.kt         # ✅ NEW: 작업일 달력
+│   │   │   │   │   └── SelectedDatesDisplay.kt     # ✅ NEW: 선택날짜 표시
 │   │   │   │   ├── 📁 model/
 │   │   │   │   │   ├── ProjectCreateEvent.kt
 │   │   │   │   │   ├── ProjectCreateUiEvent.kt
@@ -143,7 +154,7 @@ presentation/company/
 │   │       │   └── CompanyScoutScreen.kt  # 메인 화면
 │   │       ├── 📁 component/
 │   │       │   ├── WorkerCard.kt          # 인력 카드
-│   │       │   ├── ProposalCard.kt        # 제안 카드
+│   │       │   ├── ProposalCard.kt        # 제안 카드 ✅ 전화걸기
 │   │       │   ├── WorkerDetailBottomSheet.kt # 상세 정보
 │   │       │   ├── ScoutTabBar.kt         # 탭바
 │   │       │   └── EmptyState.kt          # 빈 상태
@@ -201,7 +212,7 @@ presentation/company/
 │   │       ├── 📁 screen/
 │   │       │   ├── MyInfoScreen.kt              # 내 정보
 │   │       │   ├── AnnouncementScreen.kt        # 공지사항
-│   │       │   ├── CustomerServiceScreen.kt     # 고객센터
+│   │       │   ├── CustomerServiceScreen.kt     # 고객센터 ✅ 전화걸기, AI문의
 │   │       │   ├── NotificationSettingsScreen.kt # 알림 설정
 │   │       │   └── TermsAndPoliciesScreen.kt    # 약관
 │   │       ├── 📁 component/
