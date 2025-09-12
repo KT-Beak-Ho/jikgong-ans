@@ -666,6 +666,45 @@ SMS인증 → 기본정보 → 계좌정보 → 주소 → 로그인정보 → �
 
 ---
 
+## 📦 Repository 및 API 구조
+
+### Repository 구현 현황
+```kotlin
+worker/main/
+├── income/
+│   ├── IncomeRepository.kt
+│   ├── IncomeRepositoryImpl.kt
+│   └── IncomeApi.kt
+├── myInfo/
+│   ├── MyInfoRepository.kt
+│   ├── MyInfoRepositoryImpl.kt
+│   └── MyInfoApi.kt
+├── myProject/
+│   ├── MyProjectRepository.kt
+│   ├── MyProjectRepositoryImpl.kt
+│   └── MyProjectApi.kt
+└── projectList/
+    ├── ProjectListRepository.kt
+    ├── ProjectListRepositoryImpl.kt
+    ├── ProjectListApi.kt
+    └── shared/
+        ├── WorkerProjectListSharedViewModel.kt
+        ├── WorkerProjectListSharedUiState.kt
+        └── WorkerProjectListSharedEvent.kt
+```
+
+### 데이터 모델
+```kotlin
+models/worker/
+├── main/
+│   └── income/
+│       └── IncomeModels.kt
+└── sampleDataFactory/
+    └── WorkerModels.kt  // Mock 데이터 생성용
+```
+
+---
+
 ## 📱 지원 환경
 
 - **최소 Android**: API 21 (Android 5.0)

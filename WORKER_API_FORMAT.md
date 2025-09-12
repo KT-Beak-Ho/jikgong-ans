@@ -12,22 +12,29 @@
 - SMS 인증 발송/확인
 - 로그인 (ID/비밀번호)
 - ID 중복 확인
-- 회원가입 (6단계 프로세스)
+- 회원가입 (6단계 프로세스 UI)
 
 ### 🔄 부분 구현
-- 일자리 목록 조회 (Mock 데이터)
-- 지원 현황 관리 (UI만 구현)
-- 수입 관리 (그래프 UI)
-- 프로필 관리 (기본 정보만)
+- 일자리 목록 조회 (Repository 구현, Mock 데이터)
+- 지원 현황 관리 (Repository 구현, UI 완료)
+- 수입 관리 (Repository 구현, 그래프 UI)
+- 프로필 관리 (Repository 구현, 기본 정보)
 
-### ❌ 미구현 (API)
-- 일자리 상세 조회
-- 일자리 지원/취소
-- 출근/퇴근 체크
-- 정산 내역 조회
+### 📂 Repository 구현 현황
+- ✅ IncomeRepository (수입 관리)
+- ✅ MyInfoRepository (내 정보)
+- ✅ MyProjectRepository (내 프로젝트)
+- ✅ ProjectListRepository (일자리 목록)
+
+### ❌ 미구현 (API 연동)
+- 일자리 상세 조회 API 연동
+- 일자리 지원/취소 API 연동
+- 출근/퇴근 체크 API 연동
+- 정산 내역 조회 API 연동
 - 평점/리뷰 시스템
 - 알림 시스템
 - 위치 기반 검색
+- 실제 서버 API 연동 (모두 Mock)
 
 ---
 
