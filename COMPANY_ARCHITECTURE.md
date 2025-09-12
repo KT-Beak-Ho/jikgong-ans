@@ -1,11 +1,26 @@
 # 🏗️ 직직직 사업자(Company) 앱 완전 통합 아키텍처 문서
 
 > **최종 업데이트**: 2025-01-15  
-> **버전**: 3.0  
-> **주요 변경사항**: Company 전용 문서로 재구성, 실제 구현 검증 완료
+> **버전**: 4.0  
+> **주요 변경사항**: DataStore 구현 완료, Preview 오류 수정
 > **문서 용도**: 사업자(Company) 앱 전용 아키텍처
 
-## 🔄 최근 변경사항 (2025-09-09)
+## 🔄 최근 변경사항 (2025-01-15)
+- ✅ **Priority 2 UI 기능 구현 완료**
+  - 지도 다이얼로그 구현 (LocationPickerDialog)
+  - 폼 검증 로직 구현 (JobCreationScreen)
+  - 근무 시간 선택기 구현 (WorkHoursTimePicker)
+  - 사진 업로드 기능 구현 (최대 5장)
+  - 픽업장소 관리 기능 구현
+  - 전화 걸기 기능 구현 (Intent.ACTION_DIAL)
+  - AI 문의 다이얼로그 구현
+- ✅ **CompanyDataStore 구현**: 회사 정보 및 인증 토큰 관리
+- ✅ **DataStore 의존성 추가**: androidx.datastore:datastore-preferences:1.1.1
+- ✅ **Preview 함수 수정**: Context 파라미터 오류 해결
+- ✅ **Import 최적화**: 와일드카드 import를 개별 import로 변경
+- ✅ **IDE 인덱싱 문제 해결**: DATASTORE_FIX_GUIDE.md 생성
+
+## 🔄 이전 변경사항 (2025-09-09)
 - ✅ **ProjectCreateDialog**: 4개 필수 필드로 간소화 (프로젝트명, 착공일, 준공일, 작업장소)
 - ✅ **대형 다이얼로그 UI**: 화면의 95% 사용, 스크롤 가능
 - ✅ **날짜 선택기**: Material3 DatePicker 통합
@@ -93,10 +108,13 @@ presentation/company/
 │   │   ├── 📁 feature/
 │   │   │   ├── 📁 create/            # 프로젝트 생성
 │   │   │   │   ├── 📁 screen/
-│   │   │   │   │   ├── ProjectCreateDialog.kt
-│   │   │   │   │   └── JobCreationScreen.kt
+│   │   │   │   │   ├── ProjectCreateDialog.kt      # ✅ LocationPickerDialog 추가
+│   │   │   │   │   └── JobCreationScreen.kt        # ✅ 폼검증, 시간선택, 사진, 픽업장소
 │   │   │   │   ├── 📁 components/
-│   │   │   │   │   └── UrgentRecruitmentDialog.kt
+│   │   │   │   │   ├── UrgentRecruitmentDialog.kt
+│   │   │   │   │   ├── WorkHoursTimePicker.kt      # ✅ NEW: 근무시간 선택
+│   │   │   │   │   ├── WorkDateCalendar.kt         # ✅ NEW: 작업일 달력
+│   │   │   │   │   └── SelectedDatesDisplay.kt     # ✅ NEW: 선택날짜 표시
 │   │   │   │   ├── 📁 model/
 │   │   │   │   │   ├── ProjectCreateEvent.kt
 │   │   │   │   │   ├── ProjectCreateUiEvent.kt
@@ -136,7 +154,7 @@ presentation/company/
 │   │       │   └── CompanyScoutScreen.kt  # 메인 화면
 │   │       ├── 📁 component/
 │   │       │   ├── WorkerCard.kt          # 인력 카드
-│   │       │   ├── ProposalCard.kt        # 제안 카드
+│   │       │   ├── ProposalCard.kt        # 제안 카드 ✅ 전화걸기
 │   │       │   ├── WorkerDetailBottomSheet.kt # 상세 정보
 │   │       │   ├── ScoutTabBar.kt         # 탭바
 │   │       │   └── EmptyState.kt          # 빈 상태
@@ -194,7 +212,7 @@ presentation/company/
 │   │       ├── 📁 screen/
 │   │       │   ├── MyInfoScreen.kt              # 내 정보
 │   │       │   ├── AnnouncementScreen.kt        # 공지사항
-│   │       │   ├── CustomerServiceScreen.kt     # 고객센터
+│   │       │   ├── CustomerServiceScreen.kt     # 고객센터 ✅ 전화걸기, AI문의
 │   │       │   ├── NotificationSettingsScreen.kt # 알림 설정
 │   │       │   └── TermsAndPoliciesScreen.kt    # 약관
 │   │       ├── 📁 component/
@@ -1184,7 +1202,9 @@ GET /api/payments/savings-stats?period=MONTHLY
 - **State Management**: StateFlow + SharedFlow
 - **DI**: Koin
 - **Network**: Retrofit + OkHttp
-- **Local Storage**: Room + DataStore
+- **Local Storage**: 
+  - Room (데이터베이스)
+  - DataStore (설정 및 토큰 저장) ✅ v1.1.1
 - **Map**: Kakao Map SDK
 - **Image**: Coil
 - **Animation**: Lottie

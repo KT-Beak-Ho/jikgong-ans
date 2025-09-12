@@ -17,6 +17,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.net.Uri
 import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
@@ -85,8 +88,15 @@ fun CustomerServiceScreen(
                                 )
                             }
                             
+                            val context = LocalContext.current
                             Button(
-                                onClick = { /* TODO: Call phone */ },
+                                onClick = { 
+                                    val phoneNumber = "tel:15881234"
+                                    val intent = Intent(Intent.ACTION_DIAL).apply {
+                                        data = Uri.parse(phoneNumber)
+                                    }
+                                    context.startActivity(intent)
+                                },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0xFF4B7BFF)
                                 )
@@ -197,8 +207,9 @@ fun CustomerServiceScreen(
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                         
+                        var showInquiryDialog by remember { mutableStateOf(false) }
                         Button(
-                            onClick = { /* TODO: Navigate to inquiry */ },
+                            onClick = { showInquiryDialog = true },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFF4B7BFF)
@@ -215,6 +226,17 @@ fun CustomerServiceScreen(
                                 text = "AI 문의하기",
                                 style = AppTypography.bodyLarge,
                                 fontWeight = FontWeight.Medium
+                            )
+                        }
+                        
+                        // AI 문의 다이얼로그
+                        if (showInquiryDialog) {
+                            AIInquiryDialog(
+                                onDismiss = { showInquiryDialog = false },
+                                onSend = { inquiry ->
+                                    // TODO: 실제 AI API 연동
+                                    showInquiryDialog = false
+                                }
                             )
                         }
                     }
@@ -426,6 +448,98 @@ private fun FAQItemContent(faq: FAQItem) {
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AIInquiryDialog(
+    onDismiss: () -> Unit,
+    onSend: (String) -> Unit
+) {
+    var inquiryText by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf("일반문의") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.SmartToy,
+                    contentDescription = null,
+                    tint = Color(0xFF4B7BFF),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "AI 문의하기",
+                    style = AppTypography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 카테고리 선택
+                Text(
+                    "문의 유형",
+                    style = AppTypography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf("일반문의", "기술지원", "결제문의", "기타").forEach { cat ->
+                        FilterChip(
+                            selected = category == cat,
+                            onClick = { category = cat },
+                            label = { Text(cat, fontSize = 12.sp) },
+                            modifier = Modifier.height(32.dp)
+                        )
+                    }
+                }
+                
+                // 문의 내용
+                OutlinedTextField(
+                    value = inquiryText,
+                    onValueChange = { inquiryText = it },
+                    label = { Text("문의 내용") },
+                    placeholder = { Text("궁금한 점을 자세히 작성해주세요") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    maxLines = 5
+                )
+                
+                Text(
+                    "* AI가 24시간 즉시 답변해드립니다",
+                    style = AppTypography.bodySmall,
+                    color = Color(0xFF4B7BFF)
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { 
+                    if (inquiryText.isNotBlank()) {
+                        onSend("[$category] $inquiryText")
+                    }
+                },
+                enabled = inquiryText.isNotBlank()
+            ) {
+                Text("전송")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("취소")
+            }
+        }
+    )
 }
 
 @Preview(showBackground = true)

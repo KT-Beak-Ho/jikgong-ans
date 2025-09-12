@@ -18,7 +18,7 @@ import retrofit2.http.POST
 interface JoinApi {
 
   /**
-   * SMS 인증번호 발송
+   * SMS 인증번호 발송 - 노동자와 동일한 엔드포인트 사용
    */
   @POST("api/join/sms-verification")
   suspend fun smsVerification(
@@ -42,7 +42,7 @@ interface JoinApi {
   ): Response<LoginIdValidationResponse>
 
   /**
-   * 사용자 Email 중복 확인 ( 수정 필요 )
+   * 사용자 Email 중복 확인
    */
   @POST("api/join/validation-email")
   suspend fun emailValidation(

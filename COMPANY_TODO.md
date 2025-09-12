@@ -1,9 +1,9 @@
-# 📋 직직직 사업자(Company) 앱 통합 TODO 리스트 v3.0
+# 📋 직직직 사업자(Company) 앱 통합 TODO 리스트 v5.0
 
 > **최종 업데이트**: 2025-01-15  
-> **총 TODO 항목**: 35개 (완료: 7개)  
-> **예상 총 소요시간**: 61시간 (약 8-10일)  
-> **완료된 작업**: 중복 파일 정리, 메모리 누수 해결, MVVM 패턴 적용, Money 화면 네비게이션
+> **총 TODO 항목**: 42개 (완료: 11개, 진행중: 0개, 대기: 31개)  
+> **예상 총 소요시간**: 77시간 (약 10-12일)  
+> **완료된 작업**: 중복 파일 정리, 메모리 누수 해결, MVVM 패턴 적용, Money 화면 네비게이션, DataStore 구현
 
 ---
 
@@ -36,6 +36,36 @@
 - **문제**: remember 상태 38개로 복잡한 상태 관리
 - **해결**: ViewModel 생성 및 상태 분리
 - **완료**: JobCreationViewModel, 데이터 클래스, 섹션별 컴포넌트 생성
+- **완료 시간**: 2025-01-15
+
+### 8. ✅ CompanyDataStore 구현 (완료)
+- **문제**: 회사 정보 로컬 저장소 필요
+- **해결**: 
+  - CompanyDataStore.kt 구현 완료
+  - 회사 정보, 인증 토큰 관리 기능 추가
+  - DataStore 의존성 1.1.1 추가
+- **완료 시간**: 2025-01-15
+
+### 9. ✅ Preview 함수 오류 수정 (완료)
+- **문제**: CompanyJoinPage1,2,3 Preview에서 Context 파라미터 누락
+- **해결**:
+  - Preview 함수 수정 (Context 파라미터 제거)
+  - ViewModel 생성 부분 주석 처리
+- **완료 시간**: 2025-01-15
+
+### 10. ✅ DataStore Import 오류 해결 (완료)
+- **문제**: Unresolved reference 오류
+- **해결**:
+  - 와일드카드 import를 개별 import로 변경
+  - DataStore 의존성 버전 업데이트 (1.0.0 → 1.1.1)
+  - IDE 캐시 정리 가이드 작성
+- **완료 시간**: 2025-01-15
+
+### 11. ✅ ViewModelModule Context 주입 (완료)
+- **문제**: CompanyJoinSharedViewModel, ProjectCreateViewModel에 Context 필요
+- **해결**:
+  - ViewModelModule.kt에서 get() 파라미터 추가
+  - CompanyDataStore 인스턴스 생성 가능하도록 수정
 - **완료 시간**: 2025-01-15
 
 ---
@@ -161,7 +191,76 @@
 
 ---
 
-## 🟡 우선순위 4 - API 연동
+## 🟡 우선순위 4 - API 연동 및 DataStore 활용
+
+### 12. CompanyDataStore 활용 구현 (핵심)
+- **파일**: `CompanyJoinSharedViewModel.kt`, `CompanyLoginViewModel.kt`
+- **필요 작업**:
+  - 회원가입 성공 시 CompanyDataStore에 회사 정보 저장
+    ```kotlin
+    // CompanyJoinSharedViewModel.kt
+    companyDataStore.saveCompanyInfo(
+        CompanyDataStore.CompanyInfo(
+            companyId = response.companyId,
+            companyName = uiState.value.companyName,
+            businessNumber = uiState.value.businessNumber,
+            representativeName = uiState.value.name,
+            email = uiState.value.email,
+            phone = uiState.value.phoneNumber,
+            loginId = uiState.value.loginId
+        )
+    )
+    ```
+  - 로그인 성공 시 토큰 저장
+    ```kotlin
+    // CompanyLoginViewModel.kt
+    companyDataStore.saveAuthTokens(
+        CompanyDataStore.AuthTokens(
+            accessToken = response.accessToken,
+            refreshToken = response.refreshToken,
+            isLoggedIn = true
+        )
+    )
+    ```
+  - 로그아웃 시 데이터 초기화
+    ```kotlin
+    companyDataStore.logout() // 또는 clearAll()
+    ```
+- **예상 시간**: 3시간
+
+### 13. 프로젝트 생성 시 회사 정보 연동
+- **파일**: `ProjectCreateViewModel.kt`
+- **라인**: 129
+- **현재 상태**: `company = "대림건설(주)"` 하드코딩
+- **필요 작업**: 
+  ```kotlin
+  // ProjectCreateViewModel.kt
+  init {
+      viewModelScope.launch {
+          companyDataStore.companyName.collect { name ->
+              _uiState.update { it.copy(company = name) }
+          }
+      }
+  }
+  ```
+- **예상 시간**: 1시간
+
+### 14. 자동 로그인 구현
+- **파일**: `MainActivity.kt`, `SplashScreen.kt`
+- **필요 작업**:
+  - 앱 시작 시 저장된 토큰 확인
+  - 토큰 유효성 검증
+  - 자동 로그인 처리
+  ```kotlin
+  companyDataStore.isLoggedIn.collect { isLoggedIn ->
+      if (isLoggedIn) {
+          // 메인 화면으로 이동
+      } else {
+          // 로그인 화면으로 이동
+      }
+  }
+  ```
+- **예상 시간**: 2시간
 
 ### 6. 회원가입 ID 중복 확인
 - **파일**: `CompanyJoinSharedViewModel.kt`
@@ -214,22 +313,70 @@
 
 ---
 
+## 🔷 우선순위 5 - 코드 최적화
+
+### 26. Deprecated API 업데이트
+- **대상 파일**: 전체 프로젝트
+- **주요 항목**:
+  - Icons.Filled.ArrowBack → Icons.AutoMirrored.Filled.ArrowBack
+  - Divider → HorizontalDivider
+  - Icons.Filled.Logout → Icons.AutoMirrored.Filled.Logout
+  - menuAnchor() → menuAnchor(ExposedDropdownMenuAnchorType)
+- **예상 시간**: 3시간
+
+### 27. 불필요한 Mock 데이터 제거
+- **대상**:
+  - CompanyMockDataFactory 완전 제거
+  - 하드코딩된 테스트 데이터 정리
+  - Preview 함수 최적화
+- **예상 시간**: 2시간
+
+### 28. 메모리 사용량 최적화
+- **작업 내용**:
+  - Memory Profiler로 누수 확인
+  - Large Bitmap 최적화
+  - 불필요한 StateFlow 정리
+  - LaunchedEffect cleanup 확인
+- **예상 시간**: 4시간
+
+### 29. 중복 코드 리팩토링
+- **대상**:
+  - 공통 컴포넌트 추출
+  - 유틸리티 함수 통합
+  - 상수 값 Constants 파일로 이동
+- **예상 시간**: 3시간
+
+### 30. 성능 최적화
+- **작업 내용**:
+  - Compose Recomposition 최적화
+  - derivedStateOf 활용
+  - remember 최적화
+  - 불필요한 Animation 제거
+- **예상 시간**: 4시간
+
+---
+
 ## 📊 구현 로드맵
 
 ### 🚀 Sprint 1 (Week 1): 기술적 이슈 해결
 **목표**: 안정성 확보  
-**소요시간**: 10시간
+**소요시간**: 14시간
 - [x] 중복 파일 정리 (1h) ✅
 - [x] MapLocationDialog 메모리 누수 해결 (2h) ✅
 - [x] CompanyScoutScreen Side Effect 정리 (3h) ✅
 - [x] JobCreationScreen ViewModel 분리 (4h) ✅
+- [x] CompanyDataStore 구현 (2h) ✅
+- [x] Preview 함수 오류 수정 (1h) ✅
+- [x] DataStore Import 오류 해결 (1h) ✅
 
 ### 🚀 Sprint 2 (Week 2): 네비게이션 & 핵심 API
 **목표**: 기본 동작 구현  
-**소요시간**: 20시간
+**소요시간**: 26시간
 - [x] 모든 네비게이션 구현 (5h) ✅ (Money, Scout, Info 완료)
 - [ ] 회원가입 API 연동 (7h)
-- [ ] 회사 정보 연동 (1h)
+- [ ] CompanyDataStore 활용 구현 (3h) 🆕
+- [ ] 프로젝트 생성 시 회사 정보 연동 (1h) 🆕
+- [ ] 자동 로그인 구현 (2h) 🆕
 - [ ] 지원자 관리 API (3h)
 - [ ] 정산 API (4h)
 
@@ -249,6 +396,15 @@
 - [ ] Mock 데이터 제거 (8h)
 - [ ] 에러 처리 강화 (3h)
 - [ ] 성능 최적화 (2h)
+
+### 🚀 Sprint 5 (Week 5): 코드 최적화 🆕
+**목표**: 코드 품질 개선  
+**소요시간**: 16시간
+- [ ] Deprecated API 업데이트 (3h)
+- [ ] 불필요한 Mock 데이터 제거 (2h)
+- [ ] 메모리 사용량 최적화 (4h)
+- [ ] 중복 코드 리팩토링 (3h)
+- [ ] 성능 최적화 (4h)
 
 ---
 
@@ -303,11 +459,27 @@
 - **UI**: Jetpack Compose
 - **Navigation**: Compose Destinations
 - **Network**: Retrofit + OkHttp
-- **Local Storage**: DataStore (SharedPreferences 대체)
+- **Local Storage**: 
+  - DataStore 1.1.1 ✅ (회사 정보, 토큰 관리)
+  - Room (데이터베이스)
 
 ---
 
-**문서 버전**: v3.0 (통합본)  
+**문서 버전**: v5.0 (통합본)  
 **최종 업데이트**: 2025-01-15  
 **작성자**: 직직직 개발팀  
 **상태**: 🚧 진행중
+
+### 📈 진행 현황
+- **완료**: 11개 작업 (26%)
+- **진행중**: 0개 작업
+- **대기**: 31개 작업 (74%)
+- **Sprint 1**: 완료 ✅
+- **Sprint 2-5**: 진행 예정
+
+### 🎯 우선순위 요약
+1. **긴급**: 기술적 이슈 ✅ 완료
+2. **높음**: API 연동 & DataStore 활용 (Sprint 2)
+3. **중간**: UI 기능 구현 (Sprint 3)
+4. **낮음**: Mock 데이터 제거 (Sprint 4)
+5. **최적화**: 코드 품질 개선 (Sprint 5)

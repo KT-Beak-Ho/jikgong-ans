@@ -32,6 +32,7 @@ data class CompanyJoinSharedUiState(
   val currentPage: Int = 1,
   val errorMessage: String? = null,
   val validationErrors: Map<String, String> = emptyMap(),
+  val isRegistrationComplete: Boolean = false,  // 회원가입 완료 여부
 
   ) {
   // 각 페이지 별 완료 상태 확인
@@ -43,6 +44,9 @@ data class CompanyJoinSharedUiState(
       id.isNotEmpty() &&
       email.isNotEmpty() &&
       password.isNotEmpty() &&
+      password.length >= 8 &&  // 비밀번호 8자 이상
+      passwordConfirm.isNotEmpty() &&
+      password == passwordConfirm &&  // 비밀번호 일치 확인
       businessNumber.isNotEmpty() &&
       companyName.isNotEmpty()
 

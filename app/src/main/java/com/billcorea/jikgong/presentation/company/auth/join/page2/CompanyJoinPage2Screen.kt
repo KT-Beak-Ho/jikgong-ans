@@ -20,11 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -32,20 +29,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.R
-import com.billcorea.jikgong.api.models.common.ApiResult
-import com.billcorea.jikgong.api.models.auth.EmailValidationResponse
-import com.billcorea.jikgong.api.models.auth.LoginIdValidationResponse
-import com.billcorea.jikgong.api.models.auth.PhoneValidationResponse
-import com.billcorea.jikgong.api.models.auth.SmsVerificationResponse
-import com.billcorea.jikgong.api.repository.join.JoinRepository
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonButton
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTextInput
 import com.billcorea.jikgong.presentation.company.auth.common.components.CommonTopBar
 import com.billcorea.jikgong.presentation.company.auth.common.constants.JoinConstants
 import com.billcorea.jikgong.presentation.company.auth.join.page2.components.PhoneNumberDisplay
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedEvent
+import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedUiState
 import com.billcorea.jikgong.presentation.company.auth.join.shared.CompanyJoinSharedViewModel
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage1ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.CompanyJoinPage3ScreenDestination
@@ -54,7 +45,6 @@ import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 import org.koin.androidx.compose.koinViewModel
 
 @Destination
@@ -68,23 +58,6 @@ fun CompanyJoinPage2Screen(
   val shouldNavigateToNextPage by companyJoinViewModel.shouldNavigateToNextPage.collectAsStateWithLifecycle()
   val shouldNavigateBack by companyJoinViewModel.shouldNavigateBack.collectAsStateWithLifecycle()
 
-  // FocusRequester들 생성
-  /**
-   * 이거 테스트 해봐야하는데 컴으로 하면 엔터누르면 담으로 넘어가서 폰으로 해봐야할거같은데
-   * 어케하누 ?
-   */
-  val focusRequesters = remember {
-    List(7) { FocusRequester() }
-//    listOf(
-//      FocusRequester(), // name
-//      FocusRequester(), // id
-//      FocusRequester(), // password
-//      FocusRequester(), // email
-//      FocusRequester(), // businessNumber
-//      FocusRequester(), // companyName
-//      FocusRequester()  // inquiry
-//    )
-  }
 
   // 페이지 실행 시 초기화
   LaunchedEffect(Unit) {
@@ -111,6 +84,19 @@ fun CompanyJoinPage2Screen(
     }
   }
 
+  CompanyJoinPage2ScreenContent(
+    uiState = uiState,
+    onEvent = companyJoinViewModel::onEvent,
+    modifier = modifier
+  )
+}
+
+@Composable
+fun CompanyJoinPage2ScreenContent(
+  uiState: CompanyJoinSharedUiState,
+  onEvent: (CompanyJoinSharedEvent) -> Unit,
+  modifier: Modifier = Modifier
+) {
   Scaffold(
     modifier = modifier
       .fillMaxSize()
@@ -121,7 +107,7 @@ fun CompanyJoinPage2Screen(
         currentPage = uiState.currentPage,
         totalPages = JoinConstants.TOTAL_PAGES,
         onBackClick = {
-          companyJoinViewModel.onEvent(CompanyJoinSharedEvent.PreviousPage)
+          onEvent(CompanyJoinSharedEvent.PreviousPage)
         }
       )
     },
@@ -133,7 +119,7 @@ fun CompanyJoinPage2Screen(
         onClick = {
           //  여기에 사용자 ID, Email 등록여부 검증 로직 추가 필요함
           //  NextPage 함수 정의에 들어가서 currentPage=2 인 경우 위 두 함수 실행하는 로직 추가하면될듯
-          companyJoinViewModel.onEvent(CompanyJoinSharedEvent.NextPage)
+          onEvent(CompanyJoinSharedEvent.NextPage)
         },
         enabled = uiState.isPage2Complete,
         modifier = Modifier
@@ -178,11 +164,9 @@ fun CompanyJoinPage2Screen(
           labelAppendTextColor = colorResource(R.color.secondary_B),
           placeholder = stringResource(R.string.enterName),
           validationError = uiState.validationErrors["name"],
-          modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequesters[0]),
+          modifier = Modifier.fillMaxWidth(),
           onChange = {
-            companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserName(it))
+            onEvent(CompanyJoinSharedEvent.UpdateUserName(it))
           },
         )
       }
@@ -202,12 +186,12 @@ fun CompanyJoinPage2Screen(
               validationError = uiState.validationErrors["id"],
               modifier = Modifier.weight(1f),
               onChange = {
-                companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserId(it))
+                onEvent(CompanyJoinSharedEvent.UpdateUserId(it))
               }
             )
             Button(
               onClick = {
-                companyJoinViewModel.onEvent(CompanyJoinSharedEvent.RequestVerificationID)
+                onEvent(CompanyJoinSharedEvent.RequestVerificationID)
               },
               enabled = uiState.id.isNotEmpty() && !uiState.isWaiting,
               modifier = Modifier.align(Alignment.Bottom).padding(bottom = if(uiState.validationErrors["id"] != null) 20.dp else 0.dp)
@@ -240,11 +224,29 @@ fun CompanyJoinPage2Screen(
           labelMainText = stringResource(R.string.password),
           labelAppendText = "*",
           labelAppendTextColor = colorResource(R.color.secondary_B),
-          placeholder = stringResource(R.string.enterPassword),
+          placeholder = "8자리 이상 입력",
           validationError = uiState.validationErrors["password"],
+          isPassword = true,  // 비밀번호 모드 활성화
           modifier = Modifier.fillMaxWidth(),
           onChange = {
-            companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserPassword(it))
+            onEvent(CompanyJoinSharedEvent.UpdateUserPassword(it))
+          }
+        )
+      }
+      
+      //  비밀번호 확인
+      item {
+        CommonTextInput(
+          value = uiState.passwordConfirm,
+          labelMainText = "비밀번호 확인",
+          labelAppendText = "*",
+          labelAppendTextColor = colorResource(R.color.secondary_B),
+          placeholder = "비밀번호 재입력",
+          validationError = uiState.validationErrors["passwordConfirm"],
+          isPassword = true,  // 비밀번호 모드 활성화
+          modifier = Modifier.fillMaxWidth(),
+          onChange = {
+            onEvent(CompanyJoinSharedEvent.UpdateUserPasswordConfirm(it))
           }
         )
       }
@@ -265,12 +267,12 @@ fun CompanyJoinPage2Screen(
               validationError = uiState.validationErrors["email"],
               modifier = Modifier.weight(1f),
               onChange = {
-                companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateUserMail(it))
+                onEvent(CompanyJoinSharedEvent.UpdateUserMail(it))
               }
             )
             Button(
               onClick = {
-                companyJoinViewModel.onEvent(CompanyJoinSharedEvent.RequestVerificationEmail)
+                onEvent(CompanyJoinSharedEvent.RequestVerificationEmail)
               },
               enabled = uiState.email.isNotEmpty(),
               modifier = Modifier.align(Alignment.Bottom).padding(bottom = if(uiState.validationErrors["email"] != null) 20.dp else 0.dp)
@@ -300,7 +302,7 @@ fun CompanyJoinPage2Screen(
           validationError = uiState.validationErrors["businessNumber"],
           modifier = Modifier.fillMaxWidth(),
           onChange = {
-            companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateBusinessNumber(it))
+            onEvent(CompanyJoinSharedEvent.UpdateBusinessNumber(it))
           }
         )
       }
@@ -315,7 +317,7 @@ fun CompanyJoinPage2Screen(
           validationError = uiState.validationErrors["companyName"],
           modifier = Modifier.fillMaxWidth(),
           onChange = {
-            companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateCompanyName(it))
+            onEvent(CompanyJoinSharedEvent.UpdateCompanyName(it))
           }
         )
       }
@@ -329,7 +331,7 @@ fun CompanyJoinPage2Screen(
           validationError = uiState.validationErrors["inquiry"],
           modifier = Modifier.fillMaxWidth(),
           onChange = {
-            companyJoinViewModel.onEvent(CompanyJoinSharedEvent.UpdateInquiry(it))
+            onEvent(CompanyJoinSharedEvent.UpdateInquiry(it))
           }
         )
       }
@@ -337,29 +339,65 @@ fun CompanyJoinPage2Screen(
   }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "회원가입 2단계 - 초기 상태")
 @Composable
 fun JoinPage2ScreenPreview() {
-  val navController = rememberNavController()
-  val navigator = navController.toDestinationsNavigator()
-
-  // 빈 Repository로 ViewModel 생성 (네트워크 호출 무시)
-  val emptyRepository = object : JoinRepository {
-    override suspend fun sendSmsVerification(phoneNumber: String): ApiResult<SmsVerificationResponse> =
-      ApiResult.Error(Exception("Preview mode"))
-    override suspend fun validatePhone(phoneNumber: String): ApiResult<PhoneValidationResponse> =
-      ApiResult.Error(Exception("Preview mode"))
-    override suspend fun validateLoginId(loginId: String): ApiResult<LoginIdValidationResponse> =
-      ApiResult.Error(Exception("Preview mode"))
-    override suspend fun validateEmail(email: String): ApiResult<EmailValidationResponse> =
-      ApiResult.Error(Exception("Preview mode"))
-  }
-
   Jikgong1111Theme {
-    CompanyJoinPage2Screen(
-      companyJoinViewModel = CompanyJoinSharedViewModel(emptyRepository), // ViewModel 직접 생성
-      navigator = navigator,
-      modifier = Modifier.padding(3.dp)
+    CompanyJoinPage2ScreenContent(
+      uiState = CompanyJoinSharedUiState(
+        currentPage = 2,
+        phoneNumber = "01012345678",
+        isPhoneVerified = true
+      ),
+      onEvent = {}
+    )
+  }
+}
+
+@Preview(showBackground = true, name = "회원가입 2단계 - 입력 중")
+@Composable
+fun JoinPage2ScreenPreview2() {
+  Jikgong1111Theme {
+    CompanyJoinPage2ScreenContent(
+      uiState = CompanyJoinSharedUiState(
+        currentPage = 2,
+        phoneNumber = "01012345678",
+        isPhoneVerified = true,
+        name = "홍길동",
+        id = "testuser123",
+        isIdAvailable = true,
+        idCheckMessage = "사용 가능한 아이디입니다.",
+        email = "test@example.com",
+        isEmailAvailable = true,
+        emailCheckMessage = "올바른 이메일 형식입니다.",
+        password = "password123",
+        businessNumber = "123-45-67890",
+        companyName = "테스트 회사",
+        inquiry = "문의사항입니다."
+      ),
+      onEvent = {}
+    )
+  }
+}
+
+@Preview(showBackground = true, name = "회원가입 2단계 - 에러 상태")
+@Composable
+fun JoinPage2ScreenPreview3() {
+  Jikgong1111Theme {
+    CompanyJoinPage2ScreenContent(
+      uiState = CompanyJoinSharedUiState(
+        currentPage = 2,
+        phoneNumber = "01012345678",
+        isPhoneVerified = true,
+        id = "user",
+        isIdAvailable = false,
+        idCheckMessage = "이미 사용중인 아이디입니다.",
+        validationErrors = mapOf(
+          "name" to "이름을 입력해주세요.",
+          "password" to "비밀번호는 8자 이상이어야 합니다."
+        )
+      ),
+      onEvent = {}
     )
   }
 }

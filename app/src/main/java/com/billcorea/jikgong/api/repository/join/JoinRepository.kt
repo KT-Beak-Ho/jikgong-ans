@@ -5,6 +5,7 @@ import com.billcorea.jikgong.api.models.auth.EmailValidationResponse
 import com.billcorea.jikgong.api.models.auth.LoginIdValidationResponse
 import com.billcorea.jikgong.api.models.auth.PhoneValidationResponse
 import com.billcorea.jikgong.api.models.auth.SmsVerificationResponse
+import com.billcorea.jikgong.api.models.auth.CompanyRegisterResponse
 
 /**
  * API 함수 이름 정의
@@ -18,4 +19,16 @@ interface JoinRepository {
   suspend fun validateLoginId(id: String): ApiResult<LoginIdValidationResponse>
   /** Email 등록 여부 검증 요청 */
   suspend fun validateEmail(email: String): ApiResult<EmailValidationResponse>
+  /** 사업자 회원가입 */
+  suspend fun registerCompany(
+    phoneNumber: String,
+    verificationCode: String,
+    name: String,
+    loginId: String,
+    password: String,
+    email: String,
+    businessNumber: String,
+    companyName: String,
+    inquiry: String?
+  ): ApiResult<CompanyRegisterResponse>
 }
