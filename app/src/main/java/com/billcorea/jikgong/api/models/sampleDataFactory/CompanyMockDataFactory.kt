@@ -1198,6 +1198,9 @@ object CompanyMockDataFactory {
             "2025-08-05", "2025-08-06", "2025-08-07", "2025-08-08",
             "2025-08-09", "2025-08-10", "2025-08-11", "2025-08-12",
             "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-16",
+            "2025-09-01", "2025-09-02", "2025-09-03", "2025-09-04",
+            "2025-09-05", "2025-09-06", "2025-09-07", "2025-09-08",
+            "2025-09-09", "2025-09-10", "2025-09-11", "2025-09-12",
             "2025-08-17", "2025-08-18", "2025-08-19", "2025-08-20"
         )
         
@@ -1754,7 +1757,27 @@ object CompanyMockDataFactory {
             // 각 날짜에 대해 출석 정보 생성
             for (date in dateRange) {
                 if (!attendanceMap.containsKey(date)) {
+                    // 특정 날짜에 대한 명시적 데이터 설정
                     attendanceMap[date] = when {
+                        // 9월 1일 - 아파트 신축 작업 시작일
+                        date == LocalDate.parse("2025-09-01") -> WorkerAttendanceInfo(
+                            hasCheckedIn = true,
+                            hasCheckedOut = true,
+                            hasPaymentRecord = true
+                        )
+                        // 9월 6일 - 아파트 신축 작업 완료일
+                        date == LocalDate.parse("2025-09-06") -> WorkerAttendanceInfo(
+                            hasCheckedIn = true,
+                            hasCheckedOut = true,
+                            hasPaymentRecord = true
+                        )
+                        // 9월 7일 - 철근공 작업 완료일
+                        date == LocalDate.parse("2025-09-07") -> WorkerAttendanceInfo(
+                            hasCheckedIn = true,
+                            hasCheckedOut = true,
+                            hasPaymentRecord = true
+                        )
+                        // 일반적인 과거 날짜 처리
                         date.isBefore(today.minusDays(2)) -> WorkerAttendanceInfo(
                             hasCheckedIn = true,
                             hasCheckedOut = true,
@@ -1895,10 +1918,10 @@ object CompanyMockDataFactory {
                 com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
                     id = "work_${projectId}_001", 
                     title = "아파트 신축 작업자 모집",
-                    date = today.minusDays(1), // 같은 날짜로 설정
+                    date = LocalDate.parse("2025-09-06"), // 9월 6일로 고정
                     startTime = "08:00", 
                     endTime = "18:00",
-                    recruitPeriod = "${today.minusDays(7)} ~ ${today.minusDays(1)}",
+                    recruitPeriod = "2025-09-01 ~ 2025-09-10",
                     applicants = 15, confirmed = 6, maxWorkers = 10, // 확정 인원 수 조정
                     status = "IN_PROGRESS",
                     projectId = projectId
@@ -1906,10 +1929,10 @@ object CompanyMockDataFactory {
                 com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
                     id = "work_${projectId}_002",
                     title = "철근공 작업자 모집", 
-                    date = today.minusDays(1), // 같은 날짜로 설정
+                    date = LocalDate.parse("2025-09-07"), // 9월 7일로 설정
                     startTime = "08:00",
                     endTime = "18:00",
-                    recruitPeriod = "${today.minusDays(5)} ~ ${today.minusDays(1)}",
+                    recruitPeriod = "2025-09-02 ~ 2025-09-10",
                     applicants = 12, confirmed = 4, maxWorkers = 8, // 확정 인원 수 조정
                     status = "IN_PROGRESS",
                     projectId = projectId

@@ -41,9 +41,9 @@ fun PaymentSummaryScreen(
   selectedDate: String? = null,
   modifier: Modifier = Modifier
 ) {
-  // 날짜별 확정 근로자 데이터
-  val confirmedWorkersByDate = CompanyMockDataFactory.getConfirmedWorkersByDate().mapKeys { 
-    LocalDate.parse(it.key) 
+  // WorkDay 기반 확정 근로자 데이터
+  val confirmedWorkers = remember(workDayId) {
+    CompanyMockDataFactory.getConfirmedWorkersForWorkDay(workDayId)
   }
   
   // 현재 선택된 날짜 (디버깅 정보 추가)
@@ -63,9 +63,8 @@ fun PaymentSummaryScreen(
     LocalDate.parse("2025-08-01")
   }
   
-  // 해당 날짜의 확정 근로자를 지급 데이터로 변환 (완료된 작업이므로 모든 근로자가 정상 출근)
-  val workers = remember(effectiveDate) {
-    val confirmedWorkers = confirmedWorkersByDate[effectiveDate] ?: emptyList()
+  // 확정 근로자를 지급 데이터로 변환 (완료된 작업이므로 모든 근로자가 정상 출근)
+  val workers = remember(workDayId, confirmedWorkers) {
     val jobRoles = CompanyMockDataFactory.getJobRoles()
     val workDescriptions = CompanyMockDataFactory.getWorkDescriptions()
     

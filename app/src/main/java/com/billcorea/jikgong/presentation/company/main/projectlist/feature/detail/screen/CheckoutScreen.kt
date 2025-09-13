@@ -34,9 +34,9 @@ fun CheckoutScreen(
   selectedDate: String? = null,
   modifier: Modifier = Modifier
 ) {
-  // 날짜별 확정 근로자 데이터
-  val confirmedWorkersByDate = CompanyMockDataFactory.getConfirmedWorkersByDate().mapKeys { 
-    LocalDate.parse(it.key) 
+  // WorkDay 기반 확정 근로자 데이터
+  val confirmedWorkers = remember(workDayId) {
+    CompanyMockDataFactory.getConfirmedWorkersForWorkDay(workDayId)
   }
   
   // 현재 선택된 날짜 (디버깅 정보 추가)
@@ -56,9 +56,8 @@ fun CheckoutScreen(
     LocalDate.parse("2025-08-01")
   }
   
-  // 해당 날짜의 확정 근로자를 퇴근체크 데이터로 변환
-  val workers = remember(effectiveDate) {
-    val confirmedWorkers = confirmedWorkersByDate[effectiveDate] ?: emptyList()
+  // 확정 근로자를 퇴근체크 데이터로 변환
+  val workers = remember(workDayId, confirmedWorkers) {
     mutableStateListOf(
       *confirmedWorkers.map { worker ->
         CheckoutWorker(
