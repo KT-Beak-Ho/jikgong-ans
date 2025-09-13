@@ -23,6 +23,10 @@ class CompanyScoutViewModel : ViewModel(), KoinComponent {
 
   private val _uiState = MutableStateFlow(ScoutUiState())
   val uiState: StateFlow<ScoutUiState> = _uiState.asStateFlow()
+  
+  // 네비게이션 이벤트 추가
+  private val _navigationEvent = MutableStateFlow<ScoutNavigationEvent?>(null)
+  val navigationEvent: StateFlow<ScoutNavigationEvent?> = _navigationEvent.asStateFlow()
 
   init {
     loadInitialData()
@@ -234,6 +238,26 @@ class CompanyScoutViewModel : ViewModel(), KoinComponent {
       )
     }
   }
+  
+  // 네비게이션 메서드들
+  fun navigateToWorkerDetail(workerId: String) {
+    _navigationEvent.value = ScoutNavigationEvent.NavigateToWorkerDetail(workerId)
+  }
+  
+  fun makePhoneCall(phoneNumber: String) {
+    _navigationEvent.value = ScoutNavigationEvent.MakePhoneCall(phoneNumber)
+  }
+  
+  fun clearNavigationEvent() {
+    _navigationEvent.value = null
+  }
+}
+
+// 네비게이션 이벤트
+sealed class ScoutNavigationEvent {
+  data class NavigateToWorkerDetail(val workerId: String) : ScoutNavigationEvent()
+  data class MakePhoneCall(val phoneNumber: String) : ScoutNavigationEvent()
+  object NavigateBack : ScoutNavigationEvent()
 }
 
 data class ScoutUiState(

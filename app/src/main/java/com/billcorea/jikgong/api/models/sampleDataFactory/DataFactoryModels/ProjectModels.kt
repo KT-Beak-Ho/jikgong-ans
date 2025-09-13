@@ -86,3 +86,44 @@ enum class AttendanceStatus {
   LATE,          // 지각
   EARLY_LEAVE     // 조퇴
 }
+
+// ==================== 일자리 공고 (Job Posting) ====================
+
+data class Job(
+  val id: String,
+  val projectId: String,  // 속한 프로젝트 ID
+  val title: String,       // 일자리 제목 (예: "철근공 10명 모집")
+  val jobType: String,     // 직종 (철근공, 목공, 전기공 등)
+  val workDate: LocalDate, // 작업 날짜
+  val startTime: String,   // 시작 시간
+  val endTime: String,     // 종료 시간
+  val location: String,    // 작업 장소
+  val wage: Int,          // 일당
+  val requiredWorkers: Int, // 필요 인원
+  val currentApplicants: Int, // 현재 지원자 수
+  val description: String,  // 상세 설명
+  val requirements: String, // 자격 요건
+  val recruitPeriod: String, // 모집 기간
+  val isUrgent: Boolean = false, // 긴급 여부
+  val status: String = "RECRUITING", // RECRUITING, CLOSED, COMPLETED
+  val createdDate: LocalDate = LocalDate.now(),
+  val updatedDate: LocalDate = LocalDate.now()
+)
+
+// ==================== 임시저장 데이터 ====================
+
+data class TempSavedJob(
+  val id: String,
+  val title: String,
+  val jobType: String,
+  val workDate: LocalDate?,
+  val startTime: String,
+  val endTime: String,
+  val location: String,
+  val wage: Int,
+  val requiredWorkers: Int,
+  val description: String,
+  val requirements: String,
+  val savedDate: LocalDate,
+  val completionRate: Int // 작성 완료율 (0-100)
+)

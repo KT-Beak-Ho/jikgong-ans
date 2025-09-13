@@ -41,11 +41,12 @@ fun WorkerBottomNav(
 
     Row(
         modifier = modifier
+            .fillMaxWidth()
             .background(
                 color = Color.White,
                 shape = RoundedCornerShape(16.dp)
             )
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -110,7 +111,7 @@ fun BottomNavItem(
     Column(
         modifier = Modifier
             .clickable { onClick() }
-            .padding(vertical = 8.dp, horizontal = 12.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
