@@ -45,6 +45,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/img_file_paths" />
         </provider>
+        <!-- 카카오 지도 API 키 추가 -->
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="9e962ac2797635bc5e2f7f7b2f26dc47" />
     </application>
 
 </manifest>

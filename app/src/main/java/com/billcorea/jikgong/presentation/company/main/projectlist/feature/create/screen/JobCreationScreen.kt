@@ -37,6 +37,16 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
+import android.graphics.BitmapFactory
+import android.net.Uri
+import androidx.compose.ui.layout.ContentScale
 
 // 기존 공고 데이터 (PreviousJobPostsScreen과 동일한 구조)
 data class PreviousJobPost(
@@ -214,8 +224,23 @@ internal fun ProjectCreateScreenContent(
             .padding(16.dp),
           horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+          var showCancelDialog by remember { mutableStateOf(false) }
+          
           OutlinedButton(
-            onClick = onNavigateBack,
+            onClick = { 
+              // 작성된 내용이 있는지 확인
+              val hasContent = uiState.projectName.isNotBlank() || 
+                              uiState.category.isNotBlank() || 
+                              uiState.maxApplicants.isNotBlank() || 
+                              uiState.wage.isNotBlank() ||
+                              uiState.description.isNotBlank()
+              
+              if (hasContent) {
+                showCancelDialog = true
+              } else {
+                onNavigateBack()
+              }
+            },
             modifier = Modifier.weight(1f)
           ) {
             Text("취소")
@@ -288,6 +313,53 @@ internal fun ProjectCreateScreenContent(
                   onClick = { showValidationDialog = false }
                 ) {
                   Text("확인")
+                }
+              },
+              containerColor = Color.White
+            )
+          }
+          
+          // 취소 시 임시저장 다이얼로그
+          if (showCancelDialog) {
+            AlertDialog(
+              onDismissRequest = { showCancelDialog = false },
+              title = { 
+                Text(
+                  "임시저장",
+                  fontWeight = FontWeight.Bold
+                )
+              },
+              text = { 
+                Text("작성 중인 내용을 임시저장하시겠습니까?")
+              },
+              confirmButton = {
+                Row(
+                  horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                  TextButton(
+                    onClick = { 
+                      showCancelDialog = false
+                      onNavigateBack()
+                    }
+                  ) {
+                    Text("삭제", color = Color(0xFFE57373))
+                  }
+                  TextButton(
+                    onClick = { 
+                      // TODO: 임시저장 로직 구현
+                      showCancelDialog = false
+                      onNavigateBack()
+                    }
+                  ) {
+                    Text("임시저장", color = Color(0xFF4B7BFF))
+                  }
+                }
+              },
+              dismissButton = {
+                TextButton(
+                  onClick = { showCancelDialog = false }
+                ) {
+                  Text("계속 작성")
                 }
               },
               containerColor = Color.White
@@ -637,13 +709,71 @@ internal fun ProjectCreateScreenContent(
               maxLines = 5
             )
             Spacer(modifier = Modifier.height(12.dp))
+            // 사진 목록 표시
+            var selectedPhotos by remember { mutableStateOf(listOf<Uri>()) }
+            val launcher = rememberLauncherForActivityResult(
+              contract = ActivityResultContracts.GetMultipleContents()
+            ) { uris: List<Uri> ->
+              selectedPhotos = selectedPhotos + uris.take(5 - selectedPhotos.size) // 최대 5개
+            }
+            
+            if (selectedPhotos.isNotEmpty()) {
+              Row(
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+              ) {
+                selectedPhotos.forEach { uri ->
+                  Card(
+                    modifier = Modifier.size(80.dp),
+                    shape = RoundedCornerShape(8.dp)
+                  ) {
+                    Box {
+                      // URI에서 이미지 표시 (실제 구현시 Coil 등 사용)
+                      Box(
+                        modifier = Modifier
+                          .fillMaxSize()
+                          .background(Color.LightGray),
+                        contentAlignment = Alignment.Center
+                      ) {
+                        Icon(
+                          Icons.Default.Image,
+                          contentDescription = null,
+                          modifier = Modifier.size(40.dp),
+                          tint = Color.Gray
+                        )
+                      }
+                      IconButton(
+                        onClick = { selectedPhotos = selectedPhotos - uri },
+                        modifier = Modifier
+                          .align(Alignment.TopEnd)
+                          .size(24.dp)
+                      ) {
+                        Icon(
+                          Icons.Default.Close,
+                          contentDescription = "삭제",
+                          tint = Color.White,
+                          modifier = Modifier
+                            .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                            .padding(4.dp)
+                        )
+                      }
+                    }
+                  }
+                }
+              }
+              Spacer(modifier = Modifier.height(8.dp))
+            }
+            
             OutlinedButton(
-              onClick = { /* TODO: 사진 추가 기능 */ },
-              modifier = Modifier.fillMaxWidth()
+              onClick = { launcher.launch("image/*") },
+              modifier = Modifier.fillMaxWidth(),
+              enabled = selectedPhotos.size < 5
             ) {
               Icon(Icons.Default.Add, contentDescription = null)
               Spacer(modifier = Modifier.width(8.dp))
-              Text("사진 추가")
+              Text("사진 추가 (${selectedPhotos.size}/5)")
             }
           }
         }
@@ -680,15 +810,111 @@ internal fun ProjectCreateScreenContent(
                 onCheckedChange = { pickupProvided = it }
               )
             }
-            // TODO: 픽업장소 제공시 추가 필드들
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
-              onClick = { /* TODO: 픽업장소 추가 */ },
-              modifier = Modifier.fillMaxWidth()
-            ) {
-              Icon(Icons.Default.Add, contentDescription = null)
-              Spacer(modifier = Modifier.width(8.dp))
-              Text("픽업장소 추가")
+            // 픽업장소 제공시 추가 필드들
+            if (pickupProvided) {
+              Spacer(modifier = Modifier.height(12.dp))
+              
+              var pickupLocations by remember { mutableStateOf(listOf<String>()) }
+              var newPickupLocation by remember { mutableStateOf("") }
+              var showPickupDialog by remember { mutableStateOf(false) }
+              
+              // 픽업장소 목록
+              pickupLocations.forEach { location ->
+                Card(
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                  colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+                ) {
+                  Row(
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                  ) {
+                    Row(
+                      verticalAlignment = Alignment.CenterVertically,
+                      modifier = Modifier.weight(1f)
+                    ) {
+                      Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = Color(0xFF4B7BFF),
+                        modifier = Modifier.size(20.dp)
+                      )
+                      Spacer(modifier = Modifier.width(8.dp))
+                      Text(
+                        text = location,
+                        fontSize = 14.sp
+                      )
+                    }
+                    IconButton(
+                      onClick = { pickupLocations = pickupLocations - location },
+                      modifier = Modifier.size(24.dp)
+                    ) {
+                      Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "삭제",
+                        tint = Color(0xFFE57373),
+                        modifier = Modifier.size(20.dp)
+                      )
+                    }
+                  }
+                }
+              }
+              
+              Spacer(modifier = Modifier.height(8.dp))
+              OutlinedButton(
+                onClick = { showPickupDialog = true },
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("픽업장소 추가")
+              }
+              
+              // 픽업장소 추가 다이얼로그
+              if (showPickupDialog) {
+                AlertDialog(
+                  onDismissRequest = { showPickupDialog = false },
+                  title = { Text("픽업장소 추가") },
+                  text = {
+                    Column {
+                      OutlinedTextField(
+                        value = newPickupLocation,
+                        onValueChange = { newPickupLocation = it },
+                        label = { Text("픽업장소 주소") },
+                        placeholder = { Text("예: 강남역 2번 출구") },
+                        modifier = Modifier.fillMaxWidth()
+                      )
+                    }
+                  },
+                  confirmButton = {
+                    TextButton(
+                      onClick = {
+                        if (newPickupLocation.isNotBlank()) {
+                          pickupLocations = pickupLocations + newPickupLocation
+                          newPickupLocation = ""
+                          showPickupDialog = false
+                        }
+                      }
+                    ) {
+                      Text("추가")
+                    }
+                  },
+                  dismissButton = {
+                    TextButton(
+                      onClick = { 
+                        newPickupLocation = ""
+                        showPickupDialog = false 
+                      }
+                    ) {
+                      Text("취소")
+                    }
+                  }
+                )
+              }
             }
           }
         }

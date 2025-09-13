@@ -161,4 +161,6 @@ dependencies {
     implementation (libs.glide)
     ksp (libs.glide.compiler)
 
+    // ===== DataStore =====
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }
