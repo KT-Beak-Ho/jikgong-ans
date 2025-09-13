@@ -91,7 +91,9 @@ import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage5ScreenDest
 import com.billcorea.jikgong.presentation.destinations.WorkerJoinPage6ScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerLoginPageDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerMyProjectAcceptedScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerMyProjectPendingScreenDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectDestination
+import com.billcorea.jikgong.presentation.destinations.ApplyProjectDestination
 import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
 import com.billcorea.jikgong.presentation.worker.auth.join.page1.WorkerJoinPage1Screen
 import com.billcorea.jikgong.presentation.worker.auth.join.page2.WorkerJoinPage2Screen
@@ -106,8 +108,10 @@ import com.billcorea.jikgong.presentation.worker.login.page1.WorkerLoginPage
 import com.billcorea.jikgong.presentation.worker.login.shared.WorkerLoginViewModel
 import com.billcorea.jikgong.presentation.worker.myInfo.page1.MyInfo
 import com.billcorea.jikgong.presentation.worker.myProject.page1.WorkerMyProjectAcceptedScreen
-import com.billcorea.jikgong.presentation.worker.project.WorkerProject
+import com.billcorea.jikgong.presentation.worker.myProject.page2.WorkerMyProjectPendingScreen
+import com.billcorea.jikgong.presentation.worker.projectList.page2.WorkerProject
 import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
+import com.billcorea.jikgong.presentation.worker.projectList.page3.ApplyProject
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -192,6 +196,13 @@ class MainActivity : ComponentActivity() {
               }
               composable(WorkerMyProjectAcceptedScreenDestination.route) {
                 WorkerMyProjectAcceptedScreen(
+                  viewModel,
+                  navigator,
+                  modifier = Modifier.padding(5.dp)
+                )
+              }
+              composable(WorkerMyProjectPendingScreenDestination.route) {
+                WorkerMyProjectPendingScreen(
                   viewModel,
                   navigator,
                   modifier = Modifier.padding(5.dp)

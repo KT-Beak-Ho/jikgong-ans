@@ -107,6 +107,7 @@ fun IncomeManagementScreen(
           .fillMaxWidth()
           .height((screenHeight * .10).dp)
           .padding(5.dp),
+        navigator = navigator,
         doWorkerProjectList = { /* 프로젝트 리스트 */ },
         doWorkerMyjob = { /* 내 일자리 */ },
         doWorkerEarning = { /* 수입 관리 */ },

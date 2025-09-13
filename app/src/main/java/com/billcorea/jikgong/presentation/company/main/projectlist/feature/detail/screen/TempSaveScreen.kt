@@ -28,6 +28,7 @@ import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.ramcosta.composedestinations.annotation.Destination
+
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,7 +38,6 @@ fun TempSaveScreen(
   navController: NavController,
   modifier: Modifier = Modifier
 ) {
-  // CompanyMockDataFactory에서 임시저장 데이터 가져오기
   var tempSavedJobs by remember { 
     mutableStateOf(CompanyMockDataFactory.getTempSavedJobs())
   }

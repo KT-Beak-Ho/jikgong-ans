@@ -35,48 +35,53 @@ fun WorkerInfoScreen(
   selectedDate: String? = null,
   modifier: Modifier = Modifier
 ) {
-  // 날짜별 확정 근로자 데이터 (캐시됨)
-  val confirmedWorkersByDate = CompanyMockDataFactory.getConfirmedWorkersByDate().mapKeys { 
-    LocalDate.parse(it.key) 
+  // WorkDay 기반으로 확정 근로자 데이터 조회
+  val confirmedWorkers = remember(workDayId) {
+    CompanyMockDataFactory.getConfirmedWorkersForWorkDay(workDayId)
   }
   
-  // 데이터 일관성 테스트 (한 번만 실행)
+  // WorkDay 정보 조회 (제목과 날짜 표시용)
+  val workDayInfo = remember(workDayId) {
+    // 모든 프로젝트에서 해당 WorkDay 검색
+    val allProjects = listOf("project_001", "project_002", "project_003", "project_004", "project_005", "project_006", "project_007")
+    var foundWorkDay: com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay? = null
+    
+    for (projectId in allProjects) {
+      val workDays = CompanyMockDataFactory.getWorkDaysForProject(projectId)
+      foundWorkDay = workDays.find { it.id == workDayId }
+      if (foundWorkDay != null) break
+    }
+    foundWorkDay
+  }
+  
+  // 데이터 일관성 테스트 (WorkDay 기반으로 변경)
   LaunchedEffect(Unit) {
-    CompanyMockDataFactory.testDataConsistency()
+    CompanyMockDataFactory.testWorkDayDataConsistency()
   }
   
-  // 현재 선택된 날짜 (실시간 업데이트를 위해 remember 제거)
-  val effectiveDate = try {
-    selectedDate?.takeIf { it.isNotBlank() }?.let { 
-      LocalDate.parse(it) 
-    } ?: LocalDate.parse("2025-08-01") // 데이터 범위 내 기본 날짜 사용
-  } catch (e: Exception) {
-    println("Error parsing selectedDate: $selectedDate, using default date 2025-08-01")
-    LocalDate.parse("2025-08-01") // 에러 시에도 데이터 범위 내 날짜 사용
-  }
-  
-  // 선택된 날짜에 따른 근로자 목록 (디버깅 정보 포함)
-  val confirmedWorkers = confirmedWorkersByDate[effectiveDate] ?: emptyList()
+  // WorkDay 날짜 정보 (fallback 처리)
+  val workDayDate = workDayInfo?.date ?: LocalDate.now()
+  val workDayTitle = workDayInfo?.title ?: "일자리 정보"
   
   // 디버깅: 현재 데이터 상태 확인
-  println("=== WorkerInfoScreen Debug ===")
-  println("selectedDate parameter: $selectedDate")
-  println("effectiveDate calculated: $effectiveDate")
+  println("=== WorkerInfoScreen Debug (WorkDay-based) ===")
+  println("workDayId: $workDayId")
+  println("workDayTitle: $workDayTitle")
+  println("workDayDate: $workDayDate")
   println("confirmedWorkers.size: ${confirmedWorkers.size}")
   println("confirmedWorkers.names: ${confirmedWorkers.map { it.name }}")
-  println("all available dates: ${confirmedWorkersByDate.keys.sorted()}")
-  println("data for this date exists: ${confirmedWorkersByDate.containsKey(effectiveDate)}")
-  println("workDayId: $workDayId")
-  println("=================================")
+  println("maxWorkers: ${workDayInfo?.maxWorkers ?: 0}")
+  println("confirmed: ${workDayInfo?.confirmed ?: 0}")
+  println("============================================")
 
-  // 제목에 날짜 정보 포함
-  val titleWithDate = "출근확정 근로자 정보 (${effectiveDate.format(DateTimeFormatter.ofPattern("MM/dd"))})"
+  // 제목에 날짜와 일자리 정보 포함
+  val titleWithInfo = "출근확정 근로자 (${workDayDate.format(DateTimeFormatter.ofPattern("MM/dd"))})"
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
     topBar = {
       BackNavigationTopBar(
-        title = titleWithDate,
+        title = titleWithInfo,
         onBackClick = { navController.popBackStack() }
       )
     }
@@ -89,22 +94,29 @@ fun WorkerInfoScreen(
     ) {
       HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
       
-      // 선택된 날짜 정보 표시 (WorkerManagementScreen과 동일한 스타일)
+      // WorkDay 정보 표시
       Box(
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = 16.dp, vertical = 8.dp)
       ) {
-        Text(
-          text = effectiveDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")),
-          style = AppTypography.bodyMedium,
-          fontWeight = FontWeight.Medium
-        )
+        Column {
+          Text(
+            text = workDayDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")),
+            style = AppTypography.bodyMedium,
+            fontWeight = FontWeight.Medium
+          )
+          Text(
+            text = workDayTitle,
+            style = AppTypography.bodySmall,
+            color = Color.Gray
+          )
+        }
       }
       
       HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
       
-      // 총 인원수 표시
+      // 총 인원수 표시 (WorkDay 기반 정보 포함)
       Box(
         modifier = Modifier
           .fillMaxWidth()
@@ -124,6 +136,13 @@ fun WorkerInfoScreen(
             fontWeight = FontWeight.Bold,
             color = Color(0xFF4B7BFF)
           )
+          if (workDayInfo != null) {
+            Text(
+              text = " / ${workDayInfo.maxWorkers}명",
+              style = AppTypography.bodyMedium,
+              color = Color.Gray
+            )
+          }
         }
       }
       
@@ -139,13 +158,13 @@ fun WorkerInfoScreen(
             horizontalAlignment = Alignment.CenterHorizontally
           ) {
             Text(
-              text = "${effectiveDate.format(DateTimeFormatter.ofPattern("MM월 dd일"))}에 확정된 근로자가 없습니다",
+              text = "이 일자리에 확정된 근로자가 없습니다",
               style = AppTypography.bodyLarge,
               color = Color.Gray
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-              text = "다른 날짜를 선택해보세요",
+              text = workDayTitle,
               style = AppTypography.bodySmall,
               color = Color.Gray
             )

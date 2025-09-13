@@ -1,32 +1,71 @@
 package com.billcorea.jikgong.presentation.worker.myProject.page2
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.People
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.billcorea.jikgong.presentation.worker.common.WorkerBottomNav
+import com.billcorea.jikgong.ui.theme.AppTypography
+import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
+import com.billcorea.jikgong.ui.theme.appColorScheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.*
-import androidx.compose.foundation.ExperimentalFoundationApi
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.billcorea.jikgong.utils.MainViewModel
+import org.koin.androidx.compose.koinViewModel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Destination
 @Composable
 fun WorkerMyProjectPendingScreen(
+  viewModel : MainViewModel = koinViewModel(),
+  navigator: DestinationsNavigator,
   modifier: Modifier = Modifier,
   onBack: () -> Unit = {}
 ) {
@@ -37,49 +76,115 @@ fun WorkerMyProjectPendingScreen(
   val groups = remember { sampleJobGroups() }
 
   Scaffold(
+    modifier = modifier.fillMaxSize(),
     topBar = {
       TopAppBar(
-        title = { Text("내 일자리", fontWeight = FontWeight.Bold) },
+        title = { 
+          Text(
+            "내 일자리", 
+            style = AppTypography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = appColorScheme.onSurface
+          ) 
+        },
         navigationIcon = {
           IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            Icon(
+              Icons.AutoMirrored.Filled.ArrowBack, 
+              contentDescription = "Back",
+              tint = appColorScheme.onSurface
+            )
           }
         },
         actions = {
           IconButton(onClick = { /* TODO notification */ }) {
-            Icon(Icons.Default.NotificationsNone, contentDescription = "Notifications")
+            Icon(
+              Icons.Default.NotificationsNone, 
+              contentDescription = "Notifications",
+              tint = appColorScheme.onSurface
+            )
           }
-        }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+          containerColor = Color.White,
+          titleContentColor = appColorScheme.onSurface,
+          navigationIconContentColor = appColorScheme.onSurface
+        )
       )
     },
-    bottomBar = { BottomNavigationBar(selected = 1) }
+    bottomBar = {
+      WorkerBottomNav(
+        navigator = navigator,
+        doWorkerProjectList = { /* TODO */ },
+        doWorkerMyjob = { /* TODO */ },
+        doWorkerEarning = { /* TODO */ },
+        doWorkerProfile = { /* TODO */ }
+      )
+    }
   ) { inner ->
-    Column(modifier = modifier.padding(inner)) {
-      TabRow(selectedTabIndex = selectedTab.intValue) {
+    Column(
+      modifier = Modifier
+        .padding(inner)
+        .fillMaxSize()
+        .background(Color(0xFFF8F9FA))
+    ) {
+      TabRow(
+        selectedTabIndex = selectedTab.intValue,
+        containerColor = Color.White
+      ) {
         tabs.forEachIndexed { index, label ->
-          Tab(selected = selectedTab.intValue == index,
-            onClick = { selectedTab.intValue = index }) {
-            Text(label, modifier = Modifier.padding(vertical = 12.dp))
-          }
+          Tab(
+            selected = selectedTab.intValue == index,
+            onClick = { selectedTab.intValue = index },
+            text = {
+              Text(
+                label,
+                style = AppTypography.bodyLarge,
+                color = if (selectedTab.intValue == index)
+                  appColorScheme.primary else appColorScheme.onSurfaceVariant
+              )
+            }
+          )
         }
       }
 
-      LazyColumn(modifier = Modifier.fillMaxSize()) {
-        groups.forEach { group ->
-          stickyHeader {
-            Text(
-              text = group.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.KOREAN)) + " 지원",
-              modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-              style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-            )
+      if (groups.isNotEmpty()) {
+        LazyColumn(
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+          verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+          groups.forEach { group ->
+            stickyHeader {
+              Text(
+                text = group.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.KOREAN)) + " 지원",
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .background(Color.White, RoundedCornerShape(8.dp))
+                  .padding(horizontal = 16.dp, vertical = 12.dp),
+                style = AppTypography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = appColorScheme.primary
+              )
+            }
+            items(group.jobs) { job ->
+              JobCard(job)
+            }
           }
-          items(group.jobs) { job ->
-            JobCard(job)
-            Spacer(modifier = Modifier.height(8.dp))
-          }
+        }
+      } else {
+        Column(
+          modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.Center
+        ) {
+          Text(
+            text = "신청한 일자리가 없습니다.",
+            style = AppTypography.bodyLarge,
+            color = appColorScheme.onSurfaceVariant
+          )
         }
       }
     }
@@ -88,56 +193,95 @@ fun WorkerMyProjectPendingScreen(
 
 @Composable
 private fun JobCard(job: JobApplication) {
-  Card(modifier = Modifier
-    .fillMaxWidth()
-    .padding(horizontal = 16.dp)) {
-    Column(modifier = Modifier.padding(12.dp)) {
-      Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+  Card(
+    modifier = Modifier.fillMaxWidth(),
+    shape = RoundedCornerShape(16.dp),
+    colors = CardDefaults.cardColors(
+      containerColor = Color.White
+    ),
+    elevation = CardDefaults.cardElevation(
+      defaultElevation = 2.dp
+    )
+  ) {
+    Column(modifier = Modifier.padding(16.dp)) {
+      Row(
+        modifier = Modifier.fillMaxWidth(), 
+        verticalAlignment = Alignment.CenterVertically
+      ) {
         Text(
           text = job.title,
-          color = MaterialTheme.colorScheme.primary,
-          fontWeight = FontWeight.Bold,
-          fontSize = 16.sp
+          style = AppTypography.titleMedium,
+          color = appColorScheme.primary,
+          fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.weight(1f))
         AssistChip(
           onClick = {},
-          label = { Text("진행중", fontSize = 11.sp) },
-          colors = AssistChipDefaults.assistChipColors(containerColor = Color(0xFFE5E5E5))
+          label = { 
+            Text(
+              "진행중", 
+              style = AppTypography.bodySmall
+            ) 
+          },
+          colors = AssistChipDefaults.assistChipColors(
+            containerColor = appColorScheme.primaryContainer.copy(alpha = 0.3f),
+            labelColor = appColorScheme.primary
+          )
         )
       }
-      Spacer(modifier = Modifier.height(2.dp))
-      Text(job.projectName, fontSize = 13.sp)
-      Spacer(modifier = Modifier.height(12.dp))
+      Spacer(modifier = Modifier.height(8.dp))
+      Text(
+        job.projectName, 
+        style = AppTypography.bodyMedium,
+        color = appColorScheme.onSurfaceVariant
+      )
+      Spacer(modifier = Modifier.height(16.dp))
       Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp))
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(job.supportDate, fontSize = 12.sp)
-        Spacer(modifier = Modifier.width(16.dp))
-        Icon(Icons.Default.People, contentDescription = null, modifier = Modifier.size(16.dp))
-        Spacer(modifier = Modifier.width(4.dp))
-        Text("지원자수: ${job.applicantCount}명", fontSize = 12.sp)
-        Spacer(modifier = Modifier.weight(1f))
-        OutlinedButton(onClick = { /*TODO: cancel*/ }) {
-          Text("지원 취소", color = MaterialTheme.colorScheme.error)
-        }
+        Icon(
+          Icons.Default.CalendarToday, 
+          contentDescription = null, 
+          modifier = Modifier.size(18.dp),
+          tint = appColorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+          job.supportDate, 
+          style = AppTypography.bodyMedium,
+          color = appColorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.width(24.dp))
+        Icon(
+          Icons.Default.People, 
+          contentDescription = null, 
+          modifier = Modifier.size(18.dp),
+          tint = appColorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+          "지원자수: ${job.applicantCount}명", 
+          style = AppTypography.bodyMedium,
+          color = appColorScheme.onSurfaceVariant
+        )
+      }
+      Spacer(modifier = Modifier.height(16.dp))
+      OutlinedButton(
+        onClick = { /*TODO: cancel*/ },
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+          contentColor = MaterialTheme.colorScheme.error
+        )
+      ) {
+        Text(
+          "지원 취소", 
+          style = AppTypography.bodyMedium,
+          fontWeight = FontWeight.Medium
+        )
       }
     }
   }
 }
 
-@Composable
-private fun BottomNavigationBar(selected: Int) {
-  NavigationBar {
-    val items = listOf("일자리 목록", "내 일자리", "수익 관리", "내 정보")
-    items.forEachIndexed { index, label ->
-      NavigationBarItem(selected = selected == index,
-        onClick = { /*TODO*/ },
-        icon = { /* TODO: icon resource*/ Box(Modifier.size(24.dp)) },
-        label = { Text(label, fontSize = 10.sp) })
-    }
-  }
-}
 
 // --- Sample Data & Models ---
 private data class JobApplication(
@@ -168,10 +312,149 @@ private fun sampleJobGroups(): List<JobGroup> {
   )
 }
 
+private fun emptyJobGroups(): List<JobGroup> {
+  return emptyList()
+}
+
 @Preview(showBackground = true, widthDp = 390, heightDp = 800)
 @Composable
 private fun WorkerMyProjectPendingScreenProgress() {
-  MaterialTheme {
-    WorkerMyProjectPendingScreen()
+Jikgong1111Theme {
+    //WorkerMyProjectPendingScreen()
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun WorkerMyProjectPendingScreenEmptyState(
+  modifier: Modifier = Modifier,
+  navigator: DestinationsNavigator,
+  onBack: () -> Unit = {}
+) {
+  val selectedTab = remember { mutableIntStateOf(1) }
+  val tabs = listOf("확정", "진행중", "마감")
+  val groups = remember { emptyJobGroups() }
+
+  Scaffold(
+    modifier = modifier.fillMaxSize(),
+    topBar = {
+      TopAppBar(
+        title = { 
+          Text(
+            "내 일자리", 
+            style = AppTypography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = appColorScheme.onSurface
+          ) 
+        },
+        navigationIcon = {
+          IconButton(onClick = onBack) {
+            Icon(
+              Icons.AutoMirrored.Filled.ArrowBack, 
+              contentDescription = "Back",
+              tint = appColorScheme.onSurface
+            )
+          }
+        },
+        actions = {
+          IconButton(onClick = { /* TODO notification */ }) {
+            Icon(
+              Icons.Default.NotificationsNone, 
+              contentDescription = "Notifications",
+              tint = appColorScheme.onSurface
+            )
+          }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+          containerColor = Color.White,
+          titleContentColor = appColorScheme.onSurface,
+          navigationIconContentColor = appColorScheme.onSurface
+        )
+      )
+    },
+    bottomBar = {
+      WorkerBottomNav(
+        navigator = navigator,
+        doWorkerProjectList = { /* TODO */ },
+        doWorkerMyjob = { /* TODO */ },
+        doWorkerEarning = { /* TODO */ },
+        doWorkerProfile = { /* TODO */ }
+      )
+    }
+  ) { inner ->
+    Column(
+      modifier = Modifier
+        .padding(inner)
+        .fillMaxSize()
+        .background(Color(0xFFF8F9FA))
+    ) {
+      TabRow(
+        selectedTabIndex = selectedTab.intValue,
+        containerColor = Color.White
+      ) {
+        tabs.forEachIndexed { index, label ->
+          Tab(
+            selected = selectedTab.intValue == index,
+            onClick = { selectedTab.intValue = index },
+            text = {
+              Text(
+                label,
+                style = AppTypography.bodyLarge,
+                color = if (selectedTab.intValue == index)
+                  appColorScheme.primary else appColorScheme.onSurfaceVariant
+              )
+            }
+          )
+        }
+      }
+
+      if (groups.isNotEmpty()) {
+        LazyColumn(
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+          verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+          groups.forEach { group ->
+            stickyHeader {
+              Text(
+                text = group.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.KOREAN)) + " 지원",
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .background(Color.White, RoundedCornerShape(8.dp))
+                  .padding(horizontal = 16.dp, vertical = 12.dp),
+                style = AppTypography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = appColorScheme.primary
+              )
+            }
+            items(group.jobs) { job ->
+              JobCard(job)
+            }
+          }
+        }
+      } else {
+        Column(
+          modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.Center
+        ) {
+          Text(
+            text = "신청한 일자리가 없습니다.",
+            style = AppTypography.bodyLarge,
+            color = appColorScheme.onSurfaceVariant
+          )
+        }
+      }
+    }
+  }
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 800)
+@Composable
+private fun WorkerMyProjectPendingScreenEmpty() {
+  Jikgong1111Theme {
+    // WorkerMyProjectPendingScreenEmptyState()
   }
 }

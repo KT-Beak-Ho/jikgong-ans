@@ -22,6 +22,11 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Work
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkerInfo
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Job
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.TempSavedJob
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.ExistingJob
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.PreviousJobPost
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.TempSavePost
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.WorkerAttendanceInfo
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -36,8 +41,37 @@ object CompanyMockDataFactory {
     // ==================== 공통 기본 데이터 ====================
     
     /**
-     * 일관된 작업자 기본 정보
+     * 통합 노동자 마스터 데이터 - 모든 노동자 정보의 기준이 되는 데이터 클래스
      */
+    data class MasterWorker(
+        val id: String,
+        val name: String,
+        val age: Int,
+        val gender: String, // "남", "여"
+        val primaryJobType: String,
+        val secondaryJobTypes: List<String> = emptyList(),
+        val experience: Int, // 경력 (년)
+        val hourlyWage: Int, // 원/시간
+        val dailyWage: String, // 표시용 일당
+        val rating: Float,
+        val completedProjects: Int,
+        val introduction: String,
+        val isAvailable: Boolean = true,
+        val location: String = "서울특별시 강남구",
+        val distance: Double = 0.0,
+        val phone: String,
+        val experienceLevel: String, // "초급", "중급", "고급", "전문"
+        val workEnvironment: String, // "실내", "실외", "혼합" 
+        val certifications: List<String> = emptyList(), // 보유 자격증
+        val joinDate: String, // 가입일
+        val attendanceScore: Int = 90, // 출근율 점수 (0-100)
+        val workHours: Double = 8.0 // 기본 작업시간
+    )
+
+    /**
+     * 기존 BaseWorker 호환을 위한 데이터 클래스 (Deprecated)
+     */
+    @Deprecated("Use MasterWorker with toBaseWorker() extension function")
     data class BaseWorker(
         val id: String,
         val name: String,
@@ -73,12 +107,18 @@ object CompanyMockDataFactory {
         val isBookmarked: Boolean = false
     )
 
-    // ==================== 기본 작업자 데이터 ====================
+    // ==================== 통합 노동자 마스터 데이터 ====================
     
-    private val baseWorkers = listOf(
-        BaseWorker(
+    /**
+     * 모든 노동자 정보의 마스터 데이터
+     * 기존의 BaseWorker, ConfirmedWorker, ApplicantWorker 정보를 통합
+     */
+    private val masterWorkers = listOf(
+        MasterWorker(
             id = "worker_001",
             name = "김철수",
+            age = 30,
+            gender = "남",
             primaryJobType = "철근공",
             secondaryJobTypes = listOf("형틀목공"),
             experience = 5,
@@ -87,64 +127,104 @@ object CompanyMockDataFactory {
             rating = 4.8f,
             completedProjects = 52,
             introduction = "성실하고 꼼꼼한 작업을 약속드립니다. 철근 작업 5년 경력으로 안전하고 정확한 시공이 가능합니다.",
-            distance = 0.8
+            distance = 0.8,
+            phone = "010-1234-5678",
+            experienceLevel = "고급",
+            workEnvironment = "실외",
+            certifications = listOf("철근기능사", "건설기계조종사"),
+            joinDate = "2025-07-28",
+            attendanceScore = 95
         ),
-        BaseWorker(
+        MasterWorker(
             id = "worker_002", 
             name = "이영희",
+            age = 28,
+            gender = "여",
             primaryJobType = "타일공",
             secondaryJobTypes = emptyList(),
             experience = 3,
             hourlyWage = 17000,
-            dailyWage = "일당 15만원",
+            dailyWage = "일당 17만원",
             rating = 4.5f,
             completedProjects = 28,
             introduction = "깔끔한 마감 처리가 장점입니다. 타일 시공 전문으로 꼼꼼한 작업을 보장합니다.",
-            distance = 1.2
+            distance = 1.2,
+            phone = "010-2345-6789",
+            experienceLevel = "중급",
+            workEnvironment = "실내",
+            certifications = listOf("타일기능사"),
+            joinDate = "2025-07-30",
+            attendanceScore = 88
         ),
-        BaseWorker(
+        MasterWorker(
             id = "worker_003",
-            name = "박민수", 
+            name = "박민수",
+            age = 35,
+            gender = "남",
             primaryJobType = "전기공",
             secondaryJobTypes = listOf("배관공"),
             experience = 8,
             hourlyWage = 22000,
-            dailyWage = "일당 20만원", 
+            dailyWage = "일당 20만원",
             rating = 4.9f,
             completedProjects = 103,
             introduction = "다년간의 경험으로 신속 정확한 작업 보장합니다. 전기·배관 작업의 전문가입니다.",
             isAvailable = false,
-            distance = 2.5
+            distance = 2.5,
+            phone = "010-3456-7890",
+            experienceLevel = "고급",
+            workEnvironment = "혼합",
+            certifications = listOf("전기기능사", "전기공사기사"),
+            joinDate = "2025-07-25",
+            attendanceScore = 92
         ),
-        BaseWorker(
+        MasterWorker(
             id = "worker_004",
             name = "정수진",
+            age = 25,
+            gender = "여",
             primaryJobType = "도장공",
             secondaryJobTypes = emptyList(),
             experience = 2,
             hourlyWage = 15000,
-            dailyWage = "협의 가능",
+            dailyWage = "일당 12만원",
             rating = 4.3f,
             completedProjects = 15,
             introduction = "꼼꼼한 작업으로 만족도 높은 결과물을 제공합니다. 도장 작업 전문입니다.",
-            distance = 1.8
+            distance = 1.8,
+            phone = "010-4567-8901",
+            experienceLevel = "초급",
+            workEnvironment = "실내",
+            certifications = emptyList(),
+            joinDate = "2025-07-29",
+            attendanceScore = 85
         ),
-        BaseWorker(
+        MasterWorker(
             id = "worker_005",
             name = "최영호",
+            age = 42,
+            gender = "남",
             primaryJobType = "조적공", 
             secondaryJobTypes = listOf("미장공"),
             experience = 10,
             hourlyWage = 20000,
-            dailyWage = "일당 22만원",
+            dailyWage = "일당 18만원",
             rating = 4.7f,
             completedProjects = 156,
-            introduction = "20년 경력의 베테랑입니다. 조적과 미장 작업의 숙련된 전문가입니다.",
-            distance = 3.2
+            introduction = "10년 경력의 베테랑입니다. 조적과 미장 작업의 숙련된 전문가입니다.",
+            distance = 3.2,
+            phone = "010-5678-9012",
+            experienceLevel = "고급",
+            workEnvironment = "실외",
+            certifications = listOf("조적기능사", "건축기사"),
+            joinDate = "2025-07-26",
+            attendanceScore = 98
         ),
-        BaseWorker(
+        MasterWorker(
             id = "worker_006",
             name = "최수진",
+            age = 33,
+            gender = "여",
             primaryJobType = "목수",
             secondaryJobTypes = emptyList(),
             experience = 4,
@@ -153,11 +233,19 @@ object CompanyMockDataFactory {
             rating = 4.6f,
             completedProjects = 34,
             introduction = "정밀한 목공 작업을 전문으로 합니다.",
-            distance = 1.5
+            distance = 1.5,
+            phone = "010-6789-0123",
+            experienceLevel = "고급",
+            workEnvironment = "혼합",
+            certifications = listOf("목재창호제작기능사"),
+            joinDate = "2025-07-27",
+            attendanceScore = 90
         ),
-        BaseWorker(
+        MasterWorker(
             id = "worker_007",
             name = "정대수",
+            age = 29,
+            gender = "남",
             primaryJobType = "용접공",
             secondaryJobTypes = emptyList(),
             experience = 6,
@@ -166,11 +254,19 @@ object CompanyMockDataFactory {
             rating = 4.7f,
             completedProjects = 67,
             introduction = "안전한 용접 작업을 보장합니다.",
-            distance = 2.1
+            distance = 2.1,
+            phone = "010-7890-1234",
+            experienceLevel = "중급",
+            workEnvironment = "실외",
+            certifications = listOf("용접기능사"),
+            joinDate = "2025-07-31",
+            attendanceScore = 75
         ),
-        BaseWorker(
+        MasterWorker(
             id = "worker_008",
             name = "송기원",
+            age = 27,
+            gender = "남",
             primaryJobType = "보통인부",
             secondaryJobTypes = emptyList(),
             experience = 1,
@@ -179,9 +275,169 @@ object CompanyMockDataFactory {
             rating = 4.2f,
             completedProjects = 8,
             introduction = "성실히 작업하겠습니다.",
-            distance = 0.9
+            distance = 0.9,
+            phone = "010-8901-2345",
+            experienceLevel = "초급",
+            workEnvironment = "실외",
+            certifications = emptyList(),
+            joinDate = "2025-07-24",
+            attendanceScore = 87
+        ),
+        // 테스트를 위한 추가 작업자들
+        MasterWorker(
+            id = "worker_009",
+            name = "김민지",
+            age = 26,
+            gender = "여",
+            primaryJobType = "미장공",
+            secondaryJobTypes = emptyList(),
+            experience = 3,
+            hourlyWage = 16000,
+            dailyWage = "일당 13만원",
+            rating = 4.3f,
+            completedProjects = 22,
+            introduction = "깔끔한 미장 작업을 전문으로 합니다.",
+            distance = 1.3,
+            phone = "010-9012-3456",
+            experienceLevel = "중급",
+            workEnvironment = "실내",
+            certifications = listOf("미장기능사"),
+            joinDate = "2025-07-22",
+            attendanceScore = 91
+        ),
+        MasterWorker(
+            id = "worker_010",
+            name = "박지훈",
+            age = 32,
+            gender = "남",
+            primaryJobType = "형틀목공",
+            secondaryJobTypes = listOf("철근공"),
+            experience = 7,
+            hourlyWage = 19000,
+            dailyWage = "일당 17만원",
+            rating = 4.6f,
+            completedProjects = 58,
+            introduction = "형틀 설치 및 해체 전문가입니다.",
+            distance = 2.8,
+            phone = "010-0123-4567",
+            experienceLevel = "고급",
+            workEnvironment = "실외",
+            certifications = listOf("형틀기능사", "건설기계조종사"),
+            joinDate = "2025-07-20",
+            attendanceScore = 94
+        ),
+        MasterWorker(
+            id = "worker_011",
+            name = "이지영",
+            age = 29,
+            gender = "여",
+            primaryJobType = "전기공",
+            secondaryJobTypes = emptyList(),
+            experience = 4,
+            hourlyWage = 20000,
+            dailyWage = "일당 16만원",
+            rating = 4.4f,
+            completedProjects = 31,
+            introduction = "안전한 전기 작업을 보장합니다.",
+            distance = 1.7,
+            phone = "010-1111-2222",
+            experienceLevel = "중급",
+            workEnvironment = "혼합",
+            certifications = listOf("전기기능사"),
+            joinDate = "2025-07-23",
+            attendanceScore = 88
+        ),
+        MasterWorker(
+            id = "worker_012",
+            name = "정태웅",
+            age = 35,
+            gender = "남",
+            primaryJobType = "조적공",
+            secondaryJobTypes = emptyList(),
+            experience = 9,
+            hourlyWage = 21000,
+            dailyWage = "일당 19만원",
+            rating = 4.8f,
+            completedProjects = 89,
+            introduction = "정교한 조적 작업으로 품질을 보장합니다.",
+            distance = 3.1,
+            phone = "010-2222-3333",
+            experienceLevel = "고급",
+            workEnvironment = "실외",
+            certifications = listOf("조적기능사", "건축기사"),
+            joinDate = "2025-07-18",
+            attendanceScore = 96
         )
     )
+
+    // ==================== 확장 함수 및 변환 함수 ====================
+    
+    /**
+     * MasterWorker를 BaseWorker로 변환
+     */
+    fun MasterWorker.toBaseWorker(): BaseWorker {
+        return BaseWorker(
+            id = this.id,
+            name = this.name,
+            primaryJobType = this.primaryJobType,
+            secondaryJobTypes = this.secondaryJobTypes,
+            experience = this.experience,
+            hourlyWage = this.hourlyWage,
+            dailyWage = this.dailyWage,
+            rating = this.rating,
+            completedProjects = this.completedProjects,
+            introduction = this.introduction,
+            isAvailable = this.isAvailable,
+            location = this.location,
+            distance = this.distance
+        )
+    }
+    
+    /**
+     * MasterWorker를 ConfirmedWorker로 변환
+     */
+    fun MasterWorker.toConfirmedWorker(): ConfirmedWorker {
+        return ConfirmedWorker(
+            id = this.id,
+            name = this.name,
+            age = this.age,
+            gender = this.gender,
+            experience = this.experience,
+            attendanceRate = this.attendanceScore,
+            totalWorkDays = this.completedProjects,
+            phoneNumber = this.phone,
+            jobType = this.primaryJobType,
+            skill = this.experienceLevel,
+            workPreference = this.workEnvironment,
+            certifications = this.certifications,
+            distance = this.distance,
+            rating = this.rating,
+            lastWorkDate = this.joinDate
+        )
+    }
+    
+    /**
+     * MasterWorker를 ApplicantWorker로 변환
+     */
+    fun MasterWorker.toApplicantWorker(): ApplicantWorker {
+        return ApplicantWorker(
+            id = this.id,
+            name = this.name,
+            age = this.age,
+            gender = this.gender,
+            experience = this.experience,
+            attendanceRate = this.attendanceScore,
+            totalWorkDays = this.completedProjects,
+            phoneNumber = this.phone,
+            jobType = this.primaryJobType,
+            skill = this.experienceLevel,
+            workPreference = this.workEnvironment,
+            certifications = this.certifications,
+            distance = this.distance,
+            rating = this.rating,
+            lastWorkDate = this.joinDate
+        )
+    }
 
     // ==================== 기본 프로젝트 데이터 ====================
     
@@ -339,21 +595,21 @@ object CompanyMockDataFactory {
     // ==================== 스카우트 데이터 ====================
     
     fun getScoutWorkers(): List<Worker> {
-        return baseWorkers.map { baseWorker ->
+        return masterWorkers.map { masterWorker ->
             Worker(
-                id = baseWorker.id,
-                name = baseWorker.name,
-                jobTypes = listOf(baseWorker.primaryJobType) + baseWorker.secondaryJobTypes,
-                experience = baseWorker.experience,
-                distance = baseWorker.distance,
-                rating = baseWorker.rating,
-                introduction = baseWorker.introduction,
-                desiredWage = baseWorker.dailyWage,
-                isAvailable = baseWorker.isAvailable,
-                completedProjects = baseWorker.completedProjects,
-                hourlyWage = baseWorker.hourlyWage,
-                dailyWage = baseWorker.dailyWage,
-                location = baseWorker.location
+                id = masterWorker.id,
+                name = masterWorker.name,
+                jobTypes = listOf(masterWorker.primaryJobType) + masterWorker.secondaryJobTypes,
+                experience = masterWorker.experience,
+                distance = masterWorker.distance,
+                rating = masterWorker.rating,
+                introduction = masterWorker.introduction,
+                desiredWage = masterWorker.dailyWage,
+                isAvailable = masterWorker.isAvailable,
+                completedProjects = masterWorker.completedProjects,
+                hourlyWage = masterWorker.hourlyWage,
+                dailyWage = masterWorker.dailyWage,
+                location = masterWorker.location
             )
         }
     }
@@ -691,7 +947,7 @@ object CompanyMockDataFactory {
      * 작업자 ID로 기본 작업자 정보 조회
      */
     fun getWorkerById(workerId: String): BaseWorker? {
-        return baseWorkers.find { it.id == workerId }
+        return masterWorkers.find { it.id == workerId }?.toBaseWorker()
     }
 
 
@@ -699,16 +955,16 @@ object CompanyMockDataFactory {
      * 직종별 작업자 필터링
      */
     fun getWorkersByJobType(jobType: String): List<BaseWorker> {
-        return baseWorkers.filter { 
+        return masterWorkers.filter { 
             it.primaryJobType == jobType || it.secondaryJobTypes.contains(jobType)
-        }
+        }.map { it.toBaseWorker() }
     }
 
     /**
      * 사용 가능한 작업자만 필터링
      */
     fun getAvailableWorkers(): List<BaseWorker> {
-        return baseWorkers.filter { it.isAvailable }
+        return masterWorkers.filter { it.isAvailable }.map { it.toBaseWorker() }
     }
 
     /**
@@ -723,20 +979,14 @@ object CompanyMockDataFactory {
     // ==================== 날짜별 인원 수 결정 알고리즘 ====================
     
     /**
-     * 날짜별 적정 인원 수를 결정하는 알고리즘
-     * - 주중(월~목): 4-8명 (기본 작업량)
-     * - 금요일: 6-10명 (주 마감으로 인한 증가)
-     * - 토요일: 2-5명 (휴일 근무로 감소)
-     * - 일요일: 0-3명 (최소 인원 또는 휴무)
-     */
-    /**
-     * 개선된 확정 근로자 수 결정 알고리즘
+     * 개선된 확정 근로자 수 결정 알고리즘 (물리적 제약 고려)
      * - 날짜별 일관성을 보장하기 위해 동일한 시드 사용
      * - 요일별로 다른 패턴 적용
-     * - 주중(월-목): 4~8명
-     * - 금요일: 6~10명 (주말 준비로 많음)
-     * - 토요일: 2~5명 (적당히 근무)
-     * - 일요일: 0~3명 (휴일로 적음)
+     * - 주중(월-목): 3~6명 (동시 출근 방지를 위해 줄임)
+     * - 금요일: 4~7명 (주말 준비로 많음)
+     * - 토요일: 2~4명 (적당히 근무)
+     * - 일요일: 0~2명 (휴일로 적음)
+     * - 물리적으로 같은 날짜에 다른 프로젝트에 출근할 수 없도록 제한
      */
     private fun calculateOptimalWorkerCount(dateString: String): Int {
         try {
@@ -750,24 +1000,24 @@ object CompanyMockDataFactory {
             
             return when (dayOfWeek) {
                 1, 2, 3, 4 -> { // 월-목 (주중)
-                    val baseRange = 4..8
+                    val baseRange = 3..6 // 물리적 제약을 위해 인원 수 줄임
                     val baseCount = random.nextInt(baseRange.first, baseRange.last + 1)
                     // 특정 날짜에 추가 인력 (프로젝트 진행도에 따른 증가)
-                    if (dayOfMonth % 7 == 0) minOf(10, baseCount + 2) else baseCount
+                    if (dayOfMonth % 7 == 0) minOf(7, baseCount + 1) else baseCount
                 }
                 5 -> { // 금요일
-                    val baseRange = 6..10
+                    val baseRange = 4..7 // 물리적 제약을 위해 인원 수 줄임
                     random.nextInt(baseRange.first, baseRange.last + 1)
                 }
                 6 -> { // 토요일
-                    val baseRange = 2..5
+                    val baseRange = 2..4 // 물리적 제약을 위해 인원 수 줄임
                     random.nextInt(baseRange.first, baseRange.last + 1)
                 }
                 7 -> { // 일요일
-                    // 70% 확률로 0명, 30% 확률로 1~3명
-                    if (random.nextFloat() < 0.7f) 0 else random.nextInt(1, 4)
+                    // 70% 확률로 0명, 30% 확률로 1~2명 (물리적 제약을 위해 최대 인원 줄임)
+                    if (random.nextFloat() < 0.7f) 0 else random.nextInt(1, 3)
                 }
-                else -> 5 // 기본값
+                else -> 3 // 기본값 (물리적 제약을 위해 줄임)
             }
         } catch (e: Exception) {
             return 5 // 파싱 실패 시 기본값
@@ -775,8 +1025,23 @@ object CompanyMockDataFactory {
     }
     
     /**
-     * 기본 근로자 풀 - 여기서 동적으로 선택
+     * 확정 근로자 풀 - masterWorkers에서 동적으로 생성
      */
+    private fun getWorkerPool(): List<ConfirmedWorker> {
+        return masterWorkers.map { it.toConfirmedWorker() }
+    }
+    
+    /**
+     * 지원자 풀 - masterWorkers에서 동적으로 생성
+     */
+    private fun getApplicantPool(): List<ApplicantWorker> {
+        return masterWorkers.map { it.toApplicantWorker() }
+    }
+    
+    /**
+     * 기존 workerPool 데이터 (Deprecated - 삭제 예정)
+     */
+    @Deprecated("Use getWorkerPool() instead")
     private val workerPool = listOf(
         ConfirmedWorker(
             "1", "김철수", 30, "남", 5, 95, 24, "010-1234-5678", "철근공",
@@ -791,12 +1056,12 @@ object CompanyMockDataFactory {
             "고급", "혼합", listOf("전기기능사", "전기공사기사"), 2.5, 4.9f, "2025-07-25"
         ),
         ConfirmedWorker(
-            "4", "정수연", 25, "여", 2, 85, 12, "010-4567-8901", "도장공",
+            "4", "정수진", 25, "여", 2, 85, 12, "010-4567-8901", "도장공",
             "초급", "실내", emptyList(), 1.8, 4.2f, "2025-07-29"
         ),
         ConfirmedWorker(
-            "5", "최동현", 42, "남", 12, 98, 48, "010-5678-9012", "조적공",
-            "고급", "실외", listOf("조적기능사", "건축기사"), 0.5, 4.9f, "2025-07-26"
+            "5", "최영호", 42, "남", 10, 98, 40, "010-5678-9012", "조적공",
+            "고급", "실외", listOf("조적기능사", "건축기사"), 3.2, 4.7f, "2025-07-26"
         ),
         ConfirmedWorker(
             "6", "한미영", 33, "여", 6, 90, 28, "010-6789-0123", "목수",
@@ -883,14 +1148,50 @@ object CompanyMockDataFactory {
     // 캐시된 데이터를 저장할 변수
     private var _confirmedWorkersByDateCache: Map<String, List<ConfirmedWorker>>? = null
     
+    // 프로젝트별 작업자 배정 캐시 (프로젝트_날짜별 배정된 작업자 ID 추적)
+    private val _projectWorkerAssignmentCache = mutableMapOf<String, MutableSet<String>>()
+    
     /**
-     * 날짜별 확정 근로자 데이터 반환 (동적 인원 수 적용, 캐시됨)
+     * WorkDay별 확정 근로자 데이터 반환 (프로젝트 내 물리적 제약 고려)
      */
+    fun getConfirmedWorkersByWorkDay(workDayId: String, date: String, projectId: String, maxWorkers: Int): List<ConfirmedWorker> {
+        // 전체 프로젝트별 날짜별 배정 추적을 위한 캐시 키
+        val cacheKey = "${projectId}_${date}"
+        
+        // 해당 프로젝트의 해당 날짜에 이미 배정된 작업자들을 추적
+        val assignedWorkersKey = "assigned_workers_$cacheKey"
+        val assignedWorkers = _projectWorkerAssignmentCache.getOrPut(assignedWorkersKey) { mutableSetOf<String>() }
+        
+        // 사용 가능한 작업자들 (이미 해당 날짜에 다른 WorkDay에 배정되지 않은 작업자들)
+        val availableWorkers = masterWorkers.filter { masterWorker ->
+            masterWorker.id !in assignedWorkers
+        }.map { it.toConfirmedWorker() }
+        
+        if (availableWorkers.isEmpty() || maxWorkers == 0) {
+            println("CompanyMockDataFactory: No available workers for workDay=$workDayId, date=$date")
+            return emptyList()
+        }
+        
+        // WorkDay ID와 날짜를 기반으로 일관된 랜덤 선택
+        val random = Random(workDayId.hashCode() + date.hashCode())
+        val selectedWorkers = availableWorkers.shuffled(random).take(maxWorkers)
+        
+        // 선택된 작업자들을 해당 날짜에 배정된 것으로 추가
+        assignedWorkers.addAll(selectedWorkers.map { it.id })
+        
+        println("CompanyMockDataFactory: WorkDay $workDayId on $date assigned workers: ${selectedWorkers.map { it.name }}")
+        return selectedWorkers
+    }
+    
+    /**
+     * 기존 날짜별 확정 근로자 데이터 반환 (호환성 유지, Deprecated)
+     */
+    @Deprecated("Use getConfirmedWorkersByWorkDay for project-specific assignments")
     fun getConfirmedWorkersByDate(): Map<String, List<ConfirmedWorker>> {
         // 캐시된 데이터가 있으면 반환
         _confirmedWorkersByDateCache?.let { return it }
         
-        println("CompanyMockDataFactory: Generating confirmed workers data (first time)")
+        println("CompanyMockDataFactory: Generating confirmed workers data with physical constraints (first time)")
         
         val dateRange = listOf(
             "2025-08-01", "2025-08-02", "2025-08-03", "2025-08-04", 
@@ -900,17 +1201,33 @@ object CompanyMockDataFactory {
             "2025-08-17", "2025-08-18", "2025-08-19", "2025-08-20"
         )
         
+        // 전역 날짜별 작업자 배정 (프로젝트 구분 없이)
+        val assignedWorkersByDate = mutableMapOf<String, MutableSet<String>>()
+        
         val result = dateRange.associateWith { date ->
             val workerCount = calculateOptimalWorkerCount(date)
             println("CompanyMockDataFactory: date=$date, workerCount=$workerCount")
             if (workerCount == 0) {
                 emptyList()
             } else {
-                // 날짜를 시드로 사용하여 일관된 랜덤 선택
-                val random = Random(date.hashCode())
-                val selectedWorkers = workerPool.shuffled(random).take(workerCount)
-                println("CompanyMockDataFactory: selected workers for $date: ${selectedWorkers.map { it.name }}")
-                selectedWorkers
+                // 이미 같은 날짜에 배정된 작업자들 제외
+                val assignedWorkers = assignedWorkersByDate.getOrPut(date) { mutableSetOf() }
+                val availableWorkers = getWorkerPool().filter { it.id !in assignedWorkers }
+                
+                if (availableWorkers.isEmpty()) {
+                    println("CompanyMockDataFactory: No available workers for $date")
+                    emptyList()
+                } else {
+                    // 날짜를 시드로 사용하여 일관된 랜덤 선택
+                    val random = Random(date.hashCode())
+                    val selectedWorkers = availableWorkers.shuffled(random).take(minOf(workerCount, availableWorkers.size))
+                    
+                    // 선택된 작업자들을 해당 날짜에 배정된 것으로 추가
+                    assignedWorkers.addAll(selectedWorkers.map { it.id })
+                    
+                    println("CompanyMockDataFactory: selected workers for $date: ${selectedWorkers.map { it.name }} (avoiding conflicts)")
+                    selectedWorkers
+                }
             }
         }
         
@@ -1107,7 +1424,7 @@ object CompanyMockDataFactory {
             } else {
                 // 날짜를 시드로 사용하여 일관된 랜덤 선택 (확정자와 다른 시드 사용)
                 val random = Random(date.hashCode() + 1000)
-                val selectedApplicants = applicantPool.shuffled(random).take(applicantCount)
+                val selectedApplicants = getApplicantPool().shuffled(random).take(applicantCount)
                 println("CompanyMockDataFactory: selected applicants for $date: ${selectedApplicants.map { it.name }}")
                 selectedApplicants
             }
@@ -1125,11 +1442,99 @@ object CompanyMockDataFactory {
         println("CompanyMockDataFactory: Clearing all caches")
         _confirmedWorkersByDateCache = null
         _applicantWorkersByDateCache = null
+        _projectWorkerAssignmentCache.clear()
     }
     
     /**
-     * 데이터 일관성 테스트 - 날짜별 데이터가 제대로 다른지 확인
+     * 특정 WorkDay에 대한 확정 근로자 목록 조회 (실제 배정 인원 수 반영)
      */
+    fun getConfirmedWorkersForWorkDay(workDayId: String): List<ConfirmedWorker> {
+        // 모든 프로젝트의 WorkDay를 검색하여 해당 WorkDay 찾기
+        val allProjects = baseProjects
+        
+        for (project in allProjects) {
+            val workDays = getWorkDaysForProject(project.id)
+            val targetWorkDay = workDays.find { it.id == workDayId }
+            
+            if (targetWorkDay != null) {
+                // 해당 WorkDay의 날짜와 확정 인원 수를 기반으로 작업자 배정
+                val dateString = targetWorkDay.date.toString()
+                val maxWorkers = targetWorkDay.confirmed
+                
+                return getConfirmedWorkersByWorkDay(
+                    workDayId = workDayId,
+                    date = dateString,
+                    projectId = project.id,
+                    maxWorkers = maxWorkers
+                )
+            }
+        }
+        
+        println("CompanyMockDataFactory: WorkDay $workDayId not found")
+        return emptyList()
+    }
+    
+    /**
+     * 특정 WorkDay에 대한 지원자 목록 조회
+     */
+    fun getApplicantWorkersForWorkDay(workDayId: String): List<ApplicantWorker> {
+        val allProjects = baseProjects
+        
+        for (project in allProjects) {
+            val workDays = getWorkDaysForProject(project.id)
+            val targetWorkDay = workDays.find { it.id == workDayId }
+            
+            if (targetWorkDay != null) {
+                val dateString = targetWorkDay.date.toString()
+                val maxApplicants = targetWorkDay.applicants
+                
+                // 지원자는 확정자와 별도로 관리 (WorkDay별로 다른 지원자들)
+                val random = Random(workDayId.hashCode() * 2) // 확정자와 다른 시드 사용
+                val availableApplicants = getApplicantPool()
+                val selectedApplicants = availableApplicants.shuffled(random).take(maxApplicants)
+                
+                println("CompanyMockDataFactory: WorkDay $workDayId applicants: ${selectedApplicants.map { it.name }}")
+                return selectedApplicants
+            }
+        }
+        
+        println("CompanyMockDataFactory: WorkDay $workDayId not found for applicants")
+        return emptyList()
+    }
+    
+    /**
+     * 데이터 일관성 테스트 - WorkDay별 데이터가 제대로 다른지 확인
+     */
+    fun testWorkDayDataConsistency() {
+        println("=== CompanyMockDataFactory WorkDay Data Consistency Test ===")
+        
+        // 강남구 아파트 신축공사 프로젝트의 WorkDay들 테스트
+        val project001WorkDays = getWorkDaysForProject("project_001")
+        
+        project001WorkDays.forEach { workDay ->
+            val confirmedWorkers = getConfirmedWorkersForWorkDay(workDay.id)
+            val applicantWorkers = getApplicantWorkersForWorkDay(workDay.id)
+            
+            println("WorkDay: ${workDay.title} (${workDay.id}) - Date: ${workDay.date}")
+            println("  Confirmed: ${confirmedWorkers.size}/${workDay.confirmed} workers - ${confirmedWorkers.map { it.name }}")
+            println("  Applicants: ${applicantWorkers.size}/${workDay.applicants} workers - ${applicantWorkers.map { it.name }}")
+            println("  Status: ${workDay.status}")
+            println()
+        }
+        
+        // 캐시 상태 확인
+        println("Project Worker Assignment Cache:")
+        _projectWorkerAssignmentCache.forEach { (key, workers) ->
+            println("  $key: ${workers.size} workers - $workers")
+        }
+        
+        println("============================================")
+    }
+    
+    /**
+     * 기존 데이터 일관성 테스트 (Deprecated)
+     */
+    @Deprecated("Use testWorkDayDataConsistency for detailed testing")
     fun testDataConsistency() {
         println("=== CompanyMockDataFactory Data Consistency Test ===")
         val confirmedData = getConfirmedWorkersByDate()
@@ -1146,21 +1551,231 @@ object CompanyMockDataFactory {
         }
         println("============================================")
     }
+    
+    // ==================== 프로젝트 상세 화면 데이터 ====================
+    
+    /**
+     * 직종 목록 - PaymentSummaryScreen에서 사용
+     */
+    fun getJobRoles(): List<String> {
+        return listOf(
+            "철근공", 
+            "형틀목공", 
+            "토공", 
+            "미장공", 
+            "조적공", 
+            "설비공", 
+            "전기공"
+        )
+    }
+    
+    /**
+     * 작업 설명 목록 - PaymentSummaryScreen에서 사용
+     */
+    fun getWorkDescriptions(): List<String> {
+        return listOf(
+            "철근 배근 및 결속 작업",
+            "형틀 설치 및 해체 작업", 
+            "터파기 및 되메우기 작업",
+            "미장 및 마감 작업",
+            "벽돌 쌓기 및 조적 작업",
+            "급배수 설비 설치 작업",
+            "전기 배선 및 조명 설치 작업"
+        )
+    }
+    
+    /**
+     * 기존 작업 목록 - ExistingJobScreen에서 사용
+     */
+    fun getExistingJobs(): List<ExistingJob> {
+        return listOf(
+            ExistingJob(
+                id = "1",
+                title = "아파트 신축공사 철근 작업자 모집",
+                workPeriod = "2025-08-01 ~ 2025-08-31",
+                dailyWage = 200000
+            ),
+            ExistingJob(
+                id = "2",
+                title = "사무실 인테리어 목공 인력 모집",
+                workPeriod = "2025-08-05 ~ 2025-08-20",
+                dailyWage = 180000
+            ),
+            ExistingJob(
+                id = "3",
+                title = "상가건물 전기공 모집",
+                workPeriod = "2025-08-10 ~ 2025-08-25",
+                dailyWage = 220000
+            )
+        )
+    }
+    
+    /**
+     * 이전 작업 공고 목록 - PreviousJobPostsScreen에서 사용
+     */
+    fun getPreviousJobPosts(): List<PreviousJobPost> {
+        return listOf(
+            PreviousJobPost(
+                id = "1",
+                title = "아파트 신축공사 철근 작업자 모집",
+                category = "철근공",
+                location = "서울시 강남구 역삼동",
+                wage = 200000,
+                workPeriod = "2025-07-15 ~ 2025-08-30",
+                maxWorkers = 15,
+                completedDate = LocalDate.now().minusDays(7),
+                totalApplicants = 23
+            ),
+            PreviousJobPost(
+                id = "2",
+                title = "사무실 인테리어 목공 인력 모집",
+                category = "목공",
+                location = "서울시 송파구 잠실동",
+                wage = 180000,
+                workPeriod = "2025-07-01 ~ 2025-07-20",
+                maxWorkers = 8,
+                completedDate = LocalDate.now().minusDays(14),
+                totalApplicants = 15
+            ),
+            PreviousJobPost(
+                id = "3",
+                title = "상가건물 전기공 모집",
+                category = "전기공",
+                location = "서울시 마포구 상암동",
+                wage = 220000,
+                workPeriod = "2025-06-15 ~ 2025-07-10",
+                maxWorkers = 10,
+                completedDate = LocalDate.now().minusDays(21),
+                totalApplicants = 18
+            ),
+            PreviousJobPost(
+                id = "4",
+                title = "주택 리모델링 타일공 모집",
+                category = "타일공",
+                location = "서울시 성북구 성북동",
+                wage = 190000,
+                workPeriod = "2025-06-01 ~ 2025-06-30",
+                maxWorkers = 5,
+                completedDate = LocalDate.now().minusDays(30),
+                totalApplicants = 12
+            )
+        )
+    }
+    
+    /**
+     * 임시저장 공고 목록 - TempSaveScreen에서 사용
+     */
+    fun getTempSavePosts(): List<TempSavePost> {
+        return listOf(
+            TempSavePost(
+                id = "1",
+                title = "아파트 신축공사 철근 작업자 모집",
+                saveDate = LocalDateTime.now().minusDays(1)
+            ),
+            TempSavePost(
+                id = "2",
+                title = "사무실 인테리어 목공 인력 모집",
+                saveDate = LocalDateTime.now().minusDays(3)
+            ),
+            TempSavePost(
+                id = "3",
+                title = "상가건물 전기공 모집",
+                saveDate = LocalDateTime.now().minusDays(7)
+            )
+        )
+    }
+    
+    /**
+     * 오늘 날짜 - WorkerManagementScreen에서 사용
+     */
+    fun getTodayDate(): LocalDate {
+        return LocalDate.parse("2025-08-03")
+    }
+    
+    /**
+     * 근로자 출퇴근 정보 - WorkerManagementScreen에서 사용
+     */
+    fun getWorkerAttendanceStatus(): Map<LocalDate, WorkerAttendanceInfo> {
+        return mapOf(
+            LocalDate.parse("2025-08-01") to WorkerAttendanceInfo(
+                hasCheckedIn = true,
+                hasCheckedOut = true,
+                hasPaymentRecord = true
+            ),
+            LocalDate.parse("2025-08-02") to WorkerAttendanceInfo(
+                hasCheckedIn = true,
+                hasCheckedOut = true,
+                hasPaymentRecord = true
+            ),
+            LocalDate.parse("2025-08-03") to WorkerAttendanceInfo(
+                hasCheckedIn = true,
+                hasCheckedOut = false,
+                hasPaymentRecord = false
+            ),
+            LocalDate.parse("2025-08-04") to WorkerAttendanceInfo(
+                hasCheckedIn = false,
+                hasCheckedOut = false,
+                hasPaymentRecord = false
+            ),
+            LocalDate.parse("2025-08-05") to WorkerAttendanceInfo(
+                hasCheckedIn = false,
+                hasCheckedOut = false,
+                hasPaymentRecord = false
+            ),
+            LocalDate.parse("2025-08-06") to WorkerAttendanceInfo(
+                hasCheckedIn = false,
+                hasCheckedOut = false,
+                hasPaymentRecord = false
+            ),
+            LocalDate.parse("2025-08-07") to WorkerAttendanceInfo(
+                hasCheckedIn = false,
+                hasCheckedOut = false,
+                hasPaymentRecord = false
+            )
+        )
+    }
+    
+    /**
+     * WorkDay 데이터 - WorkerManagementScreen에서 사용
+     */
+    fun getWorkDayById(workDayId: String): WorkDay {
+        // 모든 프로젝트에서 해당 workDayId를 가진 WorkDay 찾기
+        val allProjects = listOf("project_001", "project_002", "project_003", "project_004", "project_005", "project_006", "project_007")
+        
+        for (projectId in allProjects) {
+            val workDays = getWorkDaysForProject(projectId)
+            val foundWorkDay = workDays.find { it.id == workDayId }
+            if (foundWorkDay != null) {
+                return foundWorkDay
+            }
+        }
+        
+        // 기본값 반환 (찾지 못한 경우)
+        return WorkDay(
+            id = workDayId,
+            title = "일자리 정보",
+            date = LocalDate.now(),
+            startTime = "08:00",
+            endTime = "18:00",
+            recruitPeriod = "${LocalDate.now()} ~ ${LocalDate.now().plusDays(7)}",
+            applicants = 0,
+            confirmed = 0,
+            maxWorkers = 15,
+            status = "IN_PROGRESS",
+            projectId = "project_001"
+        )
+    }
 
     // ==================== Payment 관련 샘플 데이터 ====================
     
     fun getSampleWorkerInfos(): List<WorkerInfo> {
-        return baseWorkers.map { baseWorker ->
+        return masterWorkers.map { masterWorker ->
             WorkerInfo(
-                id = baseWorker.id,
-                name = baseWorker.name,
-                phone = "010-${(1000..9999).random()}-${(1000..9999).random()}",
-                jobType = baseWorker.primaryJobType,
-                experienceLevel = when {
-                    baseWorker.experience >= 10 -> "전문"
-                    baseWorker.experience >= 5 -> "숙련"
-                    else -> "초급"
-                }
+                id = masterWorker.id,
+                name = masterWorker.name,
+                phone = masterWorker.phone,
+                jobType = masterWorker.primaryJobType,
+                experienceLevel = masterWorker.experienceLevel
             )
         }
     }
@@ -1228,26 +1843,26 @@ object CompanyMockDataFactory {
         // 프로젝트별로 다른 WorkDay 생성
         return when (projectId) {
             "project_001" -> listOf(
-                // 진행중 작업일들
+                // 테스트용: 같은 날짜에 두 개의 일자리 (중복 출근 방지 테스트)
                 com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
                     id = "work_${projectId}_001", 
-                    title = "${project.category} 작업자 모집",
-                    date = today.minusDays(3),
+                    title = "아파트 신축 작업자 모집",
+                    date = today.minusDays(1), // 같은 날짜로 설정
                     startTime = "08:00", 
                     endTime = "18:00",
-                    recruitPeriod = "${today.minusDays(7)} ~ ${today.minusDays(3)}",
-                    applicants = 12, confirmed = 10, maxWorkers = 15,
+                    recruitPeriod = "${today.minusDays(7)} ~ ${today.minusDays(1)}",
+                    applicants = 15, confirmed = 6, maxWorkers = 10, // 확정 인원 수 조정
                     status = "IN_PROGRESS",
                     projectId = projectId
                 ),
                 com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
                     id = "work_${projectId}_002",
                     title = "철근공 작업자 모집", 
-                    date = today.minusDays(1),
+                    date = today.minusDays(1), // 같은 날짜로 설정
                     startTime = "08:00",
                     endTime = "18:00",
                     recruitPeriod = "${today.minusDays(5)} ~ ${today.minusDays(1)}",
-                    applicants = 8, confirmed = 8, maxWorkers = 10,
+                    applicants = 12, confirmed = 4, maxWorkers = 8, // 확정 인원 수 조정
                     status = "IN_PROGRESS",
                     projectId = projectId
                 ),
@@ -1355,11 +1970,11 @@ object CompanyMockDataFactory {
         return when (projectId) {
             "project_001" -> {
                 val workers = listOf(
-                    baseWorkers[0], // 김철수 - 철근공
-                    baseWorkers[2], // 박민준 - 미장공  
-                    baseWorkers[4], // 김유진 - 전기공
-                    baseWorkers[1], // 이영희 - 타일공
-                    baseWorkers[3]  // 정수빈 - 목공
+                    masterWorkers[0], // 김철수 - 철근공
+                    masterWorkers[2], // 박민수 - 전기공
+                    masterWorkers[1], // 이영희 - 타일공
+                    masterWorkers[3], // 정수진 - 도장공
+                    masterWorkers[4]  // 최영호 - 조적공
                 ).take(5)
                 
                 workers.mapIndexed { index, worker ->
@@ -1377,9 +1992,9 @@ object CompanyMockDataFactory {
             
             "project_002" -> {
                 val workers = listOf(
-                    baseWorkers[5], // 다른 노동자들 
-                    baseWorkers[6],
-                    baseWorkers[7]
+                    masterWorkers[5], // 최수진 - 목수
+                    masterWorkers[6], // 정대수 - 용접공 
+                    masterWorkers[7]  // 송기원 - 보통인부
                 ).take(3)
                 
                 workers.mapIndexed { index, worker ->
