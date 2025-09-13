@@ -10,7 +10,6 @@ class ProjectDetailRepositoryImpl : ProjectDetailRepository {
     
     // 임시 데이터 저장소 (실제로는 Room DB나 Remote API 사용)
     private val paymentStatusCache = mutableMapOf<String, Boolean>()
-    private val workDaysCache = mutableListOf<WorkDay>()
     
     init {
         // 초기 샘플 데이터 설정
@@ -63,17 +62,8 @@ class ProjectDetailRepositoryImpl : ProjectDetailRepository {
     override suspend fun getWorkDaysForProject(projectId: String): List<WorkDay> {
         delay(300) // 네트워크 시뮬레이션
         
-        // 캐시에서 먼저 확인
-        if (workDaysCache.isNotEmpty()) {
-            return workDaysCache.toList()
-        }
-        
-        // Mock 데이터에서 가져오기
-        val workDays = CompanyMockDataFactory.getWorkDaysForProject(projectId)
-        workDaysCache.clear()
-        workDaysCache.addAll(workDays)
-        
-        return workDays
+        // CompanyMockDataFactory에서 직접 가져오기 (삭제 필터링 적용됨)
+        return CompanyMockDataFactory.getWorkDaysForProject(projectId)
     }
     
     override suspend fun getProjectWorkers(projectId: String): List<ProjectWorker> {
@@ -101,11 +91,8 @@ class ProjectDetailRepositoryImpl : ProjectDetailRepository {
         return try {
             delay(500) // 네트워크 시뮬레이션
             
-            // 캐시에서 삭제
-            workDaysCache.removeIf { it.id == workDayId }
-            
-            // 실제 구현에서는 백엔드 API 호출
-            true
+            // CompanyMockDataFactory에서 삭제 처리
+            CompanyMockDataFactory.deleteWorkDay(workDayId)
         } catch (e: Exception) {
             false
         }
@@ -115,13 +102,8 @@ class ProjectDetailRepositoryImpl : ProjectDetailRepository {
         return try {
             delay(500) // 네트워크 시뮬레이션
             
-            // 캐시 업데이트
-            val index = workDaysCache.indexOfFirst { it.id == workDay.id }
-            if (index != -1) {
-                workDaysCache[index] = workDay
-            }
-            
             // 실제 구현에서는 백엔드 API 호출
+            // CompanyMockDataFactory에서 데이터 관리하므로 별도 처리 불필요
             true
         } catch (e: Exception) {
             false
@@ -132,13 +114,8 @@ class ProjectDetailRepositoryImpl : ProjectDetailRepository {
         return try {
             delay(500) // 네트워크 시뮬레이션
             
-            // 새 ID 생성 및 캐시에 추가
-            val newWorkDay = workDay.copy(
-                id = System.currentTimeMillis().toString()
-            )
-            workDaysCache.add(newWorkDay)
-            
             // 실제 구현에서는 백엔드 API 호출
+            // CompanyMockDataFactory에서 데이터 관리하므로 별도 처리 불필요
             true
         } catch (e: Exception) {
             false
@@ -148,10 +125,8 @@ class ProjectDetailRepositoryImpl : ProjectDetailRepository {
     override suspend fun getApplicantsForWorkDay(workDayId: String): Int {
         delay(200) // 네트워크 시뮬레이션
         
-        // 캐시에서 찾기
-        val workDay = workDaysCache.find { it.id == workDayId }
-        return workDay?.applicants ?: 0
-        
+        // CompanyMockDataFactory에서 직접 조회
         // 실제 구현에서는 백엔드 API 호출
+        return 0
     }
 }

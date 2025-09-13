@@ -181,12 +181,19 @@ class ProjectDetailViewModel : ViewModel(), KoinComponent {
         viewModelScope.launch {
             val success = repository.deleteWorkDay(workDayId)
             if (success) {
+                // 즉시 UI 상태 업데이트
                 _uiState.update { state ->
                     state.copy(
                         workDays = state.workDays.filter { it.id != workDayId },
                         showBottomSheet = false,
                         selectedWorkDay = null
                     )
+                }
+                
+                // 서버/저장소에서 최신 데이터 다시 로드하여 동기화
+                val currentProjectId = _uiState.value.project?.id
+                if (currentProjectId != null) {
+                    refreshData(currentProjectId)
                 }
             } else {
                 _uiState.update {

@@ -1,11 +1,14 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.feature.detail.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -177,6 +180,10 @@ private fun AttendanceWorkerCard(
   worker: AttendanceWorker,
   onAttendanceChange: (AttendanceStatus) -> Unit
 ) {
+  var expanded by remember { mutableStateOf(false) }
+  var isEditingComment by remember { mutableStateOf(false) }
+  var comment by remember { mutableStateOf("해당 근로자에 대한 특별한 코멘트가 없습니다.") }
+  
   Card(
     modifier = Modifier.fillMaxWidth(),
     shape = RoundedCornerShape(12.dp),
@@ -236,6 +243,16 @@ private fun AttendanceWorkerCard(
               fontWeight = FontWeight.Medium
             )
           }
+          
+          // 확장 아이콘
+          Icon(
+            if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+            contentDescription = if (expanded) "접기" else "펼치기",
+            modifier = Modifier
+              .size(20.dp)
+              .clickable { expanded = !expanded },
+            tint = Color.Gray
+          )
         }
       }
       
@@ -301,6 +318,65 @@ private fun AttendanceWorkerCard(
             Text(
               text = "출근",
               style = AppTypography.bodySmall,
+              fontWeight = FontWeight.Medium
+            )
+          }
+        }
+      }
+      
+      // 확장된 상세 정보
+      if (expanded) {
+        Column(
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          HorizontalDivider(
+            modifier = Modifier.padding(vertical = 12.dp),
+            color = Color.LightGray
+          )
+          
+          // 코멘트 텍스트 필드
+          if (isEditingComment) {
+            OutlinedTextField(
+              value = comment,
+              onValueChange = { comment = it },
+              modifier = Modifier.fillMaxWidth(),
+              label = { Text("코멘트") },
+              minLines = 3,
+              maxLines = 5,
+              shape = RoundedCornerShape(8.dp)
+            )
+          } else {
+            Text(
+              text = comment,
+              style = AppTypography.bodyMedium,
+              color = Color.Gray,
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+                .background(
+                  color = Color(0xFFF5F5F5),
+                  shape = RoundedCornerShape(8.dp)
+                )
+                .padding(12.dp)
+            )
+          }
+          
+          Spacer(modifier = Modifier.height(12.dp))
+          
+          // 수정하기/수정완료 버튼
+          Button(
+            onClick = { 
+              isEditingComment = !isEditingComment
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+              containerColor = if (isEditingComment) Color(0xFF4CAF50) else appColorScheme.primary
+            ),
+            shape = RoundedCornerShape(8.dp)
+          ) {
+            Text(
+              text = if (isEditingComment) "수정 완료" else "수정하기",
+              color = Color.White,
               fontWeight = FontWeight.Medium
             )
           }

@@ -26,7 +26,8 @@
       "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\money\\data\\PaymentSortBy.kt\")",
       "Bash(\"./gradlew\" clean)",
       "Bash(del \"C:\\jikjikjik\\jikgong-ans\\app\\src\\main\\java\\com\\billcorea\\jikgong\\presentation\\company\\main\\info\\presentation\\screen\\SettingsScreen.kt\")",
-      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\API_DATA_FORMAT_COMPLETE.md\")"
+      "Bash(del \"C:\\jikjikjik\\jikgong-ans\\API_DATA_FORMAT_COMPLETE.md\")",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

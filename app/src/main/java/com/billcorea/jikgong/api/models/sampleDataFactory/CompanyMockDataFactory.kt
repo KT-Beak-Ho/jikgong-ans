@@ -1409,6 +1409,9 @@ object CompanyMockDataFactory {
     private val _workDayConfirmedWorkersCache = mutableMapOf<String, List<ConfirmedWorker>>()
     private val _workDayApplicantWorkersCache = mutableMapOf<String, List<ApplicantWorker>>()
     
+    // 삭제된 WorkDay ID 추적
+    private val _deletedWorkDayIds = mutableSetOf<String>()
+    
     fun getApplicantWorkersByDate(): Map<String, List<ApplicantWorker>> {
         // 캐시된 데이터가 있으면 반환
         _applicantWorkersByDateCache?.let { return it }
@@ -1452,6 +1455,7 @@ object CompanyMockDataFactory {
         _projectWorkerAssignmentCache.clear()
         _workDayConfirmedWorkersCache.clear()
         _workDayApplicantWorkersCache.clear()
+        _deletedWorkDayIds.clear()
     }
     
     /**
@@ -1912,7 +1916,7 @@ object CompanyMockDataFactory {
         val today = LocalDate.now()
         
         // 프로젝트별로 다른 WorkDay 생성
-        return when (projectId) {
+        val workDays = when (projectId) {
             "project_001" -> listOf(
                 // 테스트용: 같은 날짜에 두 개의 일자리 (중복 출근 방지 테스트)
                 com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay(
@@ -2026,6 +2030,9 @@ object CompanyMockDataFactory {
                 )
             )
         }
+        
+        // 삭제된 WorkDay 필터링
+        return workDays.filter { it.id !in _deletedWorkDayIds }
     }
 
     // ==================== 프로젝트별 노동자 출퇴근 관리 ====================
@@ -2428,6 +2435,29 @@ object CompanyMockDataFactory {
             val currentApplicants = _workDayApplicantWorkersCache[workDayId]?.toMutableList() ?: mutableListOf()
             currentApplicants.removeAll { it.id == applicant.id }
             _workDayApplicantWorkersCache[workDayId] = currentApplicants
+        }
+    }
+    
+    // ==================== WorkDay 관리 관련 ====================
+    
+    /**
+     * WorkDay 삭제 처리
+     */
+    fun deleteWorkDay(workDayId: String): Boolean {
+        return try {
+            // 삭제된 WorkDay ID 목록에 추가
+            _deletedWorkDayIds.add(workDayId)
+            
+            // WorkDay별 데이터 캐시 삭제
+            _workDayConfirmedWorkersCache.remove(workDayId)
+            _workDayApplicantWorkersCache.remove(workDayId)
+            
+            // 관련 프로젝트 워커 할당 캐시도 정리
+            _projectWorkerAssignmentCache.keys.removeIf { it.contains(workDayId) }
+            
+            true
+        } catch (e: Exception) {
+            false
         }
     }
 }

@@ -164,12 +164,35 @@ fun ProjectDetailScreen(
       }
 
       // 작업 일자 목록
+      val filteredWorkDays by remember(uiState.workDays, uiState.selectedTab, uiState.selectedMonth) {
+        derivedStateOf {
+          val workDays = uiState.workDays
+          val selectedTab = uiState.selectedTab
+          val selectedMonth = uiState.selectedMonth
+          
+          when (selectedTab) {
+            0 -> workDays.filter { it.status == "IN_PROGRESS" }
+            1 -> {
+              val upcomingDays = workDays.filter { it.status == "UPCOMING" }
+              if (selectedMonth != null) {
+                upcomingDays.filter {
+                  it.date.format(DateTimeFormatter.ofPattern("yyyy년 MM월")) == selectedMonth
+                }
+              } else {
+                upcomingDays
+              }
+            }
+            2 -> workDays.filter { it.status == "COMPLETED" }
+            else -> workDays
+          }
+        }
+      }
+      
       LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-        val filteredWorkDays = viewModel.getFilteredWorkDays()
 
         // 날짜별로 그룹화
         val groupedByMonth = filteredWorkDays.groupBy { 
