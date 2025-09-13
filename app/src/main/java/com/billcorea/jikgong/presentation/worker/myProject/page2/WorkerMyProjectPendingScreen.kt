@@ -56,7 +56,6 @@ import java.time.format.FormatStyle
 import java.util.*
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import androidx.compose.foundation.ExperimentalFoundationApi
 import com.billcorea.jikgong.utils.MainViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
@@ -115,6 +114,7 @@ fun WorkerMyProjectPendingScreen(
     },
     bottomBar = {
       WorkerBottomNav(
+        navigator = navigator,
         doWorkerProjectList = { /* TODO */ },
         doWorkerMyjob = { /* TODO */ },
         doWorkerEarning = { /* TODO */ },
@@ -328,6 +328,7 @@ Jikgong1111Theme {
 @Composable
 fun WorkerMyProjectPendingScreenEmptyState(
   modifier: Modifier = Modifier,
+  navigator: DestinationsNavigator,
   onBack: () -> Unit = {}
 ) {
   val selectedTab = remember { mutableIntStateOf(1) }
@@ -373,6 +374,7 @@ fun WorkerMyProjectPendingScreenEmptyState(
     },
     bottomBar = {
       WorkerBottomNav(
+        navigator = navigator,
         doWorkerProjectList = { /* TODO */ },
         doWorkerMyjob = { /* TODO */ },
         doWorkerEarning = { /* TODO */ },
@@ -453,6 +455,6 @@ fun WorkerMyProjectPendingScreenEmptyState(
 @Composable
 private fun WorkerMyProjectPendingScreenEmpty() {
   Jikgong1111Theme {
-    WorkerMyProjectPendingScreenEmptyState()
+    // WorkerMyProjectPendingScreenEmptyState()
   }
 }

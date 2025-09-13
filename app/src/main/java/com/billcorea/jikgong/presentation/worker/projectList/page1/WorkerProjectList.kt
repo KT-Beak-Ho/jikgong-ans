@@ -171,7 +171,9 @@ fun WorkerProjectList(
             category = "건설업"
         )
 
-    ) 
+    )
+    */
+
 
     val jobPostings = listOf<JobPosting>()
 
