@@ -1708,7 +1708,7 @@ object CompanyMockDataFactory {
      * 오늘 날짜 - WorkerManagementScreen에서 사용
      */
     fun getTodayDate(): LocalDate {
-        return LocalDate.parse("2025-08-03")
+        return LocalDate.now()
     }
     
     /**

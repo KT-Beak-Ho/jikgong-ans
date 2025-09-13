@@ -338,8 +338,8 @@ fun WorkerManagementScreen(
                 }
               }
               
-              // 출근 여부 확인 카드 (모든 날짜에 표시 - 과거 데이터는 항상 열람 가능)
-              if (dateStatus != DateStatus.FUTURE || attendanceStatus.hasCheckedIn || attendanceStatus.hasCheckedOut || attendanceStatus.hasPaymentRecord) {
+              // 출근 여부 확인 카드 (과거/현재 날짜는 항상 표시, 미래 날짜는 데이터가 있을 때만 표시)
+              if (dateStatus == DateStatus.PAST || dateStatus == DateStatus.TODAY || attendanceStatus.hasCheckedIn || attendanceStatus.hasCheckedOut || attendanceStatus.hasPaymentRecord) {
                 item {
                   AttendanceCheckCard(
                     type = "출근",
@@ -374,8 +374,8 @@ fun WorkerManagementScreen(
                 }
               }
               
-              // 퇴근 여부 확인 카드 (출근 확인이 완료된 경우 또는 기존 데이터가 있는 경우)
-              if (attendanceStatus.hasCheckedIn || attendanceStatus.hasCheckedOut || dateStatus == DateStatus.PAST || (dateStatus == DateStatus.TODAY && attendanceStatus.hasCheckedIn)) {
+              // 퇴근 여부 확인 카드 (과거/현재 날짜는 항상 표시, 미래 날짜는 출근 확인 후 표시)
+              if (dateStatus == DateStatus.PAST || dateStatus == DateStatus.TODAY || attendanceStatus.hasCheckedIn || attendanceStatus.hasCheckedOut) {
                 item {
                   AttendanceCheckCard(
                     type = "퇴근",
@@ -410,8 +410,8 @@ fun WorkerManagementScreen(
                 }
               }
               
-              // 지급내역 확인 카드 (과거 날짜 또는 기존 지급내역이 있는 경우)
-              if (dateStatus == DateStatus.PAST || attendanceStatus.hasPaymentRecord) {
+              // 지급내역 확인 카드 (과거/현재 날짜는 항상 표시, 미래 날짜는 지급내역이 있을 때만 표시)
+              if (dateStatus == DateStatus.PAST || dateStatus == DateStatus.TODAY || attendanceStatus.hasPaymentRecord) {
                 item {
                   AttendanceCheckCard(
                     type = "지급내역",
