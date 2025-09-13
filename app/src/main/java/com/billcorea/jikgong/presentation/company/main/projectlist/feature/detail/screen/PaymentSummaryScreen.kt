@@ -66,16 +66,8 @@ fun PaymentSummaryScreen(
   // 해당 날짜의 확정 근로자를 지급 데이터로 변환 (완료된 작업이므로 모든 근로자가 정상 출근)
   val workers = remember(effectiveDate) {
     val confirmedWorkers = confirmedWorkersByDate[effectiveDate] ?: emptyList()
-    val jobRoles = listOf("철근공", "형틀목공", "토공", "미장공", "조적공", "설비공", "전기공")
-    val workDescriptions = listOf(
-      "철근 배근 및 결속 작업",
-      "형틀 설치 및 해체 작업", 
-      "터파기 및 되메우기 작업",
-      "미장 및 마감 작업",
-      "벽돌 쌓기 및 조적 작업",
-      "급배수 설비 설치 작업",
-      "전기 배선 및 조명 설치 작업"
-    )
+    val jobRoles = CompanyMockDataFactory.getJobRoles()
+    val workDescriptions = CompanyMockDataFactory.getWorkDescriptions()
     
     confirmedWorkers.mapIndexed { index, worker ->
       // 완료된 프로젝트이므로 모든 근로자가 정상 출근하고 임금을 받음

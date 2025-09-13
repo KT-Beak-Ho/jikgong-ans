@@ -26,6 +26,7 @@ import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.billcorea.jikgong.presentation.company.main.projectlist.data.PreviousJobPost
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.text.NumberFormat
@@ -39,54 +40,9 @@ fun PreviousJobPostsScreen(
   projectId: String,
   modifier: Modifier = Modifier
 ) {
-  // 샘플 기존 공고 데이터
+  // CompanyMockDataFactory에서 데이터 가져오기
   val previousJobPosts = remember {
-    listOf(
-      PreviousJobPost(
-        id = "1",
-        title = "아파트 신축공사 철근 작업자 모집",
-        category = "철근공",
-        location = "서울시 강남구 역삼동",
-        wage = 200000,
-        workPeriod = "2025-07-15 ~ 2025-08-30",
-        maxWorkers = 15,
-        completedDate = LocalDate.now().minusDays(7),
-        totalApplicants = 23
-      ),
-      PreviousJobPost(
-        id = "2",
-        title = "사무실 인테리어 목공 인력 모집",
-        category = "목공",
-        location = "서울시 서초구 서초동",
-        wage = 180000,
-        workPeriod = "2025-06-20 ~ 2025-07-25",
-        maxWorkers = 10,
-        completedDate = LocalDate.now().minusDays(14),
-        totalApplicants = 18
-      ),
-      PreviousJobPost(
-        id = "3",
-        title = "상가건물 전기공 모집",
-        category = "전기공",
-        location = "서울시 용산구 이태원동",
-        wage = 220000,
-        workPeriod = "2025-05-10 ~ 2025-06-30",
-        maxWorkers = 8,
-        completedDate = LocalDate.now().minusDays(21),
-        totalApplicants = 15
-      ),
-      PreviousJobPost(
-        id = "4",
-        title = "아파트 리모델링 미장공 모집",
-        category = "미장공",
-        location = "서울시 마포구 홍대입구",
-        wage = 190000,
-        workPeriod = "2025-04-01 ~ 2025-05-20",
-        maxWorkers = 12,
-        completedDate = LocalDate.now().minusDays(35),
-        totalApplicants = 20
-      )
-    )
+    CompanyMockDataFactory.getPreviousJobPosts()
   }
 
   Scaffold(

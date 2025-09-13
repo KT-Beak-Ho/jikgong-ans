@@ -20,6 +20,7 @@ import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.presentation.company.main.projectlist.data.ExistingJob
+import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import java.text.NumberFormat
 import java.util.*
 
@@ -29,13 +30,9 @@ fun ExistingJobScreen(
   navController: NavController,
   modifier: Modifier = Modifier
 ) {
-  // 샘플 기존 일자리 데이터 (빈 리스트로 시작해서 없는 경우 테스트 가능)
+  // CompanyMockDataFactory에서 데이터 가져오기
   val existingJobs = remember {
-    listOf(
-      ExistingJob("1", "아파트 신축공사 철근 작업자 모집", "2025-08-01 ~ 2025-08-31", 200000),
-      ExistingJob("2", "사무실 인테리어 목공 인력 모집", "2025-08-05 ~ 2025-08-20", 180000),
-      ExistingJob("3", "상가건물 전기공 모집", "2025-08-10 ~ 2025-08-25", 220000)
-    )
+    CompanyMockDataFactory.getExistingJobs()
   }
 
   Scaffold(
