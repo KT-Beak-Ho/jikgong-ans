@@ -90,10 +90,9 @@ fun ProjectListScreen(
         .background(Color(0xFFF8F9FA))
     ) {
       // 탭
-      val recruitingCount = projects.count { it.status == "RECRUITING" }
       val inProgressCount = projects.count { it.status == "IN_PROGRESS" }
       val completedCount = projects.count { it.status == "COMPLETED" }
-      val totalCount = recruitingCount + inProgressCount + completedCount
+      val totalCount = inProgressCount + completedCount
 
       TabRow(
         selectedTabIndex = selectedTab,
@@ -107,21 +106,16 @@ fun ProjectListScreen(
         Tab(
           selected = selectedTab == 1,
           onClick = { selectedTab = 1 },
-          text = { Text("모집중 ($recruitingCount)") }
+          text = { Text("진행중 ($inProgressCount)") }
         )
         Tab(
           selected = selectedTab == 2,
           onClick = { selectedTab = 2 },
-          text = { Text("진행중 ($inProgressCount)") }
-        )
-        Tab(
-          selected = selectedTab == 3,
-          onClick = { selectedTab = 3 },
           text = { Text("완료 ($completedCount)") }
         )
       }
 
-      // 모집중 프로젝트 헤더
+      // 진행중 프로젝트 헤더
       if (selectedTab == 0 || selectedTab == 1) {
         Card(
           modifier = Modifier
@@ -139,14 +133,14 @@ fun ProjectListScreen(
             verticalAlignment = Alignment.CenterVertically
           ) {
             Text(
-              text = "모집중 프로젝트",
+              text = "진행중 프로젝트",
               style = AppTypography.bodyLarge,
               fontWeight = FontWeight.Medium,
               color = appColorScheme.primary
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-              text = "총 ${recruitingCount}개",
+              text = "총 ${inProgressCount}개",
               style = AppTypography.titleMedium,
               fontWeight = FontWeight.Bold,
               color = appColorScheme.primary
@@ -162,9 +156,8 @@ fun ProjectListScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
       ) {
         val filteredProjects = when (selectedTab) {
-          1 -> projects.filter { it.status == "RECRUITING" }
-          2 -> projects.filter { it.status == "IN_PROGRESS" }
-          3 -> projects.filter { it.status == "COMPLETED" }
+          1 -> projects.filter { it.status == "IN_PROGRESS" }
+          2 -> projects.filter { it.status == "COMPLETED" }
           else -> projects
         }
 
@@ -236,17 +229,17 @@ private fun ProjectCard(
             }
             Badge(
               containerColor = when(project.status) {
-                "RECRUITING" -> Color(0xFF4B7BFF)
                 "IN_PROGRESS" -> Color(0xFF4CAF50)
-                else -> Color(0xFF9E9E9E)
+                "COMPLETED" -> Color(0xFF9E9E9E)
+                else -> Color(0xFF4B7BFF)
               },
               contentColor = Color.White
             ) {
               Text(
                 when(project.status) {
-                  "RECRUITING" -> "모집중"
                   "IN_PROGRESS" -> "진행중"
-                  else -> "완료"
+                  "COMPLETED" -> "완료"
+                  else -> "진행중"
                 },
                 fontSize = 12.sp
               )
