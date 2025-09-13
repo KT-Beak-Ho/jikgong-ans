@@ -6,7 +6,8 @@ data class AttendanceWorker(
     val age: Int,
     val gender: String, // "남", "여"
     val phoneNumber: String,
-    var attendanceStatus: AttendanceStatus = AttendanceStatus.NONE
+    var attendanceStatus: AttendanceStatus = AttendanceStatus.NONE,
+    var statusChangeTime: String? = null // 출근/결근 상태 변경 시간
 )
 
 enum class AttendanceStatus {

@@ -341,30 +341,44 @@ fun WorkerManagementScreen(
               // 출근 여부 확인 카드 (과거/현재 날짜는 항상 표시, 미래 날짜는 데이터가 있을 때만 표시)
               if (dateStatus == DateStatus.PAST || dateStatus == DateStatus.TODAY || attendanceStatus.hasCheckedIn || attendanceStatus.hasCheckedOut || attendanceStatus.hasPaymentRecord) {
                 item {
-                  AttendanceCheckCard(
-                    type = "출근",
-                    description = when {
-                      attendanceStatus.hasCheckedIn -> "출근 내역"
-                      dateStatus == DateStatus.PAST -> "출근 내역 필요"
-                      dateStatus == DateStatus.TODAY -> "근로자의 출근 여부 확인하기"
-                      else -> "출근 내역 대기"
-                    },
-                    buttonText = when {
-                      attendanceStatus.hasCheckedIn -> "출근 내역 보기"
-                      dateStatus == DateStatus.PAST -> "출근 내역 보기"
-                      dateStatus == DateStatus.TODAY -> "출근 내역"
-                      else -> "출근 내역 대기"
-                    },
-                    buttonColor = Color(0xFF4B7BFF),
-                    isEnabled = true, // 모든 날짜에서 정보 열람 가능
-                    onClick = {
-                      if (dateStatus == DateStatus.TODAY) {
-                        // 출근 확인 처리
-                        updateAttendanceStatus(currentDate, attendanceStatus.copy(hasCheckedIn = true))
+                  Column {
+                    AttendanceCheckCard(
+                      type = "출근",
+                      description = when {
+                        attendanceStatus.hasCheckedIn -> "출근 내역"
+                        dateStatus == DateStatus.PAST -> "출근 내역 필요"
+                        dateStatus == DateStatus.TODAY -> "근로자의 출근 여부 확인하기"
+                        else -> "출근 내역 대기"
+                      },
+                      buttonText = when {
+                        attendanceStatus.hasCheckedIn -> "출근 내역 보기"
+                        dateStatus == DateStatus.PAST -> "출근 내역 보기"
+                        dateStatus == DateStatus.TODAY -> "출근 내역"
+                        else -> "출근 내역 대기"
+                      },
+                      buttonColor = Color(0xFF4B7BFF),
+                      isEnabled = true, // 모든 날짜에서 정보 열람 가능
+                      onClick = {
+                        if (dateStatus == DateStatus.TODAY) {
+                          // 출근 확인 처리
+                          updateAttendanceStatus(currentDate, attendanceStatus.copy(hasCheckedIn = true))
+                        }
+                        navController.navigate("attendance_check/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
                       }
-                      navController.navigate("attendance_check/${workDay.id}?selectedDate=${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
+                    )
+                    
+                    // 출근 확인이 필요한 근로자가 있을 때 경고 메시지 표시
+                    if (!attendanceStatus.hasCheckedIn && confirmedWorkers.isNotEmpty()) {
+                      Spacer(modifier = Modifier.height(8.dp))
+                      Text(
+                        text = "출근 확인 필요한 근로자 존재",
+                        style = AppTypography.bodySmall,
+                        color = Color(0xFFFF0000),
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                      )
                     }
-                  )
+                  }
                 }
               }
               

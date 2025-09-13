@@ -24,6 +24,7 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import com.billcorea.jikgong.presentation.company.main.projectlist.data.AttendanceWorker
 import com.billcorea.jikgong.presentation.company.main.projectlist.data.AttendanceStatus
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +57,7 @@ fun AttendanceCheckScreen(
     LocalDate.parse("2025-08-01")
   }
   
-  // 확정 근로자를 출근체크 데이터로 변환
+  // 확정 근로자를 출근체크 데이터로 변환 (출근 확인 안된 근로자 우선 정렬)
   val workers = remember(workDayId, confirmedWorkers) {
     mutableStateListOf(
       *confirmedWorkers.map { worker ->
@@ -68,6 +69,13 @@ fun AttendanceCheckScreen(
           phoneNumber = worker.phoneNumber,
           attendanceStatus = AttendanceStatus.NONE
         )
+      }.sortedBy { worker ->
+        // 출근 확인 안된 근로자(NONE)를 먼저, 그 다음 결근(NOT_ARRIVED), 마지막에 출근(ARRIVED)
+        when (worker.attendanceStatus) {
+          AttendanceStatus.NONE -> 0
+          AttendanceStatus.NOT_ARRIVED -> 1
+          AttendanceStatus.ARRIVED -> 2
+        }
       }.toTypedArray()
     )
   }
@@ -149,7 +157,11 @@ fun AttendanceCheckScreen(
               onAttendanceChange = { newStatus ->
                 val index = workers.indexOf(worker)
                 if (index >= 0) {
-                  workers[index] = worker.copy(attendanceStatus = newStatus)
+                  val currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+                  workers[index] = worker.copy(
+                    attendanceStatus = newStatus,
+                    statusChangeTime = if (newStatus != AttendanceStatus.NONE) currentTime else null
+                  )
                 }
               }
             )
@@ -188,26 +200,42 @@ private fun AttendanceWorkerCard(
           fontWeight = FontWeight.Bold
         )
         
-        // 출근 상태 뱃지
-        Surface(
-          shape = RoundedCornerShape(12.dp),
-          color = when (worker.attendanceStatus) {
-            AttendanceStatus.NONE -> Color(0xFF4B7BFF) // 파란색 (기본)
-            AttendanceStatus.NOT_ARRIVED -> Color(0xFFF44336) // 빨간색
-            AttendanceStatus.ARRIVED -> Color(0xFF4CAF50) // 초록색
-          }
+        // 시간과 출근 상태 뱃지
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          Text(
-            text = when (worker.attendanceStatus) {
-              AttendanceStatus.NONE -> "출근 전"
-              AttendanceStatus.NOT_ARRIVED -> "결근"
-              AttendanceStatus.ARRIVED -> "출근"
-            },
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 3.dp),
-            style = AppTypography.bodySmall,
-            color = Color.White,
-            fontWeight = FontWeight.Medium
-          )
+          // 상태 변경 시간 표시 (상태가 NONE이 아닐 때만)
+          if (worker.attendanceStatus != AttendanceStatus.NONE && worker.statusChangeTime != null) {
+            Text(
+              text = worker.statusChangeTime!!,
+              style = AppTypography.bodySmall,
+              color = Color.Gray,
+              fontWeight = FontWeight.Medium
+            )
+          }
+          
+          // 출근 상태 뱃지
+          Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = when (worker.attendanceStatus) {
+              AttendanceStatus.NONE -> Color(0xFF4B7BFF) // 파란색 (기본)
+              AttendanceStatus.NOT_ARRIVED -> Color(0xFFF44336) // 빨간색
+              AttendanceStatus.ARRIVED -> Color(0xFF4CAF50) // 초록색
+            }
+          ) {
+            Text(
+              text = when (worker.attendanceStatus) {
+                AttendanceStatus.NONE -> "출근 전"
+                AttendanceStatus.NOT_ARRIVED -> "결근"
+                AttendanceStatus.ARRIVED -> "출근"
+              },
+              modifier = Modifier.padding(horizontal = 12.dp, vertical = 3.dp),
+              style = AppTypography.bodySmall,
+              color = Color.White,
+              fontWeight = FontWeight.Medium
+            )
+          }
         }
       }
       
