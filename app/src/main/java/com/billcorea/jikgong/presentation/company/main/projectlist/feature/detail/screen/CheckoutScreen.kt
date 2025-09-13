@@ -24,6 +24,7 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import com.billcorea.jikgong.presentation.company.main.projectlist.data.CheckoutWorker
 import com.billcorea.jikgong.presentation.company.main.projectlist.data.CheckoutStatus
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -156,7 +157,11 @@ fun CheckoutScreen(
               onCheckoutChange = { newStatus ->
                 val index = workers.indexOf(worker)
                 if (index >= 0) {
-                  workers[index] = worker.copy(checkoutStatus = newStatus)
+                  val currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+                  workers[index] = worker.copy(
+                    checkoutStatus = newStatus,
+                    statusChangeTime = if (newStatus != CheckoutStatus.NONE) currentTime else null
+                  )
                 }
               }
             )
@@ -195,26 +200,42 @@ private fun CheckoutWorkerCard(
           fontWeight = FontWeight.Bold
         )
         
-        // 퇴근 상태 표시
-        Surface(
-          shape = RoundedCornerShape(12.dp),
-          color = when (worker.checkoutStatus) {
-            CheckoutStatus.EARLY_LEAVE -> Color(0xFFF44336) // 빨간색
-            CheckoutStatus.NORMAL_LEAVE -> Color(0xFF2196F3) // 파란색
-            CheckoutStatus.NONE -> Color(0xFF4CAF50) // 초록색 (기본)
-          }
+        // 시간과 퇴근 상태 뱃지
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          Text(
-            text = when (worker.checkoutStatus) {
-              CheckoutStatus.EARLY_LEAVE -> "조퇴"
-              CheckoutStatus.NORMAL_LEAVE -> "정상퇴근"
-              CheckoutStatus.NONE -> "출근 중"
-            },
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 3.dp),
-            style = AppTypography.bodySmall,
-            color = Color.White,
-            fontWeight = FontWeight.Medium
-          )
+          // 상태 변경 시간 표시 (상태가 NONE이 아닐 때만)
+          if (worker.checkoutStatus != CheckoutStatus.NONE && worker.statusChangeTime != null) {
+            Text(
+              text = worker.statusChangeTime!!,
+              style = AppTypography.bodySmall,
+              color = Color.Gray,
+              fontWeight = FontWeight.Medium
+            )
+          }
+          
+          // 퇴근 상태 표시
+          Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = when (worker.checkoutStatus) {
+              CheckoutStatus.EARLY_LEAVE -> Color(0xFFF44336) // 빨간색
+              CheckoutStatus.NORMAL_LEAVE -> Color(0xFF2196F3) // 파란색
+              CheckoutStatus.NONE -> Color(0xFF4CAF50) // 초록색 (기본)
+            }
+          ) {
+            Text(
+              text = when (worker.checkoutStatus) {
+                CheckoutStatus.EARLY_LEAVE -> "조퇴"
+                CheckoutStatus.NORMAL_LEAVE -> "정상퇴근"
+                CheckoutStatus.NONE -> "출근 중"
+              },
+              modifier = Modifier.padding(horizontal = 12.dp, vertical = 3.dp),
+              style = AppTypography.bodySmall,
+              color = Color.White,
+              fontWeight = FontWeight.Medium
+            )
+          }
         }
       }
       

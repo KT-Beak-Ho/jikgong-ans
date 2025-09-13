@@ -57,13 +57,20 @@ fun WorkerManagementScreen(
   var selectedManagementTab by remember(workDayId) { mutableIntStateOf(0) }
   var selectedDateIndex by remember(workDayId) { mutableIntStateOf(0) }
   
+  var selectedApplicants by remember(workDayId) { mutableStateOf<List<ApplicantWorker>>(emptyList()) }
+  var showDialog by remember(workDayId) { mutableStateOf(false) }
+  var dialogAction by remember(workDayId) { mutableStateOf("") } // "수락" 또는 "거절"
+  
+  // 지원자와 확정 인부 데이터 새로고침을 위한 상태
+  var refreshTrigger by remember(workDayId) { mutableIntStateOf(0) }
+  
   // WorkDay 기반 확정 근로자 데이터 - 실제 모집 기간에 맞춘 데이터 사용
-  val confirmedWorkers = remember(workDayId) {
+  val confirmedWorkers = remember(workDayId, refreshTrigger) {
     CompanyMockDataFactory.getConfirmedWorkersForWorkDay(workDayId)
   }
 
   // WorkDay 기반 지원자 데이터 - 실제 모집 기간에 맞춘 데이터 사용
-  val applicantWorkers = remember(workDayId) {
+  val applicantWorkers = remember(workDayId, refreshTrigger) {
     CompanyMockDataFactory.getApplicantWorkersForWorkDay(workDayId)
   }
   
@@ -71,10 +78,6 @@ fun WorkerManagementScreen(
   LaunchedEffect(Unit) {
     CompanyMockDataFactory.testWorkDayDataConsistency()
   }
-  
-  var selectedApplicants by remember(workDayId) { mutableStateOf<List<ApplicantWorker>>(emptyList()) }
-  var showDialog by remember(workDayId) { mutableStateOf(false) }
-  var dialogAction by remember(workDayId) { mutableStateOf("") } // "수락" 또는 "거절"
   
   // 모집 기간 파싱 (예: "2025-08-01 ~ 2025-08-07")
   val dateRange = remember(workDay) {
@@ -509,6 +512,7 @@ fun WorkerManagementScreen(
               items(applicantWorkers) { applicant ->
                 ApplicantCard(
                   applicant = applicant,
+                  isSelected = selectedApplicants.contains(applicant),
                   onSelectionChanged = { isSelected ->
                     selectedApplicants = if (isSelected) {
                       selectedApplicants + applicant
@@ -573,9 +577,17 @@ fun WorkerManagementScreen(
       selectedApplicants = selectedApplicants,
       onDismiss = { showDialog = false },
       onConfirm = {
-        // TODO: 수락/거절 처리
+        // 수락/거절 처리
+        if (dialogAction == "수락") {
+          CompanyMockDataFactory.acceptApplicants(workDay.id, selectedApplicants)
+        } else {
+          CompanyMockDataFactory.rejectApplicants(workDay.id, selectedApplicants)
+        }
+        
+        // UI 상태 초기화 및 데이터 새로고침
         selectedApplicants = emptyList()
         showDialog = false
+        refreshTrigger++ // 데이터 새로고침 트리거
       }
     )
   }
@@ -624,9 +636,9 @@ private fun AttendanceCheckCard(
 @Composable
 private fun ApplicantCard(
   applicant: ApplicantWorker,
+  isSelected: Boolean,
   onSelectionChanged: (Boolean) -> Unit
 ) {
-  var isSelected by remember { mutableStateOf(false) }
   
   // 출석률에 따른 배경색 결정
   fun getAttendanceBadgeColor(rate: Int): Color {
@@ -642,8 +654,7 @@ private fun ApplicantCard(
     modifier = Modifier
       .fillMaxWidth()
       .clickable {
-        isSelected = !isSelected
-        onSelectionChanged(isSelected)
+        onSelectionChanged(!isSelected)
       },
     shape = RoundedCornerShape(12.dp),
     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -659,7 +670,6 @@ private fun ApplicantCard(
       Checkbox(
         checked = isSelected,
         onCheckedChange = { 
-          isSelected = it
           onSelectionChanged(it)
         },
         modifier = Modifier.align(Alignment.CenterVertically)

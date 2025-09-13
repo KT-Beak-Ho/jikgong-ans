@@ -2382,4 +2382,52 @@ object CompanyMockDataFactory {
     fun getTempSavedCount(): Int {
         return getTempSavedJobs().size
     }
+    
+    // ==================== 지원자 처리 관련 ====================
+    
+    /**
+     * 지원자 수락 처리 - 지원자를 확정 인부로 이동
+     */
+    fun acceptApplicants(workDayId: String, applicants: List<ApplicantWorker>) {
+        applicants.forEach { applicant ->
+            // 지원자 목록에서 제거
+            val currentApplicants = _workDayApplicantWorkersCache[workDayId]?.toMutableList() ?: mutableListOf()
+            currentApplicants.removeAll { it.id == applicant.id }
+            _workDayApplicantWorkersCache[workDayId] = currentApplicants
+            
+            // 확정 인부 목록에 추가
+            val currentConfirmed = _workDayConfirmedWorkersCache[workDayId]?.toMutableList() ?: mutableListOf()
+            val confirmedWorker = ConfirmedWorker(
+                id = applicant.id,
+                name = applicant.name,
+                age = applicant.age,
+                gender = applicant.gender,
+                experience = applicant.experience,
+                attendanceRate = applicant.attendanceRate,
+                totalWorkDays = applicant.totalWorkDays,
+                phoneNumber = applicant.phoneNumber,
+                jobType = applicant.jobType,
+                skill = applicant.skill,
+                workPreference = applicant.workPreference,
+                certifications = applicant.certifications,
+                distance = applicant.distance,
+                rating = applicant.rating,
+                lastWorkDate = applicant.lastWorkDate
+            )
+            currentConfirmed.add(confirmedWorker)
+            _workDayConfirmedWorkersCache[workDayId] = currentConfirmed
+        }
+    }
+    
+    /**
+     * 지원자 거절 처리 - 지원자 목록에서 제거
+     */
+    fun rejectApplicants(workDayId: String, applicants: List<ApplicantWorker>) {
+        applicants.forEach { applicant ->
+            // 지원자 목록에서 제거
+            val currentApplicants = _workDayApplicantWorkersCache[workDayId]?.toMutableList() ?: mutableListOf()
+            currentApplicants.removeAll { it.id == applicant.id }
+            _workDayApplicantWorkersCache[workDayId] = currentApplicants
+        }
+    }
 }

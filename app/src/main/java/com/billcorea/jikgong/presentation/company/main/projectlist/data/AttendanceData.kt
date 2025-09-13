@@ -21,7 +21,8 @@ data class CheckoutWorker(
     val name: String,
     val age: Int,
     val gender: String, // "남", "여"
-    var checkoutStatus: CheckoutStatus = CheckoutStatus.NONE
+    var checkoutStatus: CheckoutStatus = CheckoutStatus.NONE,
+    var statusChangeTime: String? = null // 퇴근/조퇴 상태 변경 시간
 )
 
 enum class CheckoutStatus {
