@@ -1402,6 +1402,10 @@ object CompanyMockDataFactory {
     // 캐시된 지원자 데이터를 저장할 변수
     private var _applicantWorkersByDateCache: Map<String, List<ApplicantWorker>>? = null
     
+    // WorkDay별 확정자/지원자 캐시
+    private val _workDayConfirmedWorkersCache = mutableMapOf<String, List<ConfirmedWorker>>()
+    private val _workDayApplicantWorkersCache = mutableMapOf<String, List<ApplicantWorker>>()
+    
     fun getApplicantWorkersByDate(): Map<String, List<ApplicantWorker>> {
         // 캐시된 데이터가 있으면 반환
         _applicantWorkersByDateCache?.let { return it }
@@ -1443,12 +1447,17 @@ object CompanyMockDataFactory {
         _confirmedWorkersByDateCache = null
         _applicantWorkersByDateCache = null
         _projectWorkerAssignmentCache.clear()
+        _workDayConfirmedWorkersCache.clear()
+        _workDayApplicantWorkersCache.clear()
     }
     
     /**
      * 특정 WorkDay에 대한 확정 근로자 목록 조회 (실제 배정 인원 수 반영)
      */
     fun getConfirmedWorkersForWorkDay(workDayId: String): List<ConfirmedWorker> {
+        // 캐시에서 먼저 확인
+        _workDayConfirmedWorkersCache[workDayId]?.let { return it }
+        
         // 모든 프로젝트의 WorkDay를 검색하여 해당 WorkDay 찾기
         val allProjects = baseProjects
         
@@ -1461,12 +1470,17 @@ object CompanyMockDataFactory {
                 val dateString = targetWorkDay.date.toString()
                 val maxWorkers = targetWorkDay.confirmed
                 
-                return getConfirmedWorkersByWorkDay(
+                val result = getConfirmedWorkersByWorkDay(
                     workDayId = workDayId,
                     date = dateString,
                     projectId = project.id,
                     maxWorkers = maxWorkers
                 )
+                
+                // 캐시에 저장
+                _workDayConfirmedWorkersCache[workDayId] = result
+                println("CompanyMockDataFactory: Cached confirmed workers for WorkDay $workDayId: ${result.map { it.name }}")
+                return result
             }
         }
         
@@ -1478,6 +1492,9 @@ object CompanyMockDataFactory {
      * 특정 WorkDay에 대한 지원자 목록 조회
      */
     fun getApplicantWorkersForWorkDay(workDayId: String): List<ApplicantWorker> {
+        // 캐시에서 먼저 확인
+        _workDayApplicantWorkersCache[workDayId]?.let { return it }
+        
         val allProjects = baseProjects
         
         for (project in allProjects) {
@@ -1493,7 +1510,9 @@ object CompanyMockDataFactory {
                 val availableApplicants = getApplicantPool()
                 val selectedApplicants = availableApplicants.shuffled(random).take(maxApplicants)
                 
-                println("CompanyMockDataFactory: WorkDay $workDayId applicants: ${selectedApplicants.map { it.name }}")
+                // 캐시에 저장
+                _workDayApplicantWorkersCache[workDayId] = selectedApplicants
+                println("CompanyMockDataFactory: Cached applicant workers for WorkDay $workDayId: ${selectedApplicants.map { it.name }}")
                 return selectedApplicants
             }
         }
@@ -1696,43 +1715,72 @@ object CompanyMockDataFactory {
      * 근로자 출퇴근 정보 - WorkerManagementScreen에서 사용
      */
     fun getWorkerAttendanceStatus(): Map<LocalDate, WorkerAttendanceInfo> {
-        return mapOf(
-            LocalDate.parse("2025-08-01") to WorkerAttendanceInfo(
-                hasCheckedIn = true,
-                hasCheckedOut = true,
-                hasPaymentRecord = true
-            ),
-            LocalDate.parse("2025-08-02") to WorkerAttendanceInfo(
-                hasCheckedIn = true,
-                hasCheckedOut = true,
-                hasPaymentRecord = true
-            ),
-            LocalDate.parse("2025-08-03") to WorkerAttendanceInfo(
-                hasCheckedIn = true,
-                hasCheckedOut = false,
-                hasPaymentRecord = false
-            ),
-            LocalDate.parse("2025-08-04") to WorkerAttendanceInfo(
-                hasCheckedIn = false,
-                hasCheckedOut = false,
-                hasPaymentRecord = false
-            ),
-            LocalDate.parse("2025-08-05") to WorkerAttendanceInfo(
-                hasCheckedIn = false,
-                hasCheckedOut = false,
-                hasPaymentRecord = false
-            ),
-            LocalDate.parse("2025-08-06") to WorkerAttendanceInfo(
-                hasCheckedIn = false,
-                hasCheckedOut = false,
-                hasPaymentRecord = false
-            ),
-            LocalDate.parse("2025-08-07") to WorkerAttendanceInfo(
-                hasCheckedIn = false,
-                hasCheckedOut = false,
-                hasPaymentRecord = false
-            )
-        )
+        val today = getTodayDate()
+        val attendanceMap = mutableMapOf<LocalDate, WorkerAttendanceInfo>()
+        
+        // 모든 WorkDay의 날짜 범위를 기반으로 동적 생성
+        val allProjects = baseProjects
+        val allWorkDays = mutableListOf<WorkDay>()
+        
+        for (project in allProjects) {
+            allWorkDays.addAll(getWorkDaysForProject(project.id))
+        }
+        
+        for (workDay in allWorkDays) {
+            // WorkDay의 모집 기간 파싱
+            val dateRange = if (workDay.recruitPeriod.contains("~")) {
+                val dates = workDay.recruitPeriod.split(" ~ ")
+                if (dates.size == 2) {
+                    try {
+                        val startDate = LocalDate.parse(dates[0])
+                        val endDate = LocalDate.parse(dates[1])
+                        var currentDate = startDate
+                        val dateList = mutableListOf<LocalDate>()
+                        while (!currentDate.isAfter(endDate)) {
+                            dateList.add(currentDate)
+                            currentDate = currentDate.plusDays(1)
+                        }
+                        dateList
+                    } catch (_: Exception) {
+                        listOf(workDay.date)
+                    }
+                } else {
+                    listOf(workDay.date)
+                }
+            } else {
+                listOf(workDay.date)
+            }
+            
+            // 각 날짜에 대해 출석 정보 생성
+            for (date in dateRange) {
+                if (!attendanceMap.containsKey(date)) {
+                    attendanceMap[date] = when {
+                        date.isBefore(today.minusDays(2)) -> WorkerAttendanceInfo(
+                            hasCheckedIn = true,
+                            hasCheckedOut = true,
+                            hasPaymentRecord = true
+                        )
+                        date.isBefore(today) -> WorkerAttendanceInfo(
+                            hasCheckedIn = true,
+                            hasCheckedOut = date.isBefore(today.minusDays(1)),
+                            hasPaymentRecord = false
+                        )
+                        date.isEqual(today) -> WorkerAttendanceInfo(
+                            hasCheckedIn = true,
+                            hasCheckedOut = false,
+                            hasPaymentRecord = false
+                        )
+                        else -> WorkerAttendanceInfo(
+                            hasCheckedIn = false,
+                            hasCheckedOut = false,
+                            hasPaymentRecord = false
+                        )
+                    }
+                }
+            }
+        }
+        
+        return attendanceMap
     }
     
     /**

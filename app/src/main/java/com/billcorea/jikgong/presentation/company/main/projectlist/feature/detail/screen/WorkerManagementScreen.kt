@@ -50,12 +50,12 @@ fun WorkerManagementScreen(
   }
   
   // 출근/퇴근 상태 데이터 - CompanyMockDataFactory에서 가져오기
-  var attendanceStatus by remember {
+  var attendanceStatus by remember(workDayId) {
     mutableStateOf(CompanyMockDataFactory.getWorkerAttendanceStatus())
   }
   
-  var selectedManagementTab by remember { mutableIntStateOf(0) }
-  var selectedDateIndex by remember { mutableIntStateOf(0) }
+  var selectedManagementTab by remember(workDayId) { mutableIntStateOf(0) }
+  var selectedDateIndex by remember(workDayId) { mutableIntStateOf(0) }
   
   // WorkDay 기반 확정 근로자 데이터 - 실제 모집 기간에 맞춘 데이터 사용
   val confirmedWorkers = remember(workDayId) {
@@ -72,9 +72,9 @@ fun WorkerManagementScreen(
     CompanyMockDataFactory.testWorkDayDataConsistency()
   }
   
-  var selectedApplicants by remember { mutableStateOf<List<ApplicantWorker>>(emptyList()) }
-  var showDialog by remember { mutableStateOf(false) }
-  var dialogAction by remember { mutableStateOf("") } // "수락" 또는 "거절"
+  var selectedApplicants by remember(workDayId) { mutableStateOf<List<ApplicantWorker>>(emptyList()) }
+  var showDialog by remember(workDayId) { mutableStateOf(false) }
+  var dialogAction by remember(workDayId) { mutableStateOf("") } // "수락" 또는 "거절"
   
   // 모집 기간 파싱 (예: "2025-08-01 ~ 2025-08-07")
   val dateRange = remember(workDay) {
