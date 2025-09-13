@@ -344,24 +344,18 @@ fun WorkerManagementScreen(
                   AttendanceCheckCard(
                     type = "출근",
                     description = when {
-                      attendanceStatus.hasCheckedIn -> "출근 확인 완료"
-                      dateStatus == DateStatus.PAST -> "출근 확인 필요"
+                      attendanceStatus.hasCheckedIn -> "출근 내역"
+                      dateStatus == DateStatus.PAST -> "출근 내역 필요"
                       dateStatus == DateStatus.TODAY -> "근로자의 출근 여부 확인하기"
-                      else -> "출근 확인 대기"
+                      else -> "출근 내역 대기"
                     },
                     buttonText = when {
-                      attendanceStatus.hasCheckedIn -> "출근확인 완료"
-                      dateStatus == DateStatus.PAST -> "출근확인 누락"
-                      dateStatus == DateStatus.TODAY -> "출근확인"
-                      else -> "출근확인 대기"
+                      attendanceStatus.hasCheckedIn -> "출근 내역 보기"
+                      dateStatus == DateStatus.PAST -> "출근 내역 보기"
+                      dateStatus == DateStatus.TODAY -> "출근 내역"
+                      else -> "출근 내역 대기"
                     },
-                    buttonColor = when {
-                      attendanceStatus.hasCheckedIn && dateStatus == DateStatus.FUTURE -> Color(0xFF81C784) // 미래 날짜 완료 - 연한 초록
-                      attendanceStatus.hasCheckedIn -> Color(0xFF4CAF50) // 과거/오늘 완료 - 진한 초록
-                      dateStatus == DateStatus.PAST && !attendanceStatus.hasCheckedIn -> Color(0xFFFF5722) // 과거 누락 - 빨강
-                      dateStatus == DateStatus.FUTURE -> Color(0xFF90CAF9) // 미래 대기 - 연한 파랑
-                      else -> Color(0xFF4B7BFF) // 오늘/기본 - 진한 파랑
-                    },
+                    buttonColor = Color(0xFF4B7BFF),
                     isEnabled = true, // 모든 날짜에서 정보 열람 가능
                     onClick = {
                       if (dateStatus == DateStatus.TODAY) {
@@ -380,24 +374,18 @@ fun WorkerManagementScreen(
                   AttendanceCheckCard(
                     type = "퇴근",
                     description = when {
-                      attendanceStatus.hasCheckedOut -> "퇴근 확인 완료"
-                      dateStatus == DateStatus.PAST -> "퇴근 확인 필요"
+                      attendanceStatus.hasCheckedOut -> "퇴근 내역"
+                      dateStatus == DateStatus.PAST -> "퇴근 내역 필요"
                       dateStatus == DateStatus.TODAY -> "근로자 퇴근여부 확인하기"
-                      else -> "퇴근 확인 대기"
+                      else -> "퇴근 내역 대기"
                     },
                     buttonText = when {
-                      attendanceStatus.hasCheckedOut -> "퇴근확인 완료"
-                      dateStatus == DateStatus.PAST -> "퇴근확인 누락"
-                      dateStatus == DateStatus.TODAY -> "퇴근확인"
-                      else -> "퇴근확인 대기"
+                      attendanceStatus.hasCheckedOut -> "퇴근 내역 보기"
+                      dateStatus == DateStatus.PAST -> "퇴근 내역 보기"
+                      dateStatus == DateStatus.TODAY -> "퇴근 내역"
+                      else -> "퇴근 내역 대기"
                     },
-                    buttonColor = when {
-                      attendanceStatus.hasCheckedOut && dateStatus == DateStatus.FUTURE -> Color(0xFF81C784) // 미래 날짜 완료 - 연한 초록
-                      attendanceStatus.hasCheckedOut -> Color(0xFF4CAF50) // 과거/오늘 완료 - 진한 초록
-                      dateStatus == DateStatus.PAST && !attendanceStatus.hasCheckedOut -> Color(0xFFFF5722) // 과거 누락 - 빨강
-                      dateStatus == DateStatus.FUTURE -> Color(0xFF90CAF9) // 미래 대기 - 연한 파랑
-                      else -> Color(0xFF4B7BFF) // 오늘/기본 - 진한 파랑
-                    },
+                    buttonColor = Color(0xFF4B7BFF),
                     isEnabled = true, // 모든 날짜에서 정보 열람 가능
                     onClick = {
                       if (dateStatus == DateStatus.TODAY) {
@@ -415,14 +403,9 @@ fun WorkerManagementScreen(
                 item {
                   AttendanceCheckCard(
                     type = "지급내역",
-                    description = if (attendanceStatus.hasPaymentRecord) "지급내역 확인 완료" else "지급내역 확인 필요",
-                    buttonText = if (attendanceStatus.hasPaymentRecord) "지급내역서 확인완료" else "지급내역서 보기",
-                    buttonColor = when {
-                      attendanceStatus.hasPaymentRecord && dateStatus == DateStatus.FUTURE -> Color(0xFF81C784) // 미래 날짜 완료 - 연한 초록
-                      attendanceStatus.hasPaymentRecord -> Color(0xFF4CAF50) // 과거/오늘 완료 - 진한 초록
-                      dateStatus == DateStatus.FUTURE -> Color(0xFF90CAF9) // 미래 대기 - 연한 파랑
-                      else -> Color(0xFF4B7BFF) // 오늘/기본 - 진한 파랑
-                    },
+                    description = if (attendanceStatus.hasPaymentRecord) "지급 내역" else "지급 내역 필요",
+                    buttonText = if (attendanceStatus.hasPaymentRecord) "지급 내역 보기" else "지급 내역 보기",
+                    buttonColor = Color(0xFF4B7BFF),
                     isEnabled = true,
                     onClick = {
                       if (!attendanceStatus.hasPaymentRecord) {
