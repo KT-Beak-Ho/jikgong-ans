@@ -13,12 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.billcorea.jikgong.presentation.worker.projectList.page1.WorkerProjectList
+import com.billcorea.jikgong.presentation.worker.common.WorkerBottomNav
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.utils.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -34,13 +36,31 @@ fun MyInfo(
   modifier: Modifier = Modifier
 ) {
   var isNightWorkEnabled by remember { mutableStateOf(true) }
+  val config = LocalConfiguration.current
+  val screenHeight = config.screenHeightDp
 
-  Column(
-    modifier = Modifier
-      .fillMaxSize()
-      .background(Color.White)
-      .padding(16.dp)
-  ) {
+  Scaffold(
+    bottomBar = {
+      WorkerBottomNav(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height((screenHeight * .10).dp)
+          .padding(5.dp),
+        navigator = navigator,
+        doWorkerProjectList = {},
+        doWorkerMyjob = {},
+        doWorkerEarning = {},
+        doWorkerProfile = {}
+      )
+    }
+  ) { innerPadding ->
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .background(Color.White)
+        .padding(innerPadding)
+        .padding(16.dp)
+    ) {
     // Header with profile
     Row(
       modifier = Modifier
@@ -215,6 +235,7 @@ fun MyInfo(
         color = Color.Gray,
         fontSize = 14.sp
       )
+    }
     }
   }
 }

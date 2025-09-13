@@ -159,6 +159,7 @@ fun WorkerProjectList(
                     .fillMaxWidth()
                     .height((screenHeight * .10).dp)
                     .padding(5.dp),
+                navigator = navigator,
                 doWorkerProjectList = {
 
                 },

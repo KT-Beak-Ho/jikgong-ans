@@ -22,11 +22,18 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.*
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import androidx.compose.foundation.ExperimentalFoundationApi
+import com.billcorea.jikgong.utils.MainViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Destination
 @Composable
 fun WorkerMyProjectPendingScreen(
+  viewModel : MainViewModel = koinViewModel(),
+  navigator: DestinationsNavigator,
   modifier: Modifier = Modifier,
   onBack: () -> Unit = {}
 ) {
@@ -172,6 +179,6 @@ private fun sampleJobGroups(): List<JobGroup> {
 @Composable
 private fun WorkerMyProjectPendingScreenProgress() {
   MaterialTheme {
-    WorkerMyProjectPendingScreen()
+    //WorkerMyProjectPendingScreen()
   }
 }

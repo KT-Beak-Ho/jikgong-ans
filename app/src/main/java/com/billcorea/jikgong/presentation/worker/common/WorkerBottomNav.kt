@@ -19,6 +19,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.presentation.destinations.IncomeManagementScreenDestination
+import com.billcorea.jikgong.presentation.destinations.MyInfoDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerMyProjectAcceptedScreenDestination
+import com.billcorea.jikgong.presentation.destinations.WorkerProjectListDestination
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -27,6 +31,7 @@ import com.ramcosta.composedestinations.utils.toDestinationsNavigator
 @Composable
 fun WorkerBottomNav(
     modifier: Modifier = Modifier,
+    navigator: DestinationsNavigator,
     doWorkerProjectList: () -> Unit,
     doWorkerMyjob: () -> Unit,
     doWorkerEarning: () -> Unit,
@@ -52,7 +57,8 @@ fun WorkerBottomNav(
             isSelected = selectedTab == 0,
             onClick = {
                 selectedTab = 0
-                doWorkerProjectList()
+                //doWorkerProjectList()
+                navigator.navigate(WorkerProjectListDestination)
             }
         )
 
@@ -64,6 +70,7 @@ fun WorkerBottomNav(
             onClick = {
                 selectedTab = 1
                 doWorkerMyjob()
+                navigator.navigate(WorkerMyProjectAcceptedScreenDestination)
             }
         )
 
@@ -75,6 +82,7 @@ fun WorkerBottomNav(
             onClick = {
                 selectedTab = 2
                 doWorkerEarning()
+                navigator.navigate(IncomeManagementScreenDestination)
             }
         )
 
@@ -86,6 +94,7 @@ fun WorkerBottomNav(
             onClick = {
                 selectedTab = 3
                 doWorkerProfile()
+                navigator.navigate(MyInfoDestination)
             }
         )
     }

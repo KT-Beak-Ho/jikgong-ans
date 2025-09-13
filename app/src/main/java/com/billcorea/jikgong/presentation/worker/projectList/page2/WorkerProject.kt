@@ -1,4 +1,4 @@
-package com.billcorea.jikgong.presentation.worker.project
+package com.billcorea.jikgong.presentation.worker.projectList.page2
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
