@@ -170,7 +170,8 @@ fun WorkerProjectList(
             isUrgent = false,
             category = "건설업"
         )
-    ) */
+
+    ) 
 
     val jobPostings = listOf<JobPosting>()
 
@@ -225,6 +226,7 @@ fun WorkerProjectList(
                     .fillMaxWidth()
                     .height((screenHeight * .10).dp)
                     .padding(5.dp), */
+                navigator = navigator,
                 doWorkerProjectList = {},
                 doWorkerMyjob = {},
                 doWorkerEarning = {},

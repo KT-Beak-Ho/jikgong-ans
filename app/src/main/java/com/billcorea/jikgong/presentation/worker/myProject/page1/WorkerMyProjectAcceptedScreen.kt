@@ -43,11 +43,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import com.billcorea.jikgong.presentation.worker.common.WorkerBottomNav
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
@@ -71,75 +73,76 @@ fun WorkerMyProjectAcceptedScreen(
 ) {
   val selectedTabIndex = remember { mutableIntStateOf(0) }
   val tabs = listOf("확정", "진행중", "마감")
+  val config = LocalConfiguration.current
+  val screenHeight = config.screenHeightDp
   var selectedDay by remember { mutableIntStateOf(22) } // Default to 22nd
-
   val events = remember(selectedDay) {
-    if (selectedDay == 22) {
-      listOf(
-        TimelineEvent(
-          title = "신청",
-          dateTime = "1월 21일 09:00",
-          description = "보통인부 10명 / 사하구 낙동5블락 낙동강 온도 측정 센터 신축공사",
-          isDone = true
-        ),
-        TimelineEvent(
-          title = "출역 확정",
-          dateTime = "1월 21일 14:00",
-          description = "출역이 확정되었습니다. 6시 40분까지 지정된 장소에 도착해주세요.",
-          isDone = true
-        ),
-        TimelineEvent(
-          title = "출근 확인",
-          dateTime = "1월 22일 06:50",
-          description = "출근이 확인되었습니다.",
-          isDone = true
-        ),
-        TimelineEvent(
-          title = "퇴근 확인",
-          dateTime = "1월 22일 13:50",
-          description = "퇴근이 확인되었습니다. 급여 지급이 확정되었습니다.",
-          isDone = true
-        ),
-        TimelineEvent(
-          title = "급여 지급 예정",
-          dateTime = "1월 25일 예정",
-          description = "급여가 지급될 예정입니다.",
-          isDone = false
+      if (selectedDay == 22) {
+        listOf(
+          TimelineEvent(
+            title = "신청",
+            dateTime = "1월 21일 09:00",
+            description = "보통인부 10명 / 사하구 낙동5블락 낙동강 온도 측정 센터 신축공사",
+            isDone = true
+          ),
+          TimelineEvent(
+            title = "출역 확정",
+            dateTime = "1월 21일 14:00",
+            description = "출역이 확정되었습니다. 6시 40분까지 지정된 장소에 도착해주세요.",
+            isDone = true
+          ),
+          TimelineEvent(
+            title = "출근 확인",
+            dateTime = "1월 22일 06:50",
+            description = "출근이 확인되었습니다.",
+            isDone = true
+          ),
+          TimelineEvent(
+            title = "퇴근 확인",
+            dateTime = "1월 22일 13:50",
+            description = "퇴근이 확인되었습니다. 급여 지급이 확정되었습니다.",
+            isDone = true
+          ),
+          TimelineEvent(
+            title = "급여 지급 예정",
+            dateTime = "1월 25일 예정",
+            description = "급여가 지급될 예정입니다.",
+            isDone = false
+          )
         )
-      )
-    } else if (selectedDay == 23) {
-      listOf(
-        TimelineEvent(
-          title = "신청",
-          dateTime = "1월 22일 15:00",
-          description = "보통인부 5명 / 해운대구 센텀시티 상업시설 리모델링",
-          isDone = true
-        ),
-        TimelineEvent(
-          title = "출역 확정",
-          dateTime = "1월 22일 18:30",
-          description = "출역이 확정되었습니다. 7시까지 지정된 장소에 도착해주세요.",
-          isDone = true
-        ),
-        TimelineEvent(
-          title = "출근 확인",
-          dateTime = "1월 23일 07:10",
-          description = "출근이 확인되었습니다.",
-          isDone = true
-        ),
-        TimelineEvent(
-          title = "점심시간",
-          dateTime = "1월 23일 12:00",
-          description = "점심시간입니다. 13:00까지 복귀해주세요.",
-          isDone = true
-        ),
-        TimelineEvent(
-          title = "퇴근 예정",
-          dateTime = "1월 23일 17:00 예정",
-          description = "오후 5시 퇴근 예정입니다.",
-          isDone = false
+      } else if (selectedDay == 23) {
+        listOf(
+          TimelineEvent(
+            title = "신청",
+            dateTime = "1월 22일 15:00",
+            description = "보통인부 5명 / 해운대구 센텀시티 상업시설 리모델링",
+            isDone = true
+          ),
+          TimelineEvent(
+            title = "출역 확정",
+            dateTime = "1월 22일 18:30",
+            description = "출역이 확정되었습니다. 7시까지 지정된 장소에 도착해주세요.",
+            isDone = true
+          ),
+          TimelineEvent(
+            title = "출근 확인",
+            dateTime = "1월 23일 07:10",
+            description = "출근이 확인되었습니다.",
+            isDone = true
+          ),
+          TimelineEvent(
+            title = "점심시간",
+            dateTime = "1월 23일 12:00",
+            description = "점심시간입니다. 13:00까지 복귀해주세요.",
+            isDone = true
+          ),
+          TimelineEvent(
+            title = "퇴근 예정",
+            dateTime = "1월 23일 17:00 예정",
+            description = "오후 5시 퇴근 예정입니다.",
+            isDone = false
+          )
         )
-      )
     } else {
       emptyList()
     }
@@ -171,6 +174,27 @@ fun WorkerMyProjectAcceptedScreen(
           titleContentColor = appColorScheme.onSurface,
           navigationIconContentColor = appColorScheme.onSurface
         )
+      )
+    },
+    bottomBar = {
+      WorkerBottomNav(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height((screenHeight * .10).dp)
+          .padding(5.dp),
+        navigator = navigator,
+        doWorkerProjectList = {
+
+        },
+        doWorkerMyjob = {
+
+        },
+        doWorkerEarning = {
+
+        },
+        doWorkerProfile = {
+
+        }
       )
     }
   ) { inner ->
