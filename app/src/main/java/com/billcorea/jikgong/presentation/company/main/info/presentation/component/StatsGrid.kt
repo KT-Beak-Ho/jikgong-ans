@@ -21,7 +21,8 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Stat
 @Composable
 fun StatsGrid(
   stats: CompanyStats,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  onStatClick: ((String) -> Unit)? = null
 ) {
   val statsList = listOf(
     stats.automatedDocs,
@@ -42,11 +43,13 @@ fun StatsGrid(
     ) {
       StatCard(
         stat = statsList[0],
-        modifier = Modifier.weight(1f)
+        modifier = Modifier.weight(1f),
+        onClick = { onStatClick?.invoke(statsList[0].label) }
       )
       StatCard(
         stat = statsList[1],
-        modifier = Modifier.weight(1f)
+        modifier = Modifier.weight(1f),
+        onClick = { onStatClick?.invoke(statsList[1].label) }
       )
     }
     Row(
@@ -55,12 +58,14 @@ fun StatsGrid(
     ) {
       StatCard(
         stat = statsList[2],
-        modifier = Modifier.weight(1f)
+        modifier = Modifier.weight(1f),
+        onClick = { onStatClick?.invoke(statsList[2].label) }
       )
       StatCard(
         stat = statsList[3],
         isHighlight = true,
-        modifier = Modifier.weight(1f)
+        modifier = Modifier.weight(1f),
+        onClick = { onStatClick?.invoke(statsList[3].label) }
       )
     }
   }
@@ -70,14 +75,18 @@ fun StatsGrid(
 private fun StatCard(
   stat: StatItem,
   isHighlight: Boolean = false,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  onClick: () -> Unit = {}
 ) {
   var isPressed by remember { mutableStateOf(false) }
 
   Card(
     modifier = modifier
       .animateContentSize()
-      .clickable { isPressed = !isPressed }
+      .clickable { 
+        onClick()
+        isPressed = !isPressed 
+      }
       .then(
         if (isHighlight) {
           Modifier.border(

@@ -8,6 +8,10 @@ import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Construction
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -118,16 +122,77 @@ internal fun CompanyInfoContent(
 ) {
   val scrollState = rememberLazyListState()
   val pullToRefreshState = rememberPullToRefreshState()
+  
+  // Coming Soon 다이얼로그 상태
+  var showComingSoonDialog by remember { mutableStateOf(false) }
+  var comingSoonFeature by remember { mutableStateOf("") }
+  
+  // Coming Soon 다이얼로그
+  if (showComingSoonDialog) {
+    AlertDialog(
+      onDismissRequest = { showComingSoonDialog = false },
+      icon = {
+        Icon(
+          imageVector = Icons.Default.Construction,
+          contentDescription = null,
+          tint = Color(0xFF4B7BFF),
+          modifier = Modifier.size(48.dp)
+        )
+      },
+      title = {
+        Text(
+          text = "준비 중인 기능",
+          style = MaterialTheme.typography.titleLarge.copy(
+            fontWeight = FontWeight.Bold
+          ),
+          color = Color(0xFF1A1D29)
+        )
+      },
+      text = {
+        Column(
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          Text(
+            text = "'$comingSoonFeature' 기능은\n현재 준비 중입니다.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color(0xFF6B7280),
+            textAlign = TextAlign.Center
+          )
+          Text(
+            text = "곧 더 나은 서비스로 찾아뵙겠습니다!",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color(0xFF9CA3AF),
+            textAlign = TextAlign.Center
+          )
+        }
+      },
+      confirmButton = {
+        TextButton(
+          onClick = { showComingSoonDialog = false },
+          colors = ButtonDefaults.textButtonColors(
+            contentColor = Color(0xFF4B7BFF)
+          )
+        ) {
+          Text(
+            text = "확인",
+            style = MaterialTheme.typography.labelLarge.copy(
+              fontWeight = FontWeight.Bold
+            )
+          )
+        }
+      },
+      containerColor = Color.White,
+      shape = RoundedCornerShape(16.dp)
+    )
+  }
 
   Scaffold(
     topBar = {
       InfoTopBar(
         title = companyData.name,
         notificationCount = companyData.notifications.unreadCount,
-        onNotificationClick = onClearNotifications,
-        onSettingsClick = {
-          // TODO: 설정 화면으로 이동
-        }
+        onNotificationClick = onClearNotifications
       )
     },
     bottomBar = {
@@ -169,7 +234,13 @@ internal fun CompanyInfoContent(
         // 통계 그리드
         item {
           Spacer(modifier = Modifier.height(20.dp))
-          StatsGrid(stats = companyData.stats)
+          StatsGrid(
+            stats = companyData.stats,
+            onStatClick = { statLabel ->
+              comingSoonFeature = statLabel
+              showComingSoonDialog = true
+            }
+          )
         }
 
         // 빠른 메뉴

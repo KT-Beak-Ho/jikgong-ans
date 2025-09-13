@@ -4,11 +4,13 @@ import com.billcorea.jikgong.api.models.auth.EmailValidationRequest
 import com.billcorea.jikgong.api.models.auth.LoginIdValidationRequest
 import com.billcorea.jikgong.api.models.auth.PhoneValidationRequest
 import com.billcorea.jikgong.api.models.auth.SmsVerificationRequest
+import com.billcorea.jikgong.api.models.auth.CompanyRegisterRequest
 import com.billcorea.jikgong.api.models.common.ApiResult
 import com.billcorea.jikgong.api.models.auth.EmailValidationResponse
 import com.billcorea.jikgong.api.models.auth.LoginIdValidationResponse
 import com.billcorea.jikgong.api.models.auth.PhoneValidationResponse
 import com.billcorea.jikgong.api.models.auth.SmsVerificationResponse
+import com.billcorea.jikgong.api.models.auth.CompanyRegisterResponse
 import com.billcorea.jikgong.api.service.JoinApi
 import retrofit2.HttpException
 import java.io.IOException
@@ -112,6 +114,61 @@ class JoinRepositoryImpl(
           ApiResult.HttpError(response.code(), response.message(), errorBody)
         }
       }
+    } catch (e: Exception) {
+      ApiResult.Error(e)
+    }
+  }
+
+  override suspend fun registerCompany(
+    phoneNumber: String,
+    verificationCode: String,
+    name: String,
+    loginId: String,
+    password: String,
+    email: String,
+    businessNumber: String,
+    companyName: String,
+    inquiry: String?
+  ): ApiResult<CompanyRegisterResponse> {
+    return try {
+      val request = CompanyRegisterRequest(
+        phoneNumber = phoneNumber,
+        verificationCode = verificationCode,
+        name = name,
+        loginId = loginId,
+        password = password,
+        email = email,
+        businessNumber = businessNumber,
+        companyName = companyName,
+        inquiry = inquiry
+      )
+      
+      // Mock response for development (API not implemented yet)
+      // TODO: Replace with actual API call when backend is ready
+      // val response = joinApi.registerCompany(request)
+      
+      // Temporary mock success response
+      val mockResponse = CompanyRegisterResponse(
+        success = true,
+        message = "회원가입이 완료되었습니다",
+        companyId = System.currentTimeMillis(), // Generate mock ID
+        accessToken = "mock_access_token_${System.currentTimeMillis()}",
+        refreshToken = "mock_refresh_token_${System.currentTimeMillis()}",
+        companyInfo = null
+      )
+      
+      ApiResult.Success(mockResponse)
+      
+    } catch (e: HttpException) {
+      ApiResult.HttpError(e.code(), e.message() ?: "HTTP Error", null)
+    } catch (e: SocketTimeoutException) {
+      ApiResult.Error(Exception("연결 시간이 초과되었습니다"))
+    } catch (e: UnknownHostException) {
+      ApiResult.Error(Exception("서버에 연결할 수 없습니다"))
+    } catch (e: ConnectException) {
+      ApiResult.Error(Exception("서버 연결에 실패했습니다"))
+    } catch (e: IOException) {
+      ApiResult.Error(Exception("네트워크 오류가 발생했습니다"))
     } catch (e: Exception) {
       ApiResult.Error(e)
     }

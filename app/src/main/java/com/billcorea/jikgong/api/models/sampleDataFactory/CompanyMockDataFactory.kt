@@ -20,6 +20,8 @@ import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Stat
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WageType
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Worker
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkerInfo
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Job
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.TempSavedJob
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay
 import com.billcorea.jikgong.presentation.company.main.projectlist.data.ExistingJob
 import com.billcorea.jikgong.presentation.company.main.projectlist.data.PreviousJobPost
@@ -2071,5 +2073,242 @@ object CompanyMockDataFactory {
         )
         
         return records
+    }
+    
+    // ==================== 일자리 공고 (Job) 데이터 ====================
+    
+    /**
+     * 프로젝트에 속한 일자리 공고들을 반환
+     * 프로젝트 != 일자리 (프로젝트는 큰 단위, 일자리는 프로젝트 내 세부 모집 공고)
+     */
+    fun getJobsForProject(projectId: String): List<Job> {
+        val project = getProjectById(projectId) ?: baseProjects.first()
+        val today = LocalDate.now()
+        
+        return listOf(
+            Job(
+                id = "job_${projectId}_001",
+                projectId = projectId,
+                title = "${project.title} - 철근공 10명 모집",
+                jobType = "철근공",
+                workDate = today.plusDays(7),
+                startTime = "08:00",
+                endTime = "18:00",
+                location = project.location,
+                wage = 200000,
+                requiredWorkers = 10,
+                currentApplicants = 7,
+                description = "아파트 신축 현장 철근 작업을 진행할 숙련된 철근공을 모집합니다.",
+                requirements = "경력 3년 이상, 안전교육 이수자",
+                recruitPeriod = "${today} ~ ${today.plusDays(5)}",
+                isUrgent = true,
+                status = "RECRUITING"
+            ),
+            Job(
+                id = "job_${projectId}_002",
+                projectId = projectId,
+                title = "${project.title} - 목공 15명 모집",
+                jobType = "목공",
+                workDate = today.plusDays(10),
+                startTime = "07:30",
+                endTime = "17:30",
+                location = project.location,
+                wage = 180000,
+                requiredWorkers = 15,
+                currentApplicants = 12,
+                description = "내부 인테리어 목공 작업을 수행할 인력을 모집합니다.",
+                requirements = "목공 경력 2년 이상",
+                recruitPeriod = "${today} ~ ${today.plusDays(7)}",
+                isUrgent = false,
+                status = "RECRUITING"
+            ),
+            Job(
+                id = "job_${projectId}_003",
+                projectId = projectId,
+                title = "${project.title} - 전기공 5명 모집",
+                jobType = "전기공",
+                workDate = today.plusDays(14),
+                startTime = "08:00",
+                endTime = "17:00",
+                location = project.location,
+                wage = 220000,
+                requiredWorkers = 5,
+                currentApplicants = 5,
+                description = "전기 배선 및 설비 작업을 담당할 전기공을 모집합니다.",
+                requirements = "전기기능사 자격증 필수",
+                recruitPeriod = "${today} ~ ${today.plusDays(10)}",
+                isUrgent = false,
+                status = "CLOSED" // 마감됨
+            )
+        )
+    }
+    
+    /**
+     * 회사가 이전에 등록했던 모든 일자리 공고 목록 반환
+     * (재사용 가능한 템플릿 역할)
+     */
+    fun getPreviousJobs(): List<Job> {
+        val today = LocalDate.now()
+        
+        return listOf(
+            // 과거 완료된 일자리들
+            Job(
+                id = "prev_job_001",
+                projectId = "project_002",
+                title = "상가건물 신축 - 철근공 20명 모집",
+                jobType = "철근공",
+                workDate = today.minusDays(30),
+                startTime = "08:00",
+                endTime = "18:00",
+                location = "서울특별시 강남구 역삼동",
+                wage = 210000,
+                requiredWorkers = 20,
+                currentApplicants = 20,
+                description = "상가건물 신축 현장 철근 작업",
+                requirements = "경력 3년 이상, 안전교육 이수자",
+                recruitPeriod = "${today.minusDays(45)} ~ ${today.minusDays(35)}",
+                isUrgent = false,
+                status = "COMPLETED"
+            ),
+            Job(
+                id = "prev_job_002",
+                projectId = "project_003",
+                title = "오피스텔 리모델링 - 목공 10명 모집",
+                jobType = "목공",
+                workDate = today.minusDays(20),
+                startTime = "07:30",
+                endTime = "17:30",
+                location = "서울특별시 서초구 서초동",
+                wage = 190000,
+                requiredWorkers = 10,
+                currentApplicants = 10,
+                description = "오피스텔 내부 리모델링 목공 작업",
+                requirements = "목공 경력 2년 이상",
+                recruitPeriod = "${today.minusDays(35)} ~ ${today.minusDays(25)}",
+                isUrgent = true,
+                status = "COMPLETED"
+            ),
+            Job(
+                id = "prev_job_003",
+                projectId = "project_001",
+                title = "아파트 신축 - 타일공 8명 모집",
+                jobType = "타일공",
+                workDate = today.minusDays(15),
+                startTime = "08:00",
+                endTime = "17:00",
+                location = "서울특별시 송파구 잠실동",
+                wage = 200000,
+                requiredWorkers = 8,
+                currentApplicants = 8,
+                description = "아파트 욕실 및 주방 타일 시공",
+                requirements = "타일 시공 경력 3년 이상",
+                recruitPeriod = "${today.minusDays(25)} ~ ${today.minusDays(18)}",
+                isUrgent = false,
+                status = "COMPLETED"
+            ),
+            Job(
+                id = "prev_job_004",
+                projectId = "project_004",
+                title = "빌라 신축 - 조적공 5명 모집",
+                jobType = "조적공",
+                workDate = today.minusDays(10),
+                startTime = "07:00",
+                endTime = "17:00",
+                location = "경기도 성남시 분당구",
+                wage = 180000,
+                requiredWorkers = 5,
+                currentApplicants = 5,
+                description = "빌라 신축 현장 벽돌 쌓기 작업",
+                requirements = "조적 경력 2년 이상",
+                recruitPeriod = "${today.minusDays(20)} ~ ${today.minusDays(12)}",
+                isUrgent = false,
+                status = "COMPLETED"
+            )
+        )
+    }
+    
+    /**
+     * 특정 일자리 ID로 일자리 정보 조회
+     */
+    fun getJobById(jobId: String): Job? {
+        // 현재 프로젝트의 일자리들에서 찾기
+        baseProjects.forEach { project ->
+            val job = getJobsForProject(project.id).find { it.id == jobId }
+            if (job != null) return job
+        }
+        
+        // 이전 일자리들에서 찾기
+        return getPreviousJobs().find { it.id == jobId }
+    }
+    
+    // ==================== 임시저장 관련 ====================
+    
+    /**
+     * 임시저장된 일자리 목록 조회
+     */
+    fun getTempSavedJobs(): List<TempSavedJob> {
+        val today = LocalDate.now()
+        
+        return listOf(
+            TempSavedJob(
+                id = "temp_001",
+                title = "아파트 신축 - 철근공 15명",
+                jobType = "철근공",
+                workDate = today.plusDays(7),
+                startTime = "08:00",
+                endTime = "18:00",
+                location = "서울특별시 강남구",
+                wage = 200000,
+                requiredWorkers = 15,
+                description = "아파트 신축 현장 철근 작업",
+                requirements = "철근공 경력 3년 이상",
+                savedDate = today.minusDays(1),
+                completionRate = 85
+            ),
+            TempSavedJob(
+                id = "temp_002",
+                title = "빌라 리모델링 - 목공",
+                jobType = "목공",
+                workDate = null, // 날짜 미정
+                startTime = "09:00",
+                endTime = "",
+                location = "경기도 성남시",
+                wage = 180000,
+                requiredWorkers = 5,
+                description = "",
+                requirements = "",
+                savedDate = today.minusDays(3),
+                completionRate = 40
+            ),
+            TempSavedJob(
+                id = "temp_003",
+                title = "상가 전기 공사",
+                jobType = "전기공",
+                workDate = today.plusDays(14),
+                startTime = "08:00",
+                endTime = "17:00",
+                location = "서울특별시 송파구",
+                wage = 220000,
+                requiredWorkers = 8,
+                description = "상가 건물 전기 배선 작업",
+                requirements = "전기기능사 자격증 필수",
+                savedDate = today,
+                completionRate = 95
+            )
+        )
+    }
+    
+    /**
+     * 특정 임시저장 일자리 조회
+     */
+    fun getTempSavedJobById(tempJobId: String): TempSavedJob? {
+        return getTempSavedJobs().find { it.id == tempJobId }
+    }
+    
+    /**
+     * 임시저장 개수 조회
+     */
+    fun getTempSavedCount(): Int {
+        return getTempSavedJobs().size
     }
 }

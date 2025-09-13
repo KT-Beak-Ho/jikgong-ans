@@ -1,7 +1,9 @@
 package com.billcorea.jikgong.presentation.company.main.projectlist.feature.create.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.billcorea.jikgong.data.datastore.CompanyDataStore
 import com.billcorea.jikgong.presentation.company.main.projectlist.feature.create.model.*
 import com.billcorea.jikgong.api.repository.company.main.projectList.projectCreate.ProjectCreateRepository
 import com.billcorea.jikgong.presentation.company.main.projectlist.data.Project
@@ -11,8 +13,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class ProjectCreateViewModel(
-  private val repository: ProjectCreateRepository
+  private val repository: ProjectCreateRepository,
+  private val context: Context
 ) : ViewModel() {
+  
+  private val companyDataStore = CompanyDataStore(context)
 
   private val _uiState = MutableStateFlow(ProjectCreateUiState())
   val uiState: StateFlow<ProjectCreateUiState> = _uiState.asStateFlow()
@@ -126,7 +131,7 @@ class ProjectCreateViewModel(
       val project = Project(
         id = "",
         title = state.projectName,
-        company = "대림건설(주)", // TODO: SharedPreferences에서 가져오기
+        company = companyDataStore.companyName.first().ifEmpty { "미등록 회사" },
         location = state.workLocation,
         category = state.category,
         status = "RECRUITING",

@@ -19,9 +19,10 @@ import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopB
 import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
-import com.billcorea.jikgong.presentation.company.main.projectlist.data.ExistingJob
 import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.Job
 import java.text.NumberFormat
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,9 +31,8 @@ fun ExistingJobScreen(
   navController: NavController,
   modifier: Modifier = Modifier
 ) {
-  // CompanyMockDataFactory에서 데이터 가져오기
   val existingJobs = remember {
-    CompanyMockDataFactory.getExistingJobs()
+    CompanyMockDataFactory.getPreviousJobs()
   }
 
   Scaffold(
@@ -126,9 +126,10 @@ fun ExistingJobScreen(
 
 @Composable
 private fun ExistingJobCard(
-  job: ExistingJob
+  job: Job
 ) {
   val numberFormat = NumberFormat.getNumberInstance(Locale.KOREA)
+  val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   
   Card(
     modifier = Modifier.fillMaxWidth(),
@@ -141,12 +142,21 @@ private fun ExistingJobCard(
         .fillMaxWidth()
         .padding(16.dp)
     ) {
-      // 근무 기간
-      Text(
-        text = job.workPeriod,
-        style = AppTypography.bodySmall,
-        color = Color.Gray
-      )
+      // 근무 날짜 및 시간
+      Row(
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(
+          text = job.workDate.format(dateFormatter),
+          style = AppTypography.bodySmall,
+          color = Color.Gray
+        )
+        Text(
+          text = " • ${job.startTime} ~ ${job.endTime}",
+          style = AppTypography.bodySmall,
+          color = Color.Gray
+        )
+      }
       
       Spacer(modifier = Modifier.height(4.dp))
       
@@ -158,22 +168,82 @@ private fun ExistingJobCard(
         color = Color.Black
       )
       
+      Spacer(modifier = Modifier.height(4.dp))
+      
+      // 직종 및 위치
+      Row(
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(
+          text = job.jobType,
+          style = AppTypography.bodySmall,
+          color = Color(0xFF666666)
+        )
+        Text(
+          text = " • ${job.location}",
+          style = AppTypography.bodySmall,
+          color = Color(0xFF666666)
+        )
+      }
+      
       Spacer(modifier = Modifier.height(8.dp))
       
-      // 일급 카드 (하늘색 배경, 푸른색 글자)
-      Card(
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)) // 하늘색 배경
+      // 하단 정보들
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-        Box(
-          modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+        // 일급 카드 (하늘색 배경, 푸른색 글자)
+        Card(
+          shape = RoundedCornerShape(8.dp),
+          colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
         ) {
-          Text(
-            text = "일급 ${numberFormat.format(job.dailyWage)}원",
-            style = AppTypography.bodySmall,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF1976D2) // 푸른색 글자
-          )
+          Box(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+          ) {
+            Text(
+              text = "일급 ${numberFormat.format(job.wage)}원",
+              style = AppTypography.bodySmall,
+              fontWeight = FontWeight.Medium,
+              color = Color(0xFF1976D2)
+            )
+          }
+        }
+        
+        // 필요 인원
+        Card(
+          shape = RoundedCornerShape(8.dp),
+          colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0F0))
+        ) {
+          Box(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+          ) {
+            Text(
+              text = "${job.requiredWorkers}명 모집",
+              style = AppTypography.bodySmall,
+              fontWeight = FontWeight.Medium,
+              color = Color(0xFF666666)
+            )
+          }
+        }
+        
+        // 긴급 여부
+        if (job.isUrgent) {
+          Card(
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+          ) {
+            Box(
+              modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+              Text(
+                text = "긴급",
+                style = AppTypography.bodySmall,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFD32F2F)
+              )
+            }
+          }
         }
       }
     }

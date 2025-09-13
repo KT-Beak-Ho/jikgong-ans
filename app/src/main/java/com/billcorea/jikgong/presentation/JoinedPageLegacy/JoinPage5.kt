@@ -254,7 +254,7 @@ fun JoinPage5(
                 TextButton(
                     onClick = {
                         MaterialDialog(context).show {
-                            icon(R.drawable.ic_jikgong_white)
+                            icon(R.drawable.jikjikjik_white)
                             message(R.string.msgToLater)
                             positiveButton(R.string.OK) {
                                 it.dismiss()
@@ -443,7 +443,7 @@ fun JoinPage5(
                         Spacer(modifier = Modifier.padding(2.dp))
                         TextButton( onClick = {
                             MaterialDialog(context).show {
-                                icon(R.drawable.ic_jikgong_white)
+                                icon(R.drawable.jikjikjik_white)
                                 message(R.string.msgCertified)
                                 positiveButton(R.string.OK) {
                                     it.dismiss()

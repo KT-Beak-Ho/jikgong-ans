@@ -8,8 +8,10 @@ sealed class CompanyJoinSharedEvent {
   data class UpdatePhoneNumber(val phoneNumber: String) : CompanyJoinSharedEvent()
   //  사용자 인증 번호 입력
   data class UpdateVerificationCode(val code: String) : CompanyJoinSharedEvent()
-  //  인증번호 검증
+  //  인증번호 요청
   object RequestVerificationCode : CompanyJoinSharedEvent()
+  //  인증번호 확인
+  object VerifyCode : CompanyJoinSharedEvent()
 
   /**
    * Page 2 이벤트
@@ -34,6 +36,11 @@ sealed class CompanyJoinSharedEvent {
   object RequestVerificationID: CompanyJoinSharedEvent()
   // Email 검증
   object RequestVerificationEmail: CompanyJoinSharedEvent()
+
+  /**
+   * 회원가입 최종 제출
+   */
+  object SubmitRegistration : CompanyJoinSharedEvent()
 
   /**
    * 네비게이션 이벤트
