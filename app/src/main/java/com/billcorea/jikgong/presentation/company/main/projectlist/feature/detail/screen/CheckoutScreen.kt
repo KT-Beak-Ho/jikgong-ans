@@ -21,23 +21,10 @@ import com.billcorea.jikgong.ui.theme.AppTypography
 import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.CheckoutWorker
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.CheckoutStatus
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
-// 퇴근 체크용 근로자 데이터
-data class CheckoutWorker(
-  val id: String,
-  val name: String,
-  val age: Int,
-  val gender: String, // "남", "여"
-  var checkoutStatus: CheckoutStatus = CheckoutStatus.NONE
-)
-
-enum class CheckoutStatus {
-  NONE,        // 아무것도 선택안됨
-  EARLY_LEAVE, // 조퇴
-  NORMAL_LEAVE // 정상퇴근
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

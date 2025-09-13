@@ -31,7 +31,6 @@ fun ExistingJobScreen(
   navController: NavController,
   modifier: Modifier = Modifier
 ) {
-  // CompanyMockDataFactory에서 이전 일자리 데이터 가져오기
   val existingJobs = remember {
     CompanyMockDataFactory.getPreviousJobs()
   }

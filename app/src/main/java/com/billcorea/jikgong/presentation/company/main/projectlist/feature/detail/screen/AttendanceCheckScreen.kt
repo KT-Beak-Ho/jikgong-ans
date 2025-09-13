@@ -21,24 +21,10 @@ import com.billcorea.jikgong.ui.theme.Jikgong1111Theme
 import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.presentation.company.main.common.BackNavigationTopBar
 import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.AttendanceWorker
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.AttendanceStatus
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
-// 출근 체크용 근로자 데이터
-data class AttendanceWorker(
-  val id: String,
-  val name: String,
-  val age: Int,
-  val gender: String, // "남", "여"
-  val phoneNumber: String,
-  var attendanceStatus: AttendanceStatus = AttendanceStatus.NONE
-)
-
-enum class AttendanceStatus {
-  NONE,        // 아무것도 선택안됨 (출근전)
-  NOT_ARRIVED, // 결근
-  ARRIVED      // 출근
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

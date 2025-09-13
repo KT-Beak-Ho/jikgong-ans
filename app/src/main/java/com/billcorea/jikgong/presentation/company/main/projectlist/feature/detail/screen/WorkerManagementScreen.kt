@@ -29,22 +29,10 @@ import com.billcorea.jikgong.ui.theme.appColorScheme
 import com.billcorea.jikgong.api.models.sampleDataFactory.CompanyMockDataFactory
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.ApplicantWorker
 import com.billcorea.jikgong.api.models.sampleDataFactory.DataFactoryModels.WorkDay
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.WorkerAttendanceInfo
+import com.billcorea.jikgong.presentation.company.main.projectlist.data.DateStatus
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
-// 출근/퇴근 상태를 나타내는 데이터 클래스
-data class WorkerAttendanceInfo(
-  val hasCheckedIn: Boolean = false,
-  val hasCheckedOut: Boolean = false,
-  val hasPaymentRecord: Boolean = false
-)
-
-// 날짜 상태를 나타내는 enum
-enum class DateStatus {
-  PAST,    // 과거 날짜
-  TODAY,   // 오늘 날짜
-  FUTURE   // 미래 날짜
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,59 +41,35 @@ fun WorkerManagementScreen(
   workDayId: String,
   modifier: Modifier = Modifier
 ) {
-  // 오늘 날짜 정의 (8월 3일로 고정하되, 과거 데이터는 항상 표시)
-  val TODAY = LocalDate.parse("2025-08-03")
+  // 오늘 날짜 정의 - CompanyMockDataFactory에서 가져오기
+  val TODAY = CompanyMockDataFactory.getTodayDate()
   
-  // 임시 데이터 - 실제로는 workDayId를 통해 데이터를 가져와야 함
+  // WorkDay 데이터 - CompanyMockDataFactory에서 가져오기
   val workDay = remember {
-    WorkDay(
-      id = workDayId,
-      title = "보통인부 15명 모집",
-      date = LocalDate.parse("2025-08-01"), // 데이터 범위 내 기본 날짜로 변경
-      startTime = "08:00",
-      endTime = "18:00",
-      recruitPeriod = "2025-08-01 ~ 2025-08-07",
-      applicants = 12,
-      confirmed = 10,
-      maxWorkers = 15,
-      status = "IN_PROGRESS"
-    )
+    CompanyMockDataFactory.getWorkDayById(workDayId)
   }
   
-  // 출근/퇴근 상태 데이터 (날짜별) - 8월 4일 이후도 과거 완료된 데이터로 안전화
+  // 출근/퇴근 상태 데이터 - CompanyMockDataFactory에서 가져오기
   var attendanceStatus by remember {
-    mutableStateOf<Map<LocalDate, WorkerAttendanceInfo>>(
-      mapOf(
-        LocalDate.parse("2025-08-01") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true),
-        LocalDate.parse("2025-08-02") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true),
-        LocalDate.parse("2025-08-03") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = false, hasPaymentRecord = false), // 오늘: 출근만 완료
-        LocalDate.parse("2025-08-04") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true), // 미래지만 완료된 업무
-        LocalDate.parse("2025-08-05") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true),
-        LocalDate.parse("2025-08-06") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true),
-        LocalDate.parse("2025-08-07") to WorkerAttendanceInfo(hasCheckedIn = true, hasCheckedOut = true, hasPaymentRecord = true),
-        LocalDate.parse("2025-08-08") to WorkerAttendanceInfo(hasCheckedIn = false, hasCheckedOut = false, hasPaymentRecord = false), // 실제 미래 날짜
-        LocalDate.parse("2025-08-09") to WorkerAttendanceInfo(hasCheckedIn = false, hasCheckedOut = false, hasPaymentRecord = false),
-        LocalDate.parse("2025-08-10") to WorkerAttendanceInfo(hasCheckedIn = false, hasCheckedOut = false, hasPaymentRecord = false)
-      )
-    )
+    mutableStateOf(CompanyMockDataFactory.getWorkerAttendanceStatus())
   }
   
   var selectedManagementTab by remember { mutableIntStateOf(0) }
   var selectedDateIndex by remember { mutableIntStateOf(0) }
   
-  // 확정 근로자 데이터 (날짜별) - 매번 새로 로드하여 최신 데이터 보장
-  val confirmedWorkersByDate = CompanyMockDataFactory.getConfirmedWorkersByDate().mapKeys { 
-    LocalDate.parse(it.key) 
+  // WorkDay 기반 확정 근로자 데이터 - 실제 모집 기간에 맞춘 데이터 사용
+  val confirmedWorkers = remember(workDayId) {
+    CompanyMockDataFactory.getConfirmedWorkersForWorkDay(workDayId)
   }
 
-  // 지원자 상태 관리 - 매번 새로 로드하여 최신 데이터 보장
-  val applicantsByDate = CompanyMockDataFactory.getApplicantWorkersByDate().mapKeys { 
-    LocalDate.parse(it.key) 
+  // WorkDay 기반 지원자 데이터 - 실제 모집 기간에 맞춘 데이터 사용
+  val applicantWorkers = remember(workDayId) {
+    CompanyMockDataFactory.getApplicantWorkersForWorkDay(workDayId)
   }
   
-  // 데이터 일관성 테스트 (한 번만 실행)
+  // WorkDay 데이터 일관성 테스트 (한 번만 실행)
   LaunchedEffect(Unit) {
-    CompanyMockDataFactory.testDataConsistency()
+    CompanyMockDataFactory.testWorkDayDataConsistency()
   }
   
   var selectedApplicants by remember { mutableStateOf<List<ApplicantWorker>>(emptyList()) }
@@ -146,14 +110,14 @@ fun WorkerManagementScreen(
     }
   }
   
-  // 날짜별 확정인부 체크
-  fun hasConfirmedWorkers(date: LocalDate): Boolean {
-    return (confirmedWorkersByDate[date] ?: emptyList()).isNotEmpty()
+  // WorkDay 기반 확정인부 체크
+  fun hasConfirmedWorkers(): Boolean {
+    return confirmedWorkers.isNotEmpty()
   }
   
-  // 날짜별 확정인부 수 계산
-  fun getConfirmedWorkersCount(date: LocalDate): Int {
-    return (confirmedWorkersByDate[date] ?: emptyList()).size
+  // WorkDay 기반 확정인부 수 계산
+  fun getConfirmedWorkersCount(): Int {
+    return confirmedWorkers.size
   }
   
   // 날짜 상태 판단 함수
@@ -175,21 +139,21 @@ fun WorkerManagementScreen(
     attendanceStatus = attendanceStatus + (date to status)
   }
   
-  // 디버깅: 현재 데이터 상태 확인
+  // 디버깅: 현재 데이터 상태 확인 (WorkDay 기반)
   LaunchedEffect(selectedDateIndex, selectedManagementTab) {
-    println("=== WorkerManagementScreen Debug ===")
+    println("=== WorkerManagementScreen Debug (WorkDay-based) ===")
+    println("workDayId: $workDayId")
     println("selectedDateIndex: $selectedDateIndex")
     println("selectedManagementTab: $selectedManagementTab")
     println("currentDate: $currentDate")
     println("dateRange: ${dateRange.map { it.toString() }}")
     println("dateRange size: ${dateRange.size}")
-    println("confirmedWorkers count: ${getConfirmedWorkersCount(currentDate)}")
-    println("confirmedWorkers names: ${(confirmedWorkersByDate[currentDate] ?: emptyList()).map { it.name }}")
-    println("applicants count: ${(applicantsByDate[currentDate] ?: emptyList()).size}")
-    println("all confirmed dates: ${confirmedWorkersByDate.keys.sorted()}")
-    println("all applicant dates: ${applicantsByDate.keys.sorted()}")
+    println("confirmedWorkers count: ${getConfirmedWorkersCount()}")
+    println("confirmedWorkers names: ${confirmedWorkers.map { it.name }}")
+    println("applicants count: ${applicantWorkers.size}")
+    println("recruitment period: ${workDay.recruitPeriod}")
     println("navigation will pass: ${currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
-    println("===================================")
+    println("===================================================")
   }
 
   Scaffold(
@@ -221,7 +185,7 @@ fun WorkerManagementScreen(
             selectedApplicants = emptyList() // 탭 변경 시 선택 초기화
           },
           text = { 
-            val confirmedCount = getConfirmedWorkersCount(currentDate)
+            val confirmedCount = getConfirmedWorkersCount()
             Text("확정인부 ($confirmedCount)")
           }
         )
@@ -232,7 +196,7 @@ fun WorkerManagementScreen(
             selectedApplicants = emptyList() // 탭 변경 시 선택 초기화
           },
           text = { 
-            val applicantCount = (applicantsByDate[currentDate] ?: emptyList()).size
+            val applicantCount = applicantWorkers.size
             Text("인부지원 현황 ($applicantCount)")
           }
         )
@@ -254,15 +218,15 @@ fun WorkerManagementScreen(
                 selectedApplicants = emptyList() // 날짜 변경 시 선택 초기화
               },
               text = { 
-                val applicantsForDate = applicantsByDate[date] ?: emptyList()
-                val hasApplicants = applicantsForDate.isNotEmpty()
+                // WorkDay 기반에서는 모든 날짜가 동일한 데이터를 보여줌
+                val hasApplicants = applicantWorkers.isNotEmpty()
                 
                 Row(
                   verticalAlignment = Alignment.CenterVertically
                 ) {
                   Text(
                     text = if (selectedManagementTab == 1 && hasApplicants) {
-                      "${date.format(DateTimeFormatter.ofPattern("MM/dd"))} (${applicantsForDate.size})"
+                      "${date.format(DateTimeFormatter.ofPattern("MM/dd"))} (${applicantWorkers.size})"
                     } else {
                       date.format(DateTimeFormatter.ofPattern("MM/dd"))
                     },
@@ -315,7 +279,7 @@ fun WorkerManagementScreen(
       ) {
         when (selectedManagementTab) {
           0 -> { // 확정인부 탭
-            if (!hasConfirmedWorkers(currentDate)) {
+            if (!hasConfirmedWorkers()) {
               // 확정인부가 없는 경우
               item {
                 Box(
@@ -356,7 +320,7 @@ fun WorkerManagementScreen(
                 ) {
                   Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                      "출근 확정된 근로자 ${getConfirmedWorkersCount(currentDate)}명 확인하기",
+                      "출근 확정된 근로자 ${getConfirmedWorkersCount()}명 확인하기",
                       style = AppTypography.bodyMedium
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -516,9 +480,8 @@ fun WorkerManagementScreen(
             }
           }
           1 -> { // 인부지원 현황 탭
-            val applicantsForCurrentDate = applicantsByDate[currentDate] ?: emptyList()
-            
-            if (applicantsForCurrentDate.isEmpty()) {
+            // WorkDay 기반 지원자 데이터 사용
+            if (applicantWorkers.isEmpty()) {
               // 지원한 인부가 없는 경우
               item {
                 Box(
@@ -546,7 +509,7 @@ fun WorkerManagementScreen(
               }
             } else {
               // 지원한 인부가 있는 경우
-              items(applicantsForCurrentDate) { applicant ->
+              items(applicantWorkers) { applicant ->
                 ApplicantCard(
                   applicant = applicant,
                   onSelectionChanged = { isSelected ->
